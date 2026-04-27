@@ -1,0 +1,352 @@
+# BACKLOG.md — Repair Shop
+
+Backlog de melhorias identificadas via analise completa do codigo-fonte.
+Organizado por severidade e categoria.
+Itens resolvidos marcados com ~~tachado~~ e data de resolucao.
+
+---
+
+## ALTA — Bugs de Runtime
+
+### ~~BKL-001: Mismatch Execution.service_order_id vs schema service_order~~ (RESOLVIDO 2026-04-27)
+
+- **Arquivo:** `Execution.kt:24`
+- **Schema:** `V1__create_schema.sql:97`
+- **Problema:** A entity mapeava `@JoinColumn(name = "service_order_id")`, mas a coluna no banco e `service_order` (sem `_id`).
+- **Resolucao:** JoinColumn corrigido para `name = "service_order"` na Fase 1B da refatoracao DDD.
+
+### ~~BKL-002: Mismatch ServiceOrder.createdAt/updatedAt vs schema created/updated~~ (RESOLVIDO 2026-04-27)
+
+- **Arquivo:** `ServiceOrder.kt:71-76`
+- **Schema:** `V1__create_schema.sql:82-83`
+- **Problema:** A entity usava `createdAt`/`updatedAt`, mas as colunas na tabela sao `created`/`updated`.
+- **Resolucao:** Campos renomeados para `created`/`updated` com `@Column(name = "...")` explicito na Fase 1A.
+
+### ~~BKL-003: Logica invertida em CustomerService.create~~ (RESOLVIDO 2026-04-27)
+
+- **Arquivo:** `CustomerService.kt:41`
+- **Problema:** `verifyAndTakeByEmail(email)` lancava `EntityNotFoundException` se o customer NAO existir, impedindo criacao de customer novo.
+- **Resolucao:** Substituido por verificacao de duplicata com `DuplicateEntityException` na Fase 5A.
+
+---
+
+## MEDIA — Seguranca
+
+### BKL-004: JWT secret hardcoded no application.properties
+
+- **Arquivo:** `application.properties:25`
+- **Problema:** `jwt.secret=super-secret-key-that-should-be-changed-in-production-at-least-256-bits-long` esta commitado no repositorio.
+- **Correcao:** Usar variavel de ambiente: `jwt.secret=${JWT_SECRET}`.
+- **Origem:** Analise de codigo + SonarQube (secrets:S6703)
+
+### BKL-005: Credenciais de banco hardcoded
+
+- **Arquivo:** `application.properties:5-6`, `docker-compose.yml:6-8`
+- **Problema:** Username e password do PostgreSQL estao fixos no codigo commitado.
+- **Correcao:** Usar variaveis de ambiente para producao. Aceitavel para desenvolvimento local se documentado.
+- **Origem:** Analise de codigo + SonarQube (java:S6437)
+
+### BKL-006: Registro aberto permite criar ATTENDANT sem restricao
+
+- **Arquivo:** `SecurityConfig.kt:31`
+- **Problema:** `POST /auth/register` e `permitAll`. Qualquer pessoa pode registrar um user com role `ATTENDANT`, que tem acesso completo ao sistema.
+- **Correcao:** Restringir criacao de ATTENDANT a users ja autenticados com role ATTENDANT, ou criar endpoint administrativo separado.
+
+### BKL-007: JwtService.validateToken engole todas as excecoes
+
+- **Arquivo:** `JwtService.kt:29-38`
+- **Problema:** `catch (e: Exception)` captura qualquer excecao (inclusive `OutOfMemoryError` via `Exception`). Retorna `null` silenciosamente.
+- **Correcao:** Capturar apenas `JwtException` (e subclasses) ao inves de `Exception`.
+
+### BKL-008: Endpoints /services, /insumes e /invoices sem autorizacao por role
+
+- **Arquivo:** `SecurityConfig.kt:29-48`
+- **Problema:** Nao ha regra explicita para `/services/**`, `/insumes/**` e `/invoices/**`. Caem no `anyRequest, authenticated`, permitindo que CUSTOMER crie/delete executions, insumes e invoices.
+- **Correcao:** Adicionar regras de autorizacao por role para esses endpoints.
+
+---
+
+## MEDIA — Logica de Negocio
+
+### ~~BKL-009: UserService.verifyRegisteredCustomer nao verifica role CUSTOMER~~ (RESOLVIDO 2026-04-27)
+
+- **Arquivo:** `UserService.kt:56-58`
+- **Problema:** Apenas verificava se existia um user com o email, sem verificar role `CUSTOMER`.
+- **Resolucao:** Adicionada verificacao `if (user.function != UserRole.CUSTOMER) throw ComplianceException(...)` na Fase 5B.
+
+### BKL-010: ServiceOrderMetricsService.getMetrics carrega todos os registros em memoria
+
+- **Arquivo:** `ServiceOrderMetricsService.kt` (movido de ServiceOrderService na Fase 4B)
+- **Problema:** `serviceOrderRepository.findAll()` sem paginacao. Com volume alto de OSs, causa `OutOfMemoryError`.
+- **Correcao:** Usar query nativa com agregacao no banco, ou stream com `@QueryHints`.
+
+### ~~BKL-011: Document init usa require com throw interno (redundante)~~ (RESOLVIDO 2026-04-27)
+
+- **Arquivo:** `Document.kt:12-14`
+- **Problema:** `require(...) { throw InvalidDocumentException(...) }` — funciona por acidente mas e confuso.
+- **Resolucao:** Substituido por `if (...) throw InvalidDocumentException(...)` na Fase 3A.
+
+### ~~BKL-012: InvoiceService.create usa require ao inves de exception de dominio~~ (RESOLVIDO 2026-04-27)
+
+- **Arquivo:** `InvoiceService.kt:30-32`
+- **Problema:** Lancava `IllegalArgumentException` (400) ao inves de exception de dominio (422).
+- **Resolucao:** Substituido por `InvalidStateTransitionException` na Fase 5C.
+
+---
+
+## MEDIA — Arquitetura / DDD
+
+### ~~BKL-024: Bounded context register dependia de serviceorder (direcao errada)~~ (RESOLVIDO 2026-04-27)
+
+- **Arquivos:** `CustomerService.kt`, `VehicleService.kt`
+- **Problema:** Modulo register importava `ServiceOrderService` para checar existencia de OSs no delete. Direcao errada de dependencia.
+- **Resolucao:** Criada interface `ServiceOrderExistenceChecker` no modulo register, implementada por adapter no modulo serviceorder (Fase 2A).
+
+### ~~BKL-025: ExecutionService acessava repositories de outros bounded contexts~~ (RESOLVIDO 2026-04-27)
+
+- **Arquivo:** `ExecutionService.kt`
+- **Problema:** Importava `InsumeRepository` e `ServiceOrderRepository` diretamente, bypassando a camada de servico dos outros contextos.
+- **Resolucao:** Criadas interfaces `InsumeLookup` e `ServiceOrderAccessor` com adapters (Fase 2B+2C).
+
+### ~~BKL-026: ServiceOrderService construia entidades de outro bounded context~~ (RESOLVIDO 2026-04-27)
+
+- **Arquivo:** `ServiceOrderService.kt:52-75`
+- **Problema:** Construia `Execution`, `ExecutionInsume` e `ExecutionInsumeId` manualmente. Violacao de encapsulamento entre contextos.
+- **Resolucao:** Delegate para `ServiceOrder.addExecution()` (Fase 2D).
+
+### ~~BKL-027: Modelo de dominio anemico~~ (RESOLVIDO 2026-04-27)
+
+- **Arquivos:** `ServiceOrder.kt`, `Execution.kt`, `Customer.kt`, `Vehicle.kt`
+- **Problema:** Entidades eram data holders sem comportamento. Toda logica no service.
+- **Resolucao:** Adicionados metodos de dominio: `advanceStatus()`, `recordHistory()`, `approve()`, `refuse()`, `addExecution()`, `collectInsumeRequirements()`, `recalculateTotalPrice()`, `addInsume()`, `updateDetails()` (Fases 1A-1D).
+
+### ~~BKL-028: Value Objects acoplados ao JPA~~ (RESOLVIDO 2026-04-27)
+
+- **Arquivos:** `Document.kt`, `Email.kt`, `Plate.kt`
+- **Problema:** Usavam `@Embeddable` (annotation de infraestrutura em objetos de dominio).
+- **Resolucao:** Removido `@Embeddable`, criados `AttributeConverter` na camada de persistencia (Fase 3).
+
+### BKL-029: BasicExecution deveria ser tabela ao inves de enum
+
+- **Arquivo:** `execution/domain/BasicExecution.kt`
+- **Problema:** `BasicExecution` e um enum Kotlin com valores fixos (OIL_CHANGE, BRAKE_INSPECTION, etc.). Para adicionar um novo tipo de servico, e necessario alterar o codigo e redeployar. Tipos de servico sao dados cadastrais, nao constantes.
+- **Correcao:** Criar tabela `tb_basic_execution` (id, name, description), entity `BasicExecutionEntity`, e substituir o enum por FK na `tb_execution`. Requer nova migration.
+- **Origem:** Anotacao de revisao do grupo
+
+### BKL-030: ExecutionService ainda dispara save no ServiceOrder (filho atualiza pai)
+
+- **Arquivo:** `ExecutionService.kt` — metodo `updateServiceOrderPrice()`
+- **Problema:** Ao criar, deletar ou atualizar uma Execution, o `ExecutionService` chama `serviceOrderAccessor.save(serviceOrder)` para recalcular o preco. O filho (Execution) esta disparando persistencia no pai (ServiceOrder), o que viola a direcao de responsabilidade do aggregate.
+- **Correcao:** Mover a logica de recalculo de preco para o `ServiceOrderService`, expondo um metodo `recalculatePrice(serviceOrderId)` que o controller ou um evento chama apos operacoes em executions.
+- **Origem:** Anotacao de revisao do grupo ("Filho nao atualiza o pai - o pai atualiza o filho")
+
+---
+
+## BAIXA — Inconsistencias
+
+### ~~BKL-013: Convencao de timestamps misturada entre entidades~~ (PARCIALMENTE RESOLVIDO 2026-04-27)
+
+- **Problema:** `ServiceOrder` e `Execution` usavam `@CreationTimestamp`/`@UpdateTimestamp`. Outras entidades usavam `LocalDateTime.now()` manual.
+- **Resolucao parcial:** ServiceOrder corrigido para usar `LocalDateTime.now()` (Fase 1A). Execution ainda usa `LocalDateTime.now()` manual no `advanceStatus` mas nao tem mais `@CreationTimestamp`/`@UpdateTimestamp`.
+
+### BKL-014: ExecutionHistory usa UUID direto vs ServiceOrderHistory usa @ManyToOne
+
+- **Arquivo:** `ExecutionHistory.kt:22-23` vs `ServiceOrderHistory.kt:17-18`
+- **Problema:** `ExecutionHistory` referencia execution por `executionId: UUID` (coluna simples). `ServiceOrderHistory` referencia por `@ManyToOne var serviceOrder: ServiceOrder`. Inconsistencia no padrao de relacionamento.
+- **Correcao:** Padronizar para um dos dois estilos.
+
+### BKL-015: SafeString no campo password rejeita caracteres validos
+
+- **Arquivo:** `UserDto.kt:26`
+- **Problema:** `@SafeString` no password rejeita `<`, `>` e outros caracteres. Senhas sao hasheadas antes de persistir, entao essa validacao restringe senhas desnecessariamente.
+- **Correcao:** Remover `@SafeString` do campo password.
+
+### BKL-016: Falta @SafeString no invoiceNumber
+
+- **Arquivo:** `InvoiceDto.kt:17`
+- **Problema:** Todos os outros campos de texto user-facing usam `@SafeString`, mas `invoiceNumber` nao.
+- **Correcao:** Adicionar `@field:SafeString` ao campo.
+
+### ~~BKL-017: InsumeService.getEntityById sem @Transactional~~ (RESOLVIDO 2026-04-27)
+
+- **Arquivo:** `InsumeService.kt:42-45`
+- **Resolucao:** Adicionado `@Transactional(readOnly = true)` na Fase 5D.
+
+### ~~BKL-018: CustomerService.verifyAndTakeByEmail — nome confuso~~ (RESOLVIDO 2026-04-27)
+
+- **Arquivo:** `CustomerService.kt:53`
+- **Resolucao:** Renomeado para `findByEmailOrThrow` na Fase 5E.
+
+### ~~BKL-019: Enums PostgreSQL criados no schema mas nao utilizados~~ (RESOLVIDO 2026-04-27)
+
+- **Arquivo:** `V1__create_schema.sql:6-16`
+- **Resolucao:** Criada migration `V2__drop_unused_enums.sql` na Fase 5F.
+
+### ~~BKL-020: Wildcard import com ponto e virgula estilo Java~~ (RESOLVIDO 2026-04-27)
+
+- **Arquivo:** `ServiceOrder.kt:12`
+- **Resolucao:** Imports reescritos como imports explicitos Kotlin na Fase 1A.
+
+### ~~BKL-021: Imports nao utilizados em varias classes~~ (RESOLVIDO 2026-04-27)
+
+- **Arquivos:** `Insume.kt`, `Vehicle.kt`, `VehicleRepository.kt`
+- **Resolucao:** Imports removidos nas Fases 1D e 5G.
+
+### BKL-022: ComplianceException usada para regras de negocio simples
+
+- **Arquivo:** `CustomerService.kt`, `VehicleService.kt`
+- **Problema:** `ComplianceException` (nome sugere conformidade regulatoria) e usada para impedir delecao com OSs associadas.
+- **Correcao:** Considerar `IllegalStateException` ou exception mais descritiva.
+
+### BKL-023: ExecutionService usa alias de import para @Service
+
+- **Arquivo:** `ExecutionService.kt:28`
+- **Problema:** `import org.springframework.stereotype.Service as SpringService` para evitar conflito de nome. Funcional mas atipico.
+- **Correcao:** Aceitavel. Alternativa seria usar FQN na annotation.
+
+### BKL-031: SonarQube — collection deveria ser imutavel no MetricsService
+
+- **Arquivo:** `ServiceOrderMetricsService.kt`
+- **Problema:** `serviceOrderRepository.findAll()` retorna `MutableList`, mas o resultado so e lido (nunca mutado). SonarQube rule kotlin:S6524.
+- **Correcao:** Adicionar `.toList()` apos `findAll()` para tornar a referencia imutavel.
+- **Origem:** SonarQube report (abr. 24)
+
+---
+
+## MEDIA — Validacao e Regras de Negocio
+
+### BKL-032: OS pode ser criada sem nenhum servico (lista vazia)
+
+- **Arquivo:** `ServiceOrderService.kt` — `createServiceOrder()`
+- **Problema:** O campo `request.services` pode ser uma lista vazia. O sistema cria uma OS sem nenhuma execution vinculada, com `totalPrice = 0`. Na pratica, uma OS sem servicos nao faz sentido no dominio.
+- **Correcao:** Adicionar validacao: se `request.services` estiver vazia, lancar exception. Alternativa: adicionar `@field:NotEmpty` no DTO `CreateServiceOrderRequest.services`.
+- **Origem:** Anotacao "Cadastro user / UserRole / ServiceOrder" — fluxo de criacao de OS
+
+### BKL-033: Sem validacao de que diagnostico produziu executions antes de avancar para WAITING_APPROVAL
+
+- **Arquivo:** `ServiceOrder.kt` — `advanceStatus()`
+- **Problema:** A transicao `IN_DIAGNOSIS -> WAITING_APPROVAL` nao verifica se pelo menos uma execution foi adicionada durante o diagnostico. Um mecanico pode "concluir" o diagnostico sem registrar nenhum servico, e o orcamento sera enviado ao cliente com valor zero.
+- **Correcao:** Adicionar validacao no `advanceStatus()`: se `newStatus == WAITING_APPROVAL && executions.isEmpty()`, lancar exception.
+- **Origem:** Anotacao "Nao cria a OS direto, so depois do diagnostico"
+
+### BKL-034: Insume.deductStock aceita quantidades negativas e zero
+
+- **Arquivo:** `Insume.kt:59-62` — `deductStock(amount)`
+- **Problema:** O metodo verifica `if (quantity < amount)` mas nao verifica se `amount <= 0`. Passar `amount = -5` faz `5 < -5 = false`, entao subtrai -5, resultando em `quantity += 5`. Isso permite adicionar estoque via deducao. Passar `amount = 0` e um no-op silencioso.
+- **Correcao:** Adicionar `if (amount <= 0) throw IllegalArgumentException("Deduction amount must be positive")` no inicio do metodo.
+- **Origem:** Anotacao "Regra de insumos - subtrair os insumos da OS da gestao/estoque"
+
+### BKL-035: InsumeItemRequest.quantity sem validacao de minimo
+
+- **Arquivo:** `ServiceOrderDto.kt:18` — `InsumeItemRequest`
+- **Problema:** `val quantity: Int = 1` aceita qualquer valor inteiro, inclusive zero e negativos. Nao tem `@Min(1)`. Um request com `quantity: 0` ou `quantity: -3` e aceito silenciosamente.
+- **Correcao:** Adicionar `@field:Min(1, message = "Quantity must be at least 1")` ao campo.
+- **Origem:** Anotacao "Testar cadastro da OS e dos insumos"
+
+### BKL-036: Mesmo insume pode ser adicionado duas vezes na mesma execution
+
+- **Arquivo:** `Execution.kt` — `addInsume()`
+- **Problema:** A colecao `insumes` e um `MutableSet<ExecutionInsume>` com `@EmbeddedId` composto por `(executionId, insumeId)`. Se o mesmo insumeId for passado duas vezes na request, o Set deduplica pela PK composta — a segunda chamada sobrescreve a primeira silenciosamente, perdendo a quantidade da primeira.
+- **Correcao:** Validar no `addInsume()`: se ja existe um `ExecutionInsume` com o mesmo `insume.id`, lancar exception ou somar quantidades.
+- **Origem:** Anotacao "Testar cadastro da OS e dos insumos"
+
+---
+
+## MEDIA — Anti-patterns e Clean Code
+
+### BKL-037: ApprovalDomainService instanciado manualmente ao inves de injetado
+
+- **Arquivo:** `ServiceOrderService.kt` — `private val approvalDomainService = ApprovalDomainService()`
+- **Problema:** Domain Service criado com `= ApprovalDomainService()` direto no campo, ao inves de ser injetado via construtor. Isso impede mockar o domain service em testes e viola o padrao de injecao de dependencia.
+- **Correcao:** Anotar `ApprovalDomainService` com `@Component` (ou registrar como `@Bean`) e injetar no construtor de `ServiceOrderService`.
+- **Origem:** Anotacao "Validar anti-pattern -> executar clean code"
+
+### BKL-038: ExecutionService manipula colecao interna do ServiceOrder diretamente
+
+- **Arquivo:** `ExecutionService.kt` — `serviceOrder.executions.add(savedExecution)` nos metodos `create()` e `createBatch()`
+- **Problema:** O service acessa `serviceOrder.executions` diretamente e adiciona execution, ao inves de usar o metodo de dominio `serviceOrder.addExecution()`. Isso bypassa a logica de encapsulamento do aggregate (recalculo de preco, etc). E Feature Envy — o service "inveja" a responsabilidade do aggregate.
+- **Correcao:** Alinhar com BKL-030 — se Execution e child do aggregate, toda manipulacao deve passar pelo ServiceOrderService.
+- **Origem:** Anotacao "Validar anti-pattern -> executar clean code"
+
+---
+
+## MEDIA — Observabilidade
+
+### BKL-039: Zero logging em toda a aplicacao
+
+- **Problema:** Nenhum service, controller, filter ou exception handler tem logging. Operacoes criticas (aprovacao de OS, deducao de estoque, autenticacao) executam sem rastro.
+- **Correcao:** Adicionar `kotlin-logging` ao pom.xml. Implementar logging em: ServiceOrderService (create, approve), InsumeService (deductStock, restoreStock), UserService (authenticate, createUser), JwtAuthenticationFilter, GlobalExceptionHandler.
+- **Origem:** Analise do especialista de Observabilidade
+
+### BKL-040: Sem Spring Boot Actuator (health checks, info)
+
+- **Problema:** `spring-boot-starter-actuator` nao esta no pom.xml. Docker nao tem como detectar se a app travou ou ficou em estado inconsistente. Nao existe `/actuator/health`.
+- **Correcao:** Adicionar dependencia, configurar endpoints `health` e `info`, criar health check customizado para DB, atualizar docker-compose com healthcheck na app.
+- **Origem:** Analise do especialista de Observabilidade
+
+### BKL-041: Sem correlation ID para rastreamento de requests
+
+- **Problema:** Nao existe `X-Correlation-ID` header nem MDC logging. Impossivel correlacionar logs de uma mesma request entre diferentes services/metodos.
+- **Correcao:** Criar `CorrelationIdFilter`, configurar logback-spring.xml com pattern incluindo `%X{correlationId}`.
+- **Origem:** Analise do especialista de Observabilidade
+
+---
+
+## MEDIA — Cobertura de Testes
+
+### BKL-042: Metodos de dominio novos sem testes diretos (~15 testes faltantes)
+
+- **Arquivos:** `ServiceOrder.kt`, `Execution.kt`, `Customer.kt`
+- **Problema:** Os metodos `approve()`, `refuse()`, `recordHistory()`, `addExecution()`, `collectInsumeRequirements()`, `addInsume()`, `updateDetails()` adicionados na refatoracao DDD nao tem testes unitarios diretos. Sao testados apenas indiretamente via services com mocks.
+- **Correcao:** Criar `ServiceOrderDomainTest`, `ExecutionDomainTest`, `CustomerDomainTest`.
+- **Origem:** Analise do especialista de Testes + anotacao "Testar cadastro da OS e dos insumos"
+
+### BKL-043: ApprovalDomainService sem testes
+
+- **Arquivo:** `ApprovalDomainService.kt`
+- **Problema:** Domain service novo, zero cobertura. Metodos `approve()` e `refuse()` nao testados.
+- **Correcao:** Criar `ApprovalDomainServiceTest` com cenarios: approve retorna stock requirements, refuse transiciona status, approve com OS sem insumes retorna lista vazia.
+- **Origem:** Analise do especialista de Testes
+
+### BKL-044: AttributeConverters sem testes (DocumentConverter, EmailConverter, PlateConverter)
+
+- **Arquivos:** `register/repository/converter/*.kt`
+- **Problema:** 3 converters novos, zero cobertura. `convertToDatabaseColumn` e `convertToEntityAttribute` nao testados, inclusive com nulls.
+- **Correcao:** Criar `DocumentConverterTest`, `EmailConverterTest`, `PlateConverterTest`.
+- **Origem:** Analise do especialista de Testes
+
+### BKL-045: Email value object sem testes de validacao
+
+- **Arquivo:** `Email.kt`
+- **Problema:** Document e Plate tem testes (`DocumentTest`, `PlateTest`), mas Email nao. A validacao no construtor (regex) nao e testada.
+- **Correcao:** Criar `EmailTest` com cenarios: email valido, sem @, sem dominio, vazio, com espacos.
+- **Origem:** Analise do especialista de Testes
+
+### BKL-046: Zero testes de integracao com banco real
+
+- **Problema:** Todos os 121 testes sao unitarios com mocks. Nenhum testa: converters com JPA, cascade de entidades, transacoes, lazy loading. `RepairshopApplicationTests` esta `@Disabled` por falta de banco.
+- **Correcao:** Adicionar Testcontainers (PostgreSQL) ao pom.xml. Criar `ServiceOrderIntegrationTest` com fluxo completo: criar OS -> aprovar -> verificar estoque. Habilitar `RepairshopApplicationTests`.
+- **Origem:** Analise do especialista de Testes
+
+---
+
+## Resumo de status
+
+| Status | Qtd |
+|---|---|
+| Resolvido | 16 |
+| Pendente — anteriores | 15 |
+| Pendente — novos (BKL-032 a BKL-046) | 15 |
+| **Total pendente** | **30** |
+
+### Pendentes por prioridade
+
+| Prioridade | Itens pendentes |
+|---|---|
+| MEDIA - Seguranca | BKL-004, BKL-005, BKL-006, BKL-007, BKL-008 |
+| MEDIA - Validacao/Regras | BKL-032, BKL-033, BKL-034, BKL-035, BKL-036 |
+| MEDIA - Arquitetura/DDD | BKL-029, BKL-030, BKL-037, BKL-038 |
+| MEDIA - Observabilidade | BKL-039, BKL-040, BKL-041 |
+| MEDIA - Testes | BKL-042, BKL-043, BKL-044, BKL-045, BKL-046 |
+| MEDIA - Performance | BKL-010 |
+| BAIXA - Clean Code | BKL-013 (parcial), BKL-014, BKL-015, BKL-016, BKL-022, BKL-023, BKL-031 |

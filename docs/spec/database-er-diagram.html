@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repair Shop - Diagrama ER</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #1a1a2e;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            overflow: auto;
+            min-height: 100vh;
+        }
+
+        h1 {
+            text-align: center;
+            color: #e0e0e0;
+            padding: 24px 0 4px;
+            font-size: 1.6rem;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            padding: 10px 0 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #aaa;
+            font-size: 0.78rem;
+        }
+
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .canvas {
+            position: relative;
+            width: 1600px;
+            height: 1200px;
+            margin: 0 auto 40px;
+        }
+
+        svg.lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ── Context groups ── */
+        .context {
+            position: absolute;
+            border: 2px dashed;
+            border-radius: 16px;
+            padding: 14px;
+            z-index: 0;
+        }
+
+        .context-label {
+            position: absolute;
+            top: -13px;
+            left: 20px;
+            padding: 2px 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .ctx-cadastro        { border-color: #4fc3f744; background: #4fc3f708; top: 30px; left: 20px; width: 490px; height: 590px; }
+        .ctx-cadastro .context-label { background: #4fc3f7; color: #0d1b2a; }
+
+        .ctx-ordem            { border-color: #ffb74d44; background: #ffb74d08; top: 30px; left: 530px; width: 540px; height: 590px; }
+        .ctx-ordem .context-label { background: #ffb74d; color: #1a1a2e; }
+
+        .ctx-estoque          { border-color: #81c78444; background: #81c78408; top: 30px; left: 1090px; width: 490px; height: 330px; }
+        .ctx-estoque .context-label { background: #81c784; color: #1a1a2e; }
+
+        .ctx-usuarios         { border-color: #ef535044; background: #ef535008; top: 380px; left: 1090px; width: 490px; height: 240px; }
+        .ctx-usuarios .context-label { background: #ef5350; color: #fff; }
+
+        .ctx-servico          { border-color: #ce93d844; background: #ce93d808; top: 640px; left: 20px; width: 750px; height: 540px; }
+        .ctx-servico .context-label { background: #ce93d8; color: #1a1a2e; }
+
+        .ctx-faturamento      { border-color: #f48fb144; background: #f48fb108; top: 740px; left: 810px; width: 320px; height: 350px; }
+        .ctx-faturamento .context-label { background: #f48fb1; color: #1a1a2e; }
+
+        /* ── Table cards ── */
+        .table-card {
+            position: absolute;
+            background: #16213e;
+            border: 1px solid #2a2a4a;
+            border-radius: 10px;
+            min-width: 220px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            z-index: 2;
+            overflow: hidden;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .table-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+        }
+
+        .table-header {
+            padding: 10px 16px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .table-header .icon { font-size: 1rem; }
+
+        .table-body {
+            padding: 6px 0;
+        }
+
+        .column {
+            display: flex;
+            align-items: center;
+            padding: 4px 16px;
+            font-size: 0.78rem;
+            color: #ccc;
+            gap: 8px;
+        }
+
+        .column:hover {
+            background: rgba(255,255,255,0.04);
+        }
+
+        .col-icon {
+            width: 16px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .col-icon.pk { color: #ffd54f; }
+        .col-icon.fk { color: #4fc3f7; }
+        .col-icon.field { color: #666; }
+        .col-icon.pkfk { color: #a8e6cf; }
+
+        .col-name {
+            flex: 1;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 0.75rem;
+        }
+
+        .col-type {
+            color: #777;
+            font-size: 0.68rem;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+
+        .col-constraint {
+            font-size: 0.6rem;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        .badge-pk { background: #ffd54f22; color: #ffd54f; }
+        .badge-fk { background: #4fc3f722; color: #4fc3f7; }
+        .badge-uk { background: #ce93d822; color: #ce93d8; }
+        .badge-nn { background: #ef535022; color: #ef5350; }
+        .badge-pkfk { background: #a8e6cf22; color: #a8e6cf; }
+
+        .separator {
+            height: 1px;
+            background: #2a2a4a;
+            margin: 4px 16px;
+        }
+
+        /* Context-specific header colors */
+        .hdr-cadastro  { background: #4fc3f718; color: #4fc3f7; border-bottom: 2px solid #4fc3f744; }
+        .hdr-ordem     { background: #ffb74d18; color: #ffb74d; border-bottom: 2px solid #ffb74d44; }
+        .hdr-estoque   { background: #81c78418; color: #81c784; border-bottom: 2px solid #81c78444; }
+        .hdr-servico   { background: #ce93d818; color: #ce93d8; border-bottom: 2px solid #ce93d844; }
+        .hdr-usuarios  { background: #ef535018; color: #ef5350; border-bottom: 2px solid #ef535044; }
+        .hdr-faturamento { background: #f48fb118; color: #f48fb1; border-bottom: 2px solid #f48fb144; }
+
+        /* Enum box */
+        .enum-card {
+            position: absolute;
+            background: #1a1a2e;
+            border: 1px dashed #555;
+            border-radius: 8px;
+            min-width: 170px;
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        .enum-header {
+            padding: 8px 14px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: #aaa;
+            background: #ffffff08;
+            border-bottom: 1px dashed #333;
+            letter-spacing: 0.5px;
+        }
+
+        .enum-value {
+            padding: 3px 14px;
+            font-size: 0.7rem;
+            color: #888;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+
+        /* Relationship labels */
+        .rel-label {
+            font-size: 0.6rem;
+            fill: #666;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Repair Shop &mdash; Diagrama Entidade-Relacionamento</h1>
+<p class="subtitle">Baseado no Event Storming &middot; 5 Bounded Contexts &middot; PostgreSQL</p>
+
+<div class="legend">
+    <div class="legend-item"><div class="legend-color" style="background:#4fc3f7"></div> Cadastro</div>
+    <div class="legend-item"><div class="legend-color" style="background:#ffb74d"></div> Ordem de Servico</div>
+    <div class="legend-item"><div class="legend-color" style="background:#81c784"></div> Estoque</div>
+    <div class="legend-item"><div class="legend-color" style="background:#ce93d8"></div> Servico</div>
+    <div class="legend-item"><div class="legend-color" style="background:#ef5350"></div> Usuarios</div>
+    <div class="legend-item"><div class="legend-color" style="background:#f48fb1"></div> Faturamento</div>
+    <div class="legend-item"><span style="color:#ffd54f">&#9670;</span> PK</div>
+    <div class="legend-item"><span style="color:#4fc3f7">&#9670;</span> FK</div>
+    <div class="legend-item"><span style="color:#a8e6cf">&#9670;</span> PK+FK</div>
+</div>
+
+<div class="canvas">
+
+    <!-- ══════════════ SVG RELATIONSHIPS ══════════════ -->
+    <svg class="lines" viewBox="0 0 1600 1200">
+        <defs>
+            <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                <path d="M0,0 L8,3 L0,6" fill="none" stroke="#555" stroke-width="1"/>
+            </marker>
+            <marker id="one" markerWidth="10" markerHeight="12" refX="0" refY="6" orient="auto">
+                <line x1="0" y1="1" x2="0" y2="11" stroke="#555" stroke-width="1.5"/>
+            </marker>
+            <marker id="many" markerWidth="12" markerHeight="12" refX="0" refY="6" orient="auto">
+                <path d="M10,0 L0,6 L10,12" fill="none" stroke="#555" stroke-width="1.2"/>
+            </marker>
+        </defs>
+
+        <!-- tb_customer 1──N tb_vehicle -->
+        <path d="M 160 290 L 160 320" fill="none" stroke="#4fc3f744" stroke-width="1.8" stroke-dasharray="6,3" marker-start="url(#one)" marker-end="url(#many)"/>
+        <text x="168" y="308" class="rel-label">1:N</text>
+
+        <!-- tb_customer 1──N tb_service_order -->
+        <path d="M 280 130 L 550 130" fill="none" stroke="#ffffff18" stroke-width="1.8" stroke-dasharray="6,3" marker-start="url(#one)" marker-end="url(#many)"/>
+        <text x="405" y="124" class="rel-label">1:N</text>
+
+        <!-- tb_vehicle 1──N tb_service_order -->
+        <path d="M 300 400 L 430 400 Q 450 400 450 330 L 450 220 L 550 220" fill="none" stroke="#ffffff18" stroke-width="1.8" stroke-dasharray="6,3" marker-start="url(#one)" marker-end="url(#many)"/>
+        <text x="458" y="310" class="rel-label">1:N</text>
+
+        <!-- tb_service_order 1──N tb_service_order_history -->
+        <path d="M 690 390 L 690 420" fill="none" stroke="#ffb74d44" stroke-width="1.8" stroke-dasharray="6,3" marker-start="url(#one)" marker-end="url(#many)"/>
+        <text x="698" y="408" class="rel-label">1:N</text>
+
+        <!-- tb_service_order 1──N tb_service -->
+        <path d="M 580 390 L 580 620 L 170 620 L 170 670" fill="none" stroke="#ffffff18" stroke-width="1.8" stroke-dasharray="6,3" marker-start="url(#one)" marker-end="url(#many)"/>
+        <text x="380" y="614" class="rel-label">1:N</text>
+
+        <!-- tb_service 1──N tb_service_insume -->
+        <path d="M 300 760 L 330 760" fill="none" stroke="#ce93d844" stroke-width="1.8" stroke-dasharray="6,3" marker-start="url(#one)" marker-end="url(#many)"/>
+        <text x="306" y="754" class="rel-label">1:N</text>
+
+        <!-- tb_insume 1──N tb_service_insume -->
+        <path d="M 1110 200 L 1060 200 Q 1040 200 1040 220 L 1040 760 L 550 760" fill="none" stroke="#ffffff18" stroke-width="1.8" stroke-dasharray="6,3" marker-start="url(#one)" marker-end="url(#many)"/>
+        <text x="800" y="754" class="rel-label">1:N</text>
+
+        <!-- tb_service 1──N tb_service_history -->
+        <path d="M 170 920 L 170 950" fill="none" stroke="#ce93d844" stroke-width="1.8" stroke-dasharray="6,3" marker-start="url(#one)" marker-end="url(#many)"/>
+        <text x="178" y="938" class="rel-label">1:N</text>
+
+        <!-- tb_service_order 1──1 tb_invoice -->
+        <path d="M 830 340 L 880 340 L 880 780" fill="none" stroke="#f48fb144" stroke-width="1.8" stroke-dasharray="6,3" marker-start="url(#one)" marker-end="url(#one)"/>
+        <text x="886" y="500" class="rel-label">1:1</text>
+
+        <!-- tb_customer 1──N tb_invoice -->
+        <path d="M 280 160 L 970 160 L 970 780" fill="none" stroke="#ffffff18" stroke-width="1.8" stroke-dasharray="6,3" marker-start="url(#one)" marker-end="url(#many)"/>
+        <text x="976" y="500" class="rel-label">1:N</text>
+    </svg>
+
+    <!-- ══════════════ CONTEXT AREAS ══════════════ -->
+    <div class="context ctx-cadastro"><span class="context-label">Cadastro</span></div>
+    <div class="context ctx-ordem"><span class="context-label">Ordem de Servico</span></div>
+    <div class="context ctx-estoque"><span class="context-label">Estoque</span></div>
+    <div class="context ctx-usuarios"><span class="context-label">Usuarios</span></div>
+    <div class="context ctx-servico"><span class="context-label">Servico</span></div>
+    <div class="context ctx-faturamento"><span class="context-label">Faturamento</span></div>
+
+    <!-- ══════════════ TABLES ══════════════ -->
+
+    <!-- ──── TB_CUSTOMER ──── -->
+    <div class="table-card" style="top:60px; left:40px; width:240px;">
+        <div class="table-header hdr-cadastro"><span class="icon">&#128100;</span> tb_customer</div>
+        <div class="table-body">
+            <div class="column"><span class="col-icon pk">&#9670;</span><span class="col-name">id_tb_customer</span><span class="col-type">UUID</span><span class="col-constraint badge-pk">PK</span></div>
+            <div class="separator"></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">name</span><span class="col-type">VARCHAR(150)</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">document</span><span class="col-type">VARCHAR(14)</span><span class="col-constraint badge-uk">UK</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">email</span><span class="col-type">VARCHAR(255)</span><span class="col-constraint badge-nn">NN</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">phone</span><span class="col-type">VARCHAR(20)</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">birth_date</span><span class="col-type">DATE</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">created</span><span class="col-type">TIMESTAMP</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">updated</span><span class="col-type">TIMESTAMP</span></div>
+        </div>
+    </div>
+
+    <!-- ──── TB_VEHICLE ──── -->
+    <div class="table-card" style="top:320px; left:40px; width:260px;">
+        <div class="table-header hdr-cadastro"><span class="icon">&#128663;</span> tb_vehicle</div>
+        <div class="table-body">
+            <div class="column"><span class="col-icon pk">&#9670;</span><span class="col-name">id_tb_vehicle</span><span class="col-type">UUID</span><span class="col-constraint badge-pk">PK</span></div>
+            <div class="column"><span class="col-icon fk">&#9670;</span><span class="col-name">customer_id</span><span class="col-type">UUID</span><span class="col-constraint badge-fk">FK</span></div>
+            <div class="separator"></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">plate</span><span class="col-type">VARCHAR(7)</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">brand</span><span class="col-type">VARCHAR(100)</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">model</span><span class="col-type">VARCHAR(100)</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">color</span><span class="col-type">VARCHAR(30)</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">manufacturing_date</span><span class="col-type">DATE</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">last_maintenance</span><span class="col-type">TIMESTAMP</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">created</span><span class="col-type">TIMESTAMP</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">updated</span><span class="col-type">TIMESTAMP</span></div>
+        </div>
+    </div>
+
+    <!-- ──── TB_SERVICE_ORDER ──── -->
+    <div class="table-card" style="top:60px; left:550px; width:280px;">
+        <div class="table-header hdr-ordem"><span class="icon">&#128203;</span> tb_service_order</div>
+        <div class="table-body">
+            <div class="column"><span class="col-icon pk">&#9670;</span><span class="col-name">id_tb_service_order</span><span class="col-type">UUID</span><span class="col-constraint badge-pk">PK</span></div>
+            <div class="column"><span class="col-icon fk">&#9670;</span><span class="col-name">customer_id</span><span class="col-type">UUID</span><span class="col-constraint badge-fk">FK</span></div>
+            <div class="column"><span class="col-icon fk">&#9670;</span><span class="col-name">vehicle_id</span><span class="col-type">UUID</span><span class="col-constraint badge-fk">FK</span></div>
+            <div class="separator"></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">status</span><span class="col-type">ENUM</span><span class="col-constraint badge-nn">NN</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">total_price</span><span class="col-type">DECIMAL(12,2)</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">enter_time</span><span class="col-type">TIMESTAMP</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">end_time</span><span class="col-type">TIMESTAMP</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">valid_date</span><span class="col-type">DATE</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">created</span><span class="col-type">TIMESTAMP</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">updated</span><span class="col-type">TIMESTAMP</span></div>
+        </div>
+    </div>
+
+    <!-- ──── TB_SERVICE_ORDER_HISTORY ──── -->
+    <div class="table-card" style="top:420px; left:550px; width:280px;">
+        <div class="table-header hdr-ordem"><span class="icon">&#128340;</span> tb_service_order_history</div>
+        <div class="table-body">
+            <div class="column"><span class="col-icon pk">&#9670;</span><span class="col-name">id_tb_service_order_history</span><span class="col-type">UUID</span><span class="col-constraint badge-pk">PK</span></div>
+            <div class="column"><span class="col-icon fk">&#9670;</span><span class="col-name">service_order_id</span><span class="col-type">UUID</span><span class="col-constraint badge-fk">FK</span></div>
+            <div class="separator"></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">status</span><span class="col-type">VARCHAR(50)</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">register_time</span><span class="col-type">TIMESTAMP</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">interval_time</span><span class="col-type">BIGINT</span></div>
+        </div>
+    </div>
+
+    <!-- ──── TB_INSUME ──── -->
+    <div class="table-card" style="top:60px; left:1110px; width:250px;">
+        <div class="table-header hdr-estoque"><span class="icon">&#128230;</span> tb_insume</div>
+        <div class="table-body">
+            <div class="column"><span class="col-icon pk">&#9670;</span><span class="col-name">id_tb_insume</span><span class="col-type">UUID</span><span class="col-constraint badge-pk">PK</span></div>
+            <div class="separator"></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">name</span><span class="col-type">VARCHAR(150)</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">brand</span><span class="col-type">VARCHAR(80)</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">sku_id</span><span class="col-type">VARCHAR(50)</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">quantity</span><span class="col-type">INTEGER</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">price</span><span class="col-type">DECIMAL(10,2)</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">unity_price</span><span class="col-type">DECIMAL(10,2)</span></div>
+        </div>
+    </div>
+
+    <!-- ──── TB_USER ──── -->
+    <div class="table-card" style="top:410px; left:1110px; width:230px;">
+        <div class="table-header hdr-usuarios"><span class="icon">&#128101;</span> tb_user</div>
+        <div class="table-body">
+            <div class="column"><span class="col-icon pk">&#9670;</span><span class="col-name">id_tb_user</span><span class="col-type">UUID</span><span class="col-constraint badge-pk">PK</span></div>
+            <div class="separator"></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">name</span><span class="col-type">VARCHAR(150)</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">function</span><span class="col-type">VARCHAR(50)</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">email</span><span class="col-type">VARCHAR(255)</span><span class="col-constraint badge-uk">UK</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">password</span><span class="col-type">VARCHAR(255)</span></div>
+        </div>
+    </div>
+
+    <!-- ──── TB_SERVICE ──── -->
+    <div class="table-card" style="top:670px; left:40px; width:260px;">
+        <div class="table-header hdr-servico"><span class="icon">&#128736;</span> tb_service</div>
+        <div class="table-body">
+            <div class="column"><span class="col-icon pk">&#9670;</span><span class="col-name">id_tb_service</span><span class="col-type">UUID</span><span class="col-constraint badge-pk">PK</span></div>
+            <div class="column"><span class="col-icon fk">&#9670;</span><span class="col-name">service_order</span><span class="col-type">UUID</span><span class="col-constraint badge-fk">FK</span></div>
+            <div class="separator"></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">description</span><span class="col-type">TEXT</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">price</span><span class="col-type">DECIMAL(10,2)</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">estimated_time</span><span class="col-type">DECIMAL(5,2)</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">status</span><span class="col-type">ENUM</span><span class="col-constraint badge-nn">NN</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">created</span><span class="col-type">TIMESTAMP</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">updated</span><span class="col-type">TIMESTAMP</span></div>
+        </div>
+    </div>
+
+    <!-- ──── TB_SERVICE_INSUME (pivot) ──── -->
+    <div class="table-card" style="top:700px; left:330px; width:220px;">
+        <div class="table-header hdr-servico"><span class="icon">&#128279;</span> tb_service_insume</div>
+        <div class="table-body">
+            <div class="column"><span class="col-icon pkfk">&#9670;</span><span class="col-name">id_tb_service</span><span class="col-type">UUID</span><span class="col-constraint badge-pkfk">PK FK</span></div>
+            <div class="column"><span class="col-icon pkfk">&#9670;</span><span class="col-name">id_tb_insume</span><span class="col-type">UUID</span><span class="col-constraint badge-pkfk">PK FK</span></div>
+        </div>
+    </div>
+
+    <!-- ──── TB_SERVICE_HISTORY ──── -->
+    <div class="table-card" style="top:950px; left:40px; width:260px;">
+        <div class="table-header hdr-servico"><span class="icon">&#128340;</span> tb_service_history</div>
+        <div class="table-body">
+            <div class="column"><span class="col-icon pk">&#9670;</span><span class="col-name">id_tb_service_history</span><span class="col-type">UUID</span><span class="col-constraint badge-pk">PK</span></div>
+            <div class="column"><span class="col-icon fk">&#9670;</span><span class="col-name">service_id</span><span class="col-type">UUID</span><span class="col-constraint badge-fk">FK</span></div>
+            <div class="separator"></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">status</span><span class="col-type">VARCHAR(50)</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">register_time</span><span class="col-type">TIMESTAMP</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">interval_time</span><span class="col-type">BIGINT</span></div>
+        </div>
+    </div>
+
+    <!-- ──── TB_INVOICE ──── -->
+    <div class="table-card" style="top:780px; left:840px; width:260px;">
+        <div class="table-header hdr-faturamento"><span class="icon">&#128181;</span> tb_invoice</div>
+        <div class="table-body">
+            <div class="column"><span class="col-icon pk">&#9670;</span><span class="col-name">id_tb_invoice</span><span class="col-type">UUID</span><span class="col-constraint badge-pk">PK</span></div>
+            <div class="column"><span class="col-icon fk">&#9670;</span><span class="col-name">customer_id</span><span class="col-type">UUID</span><span class="col-constraint badge-fk">FK</span></div>
+            <div class="column"><span class="col-icon fk">&#9670;</span><span class="col-name">service_order_id</span><span class="col-type">UUID</span><span class="col-constraint badge-fk">FK</span></div>
+            <div class="separator"></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">price</span><span class="col-type">DECIMAL(12,2)</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">invoice_number</span><span class="col-type">VARCHAR(50)</span><span class="col-constraint badge-uk">UK</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">emission_date</span><span class="col-type">TIMESTAMP</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">created</span><span class="col-type">TIMESTAMP</span></div>
+            <div class="column"><span class="col-icon field">&#9702;</span><span class="col-name">updated</span><span class="col-type">TIMESTAMP</span></div>
+        </div>
+    </div>
+
+    <!-- ══════════════ ENUMS ══════════════ -->
+
+    <div class="enum-card" style="top:250px; left:855px;">
+        <div class="enum-header">&#9881; status_os</div>
+        <div class="enum-value">RECEIVED</div>
+        <div class="enum-value">IN_DIAGNOSIS</div>
+        <div class="enum-value">WAITING_APPROVAL</div>
+        <div class="enum-value">APPROVED</div>
+        <div class="enum-value">REFUSED</div>
+        <div class="enum-value">IN_EXECUTION</div>
+        <div class="enum-value">FINALIZED</div>
+        <div class="enum-value">PAID</div>
+        <div class="enum-value">CANCELED</div>
+    </div>
+
+    <div class="enum-card" style="top:950px; left:330px;">
+        <div class="enum-header">&#9881; status_service</div>
+        <div class="enum-value">INITIATED</div>
+        <div class="enum-value">PENDING</div>
+        <div class="enum-value">FINALIZED</div>
+    </div>
+
+</div>
+
+</body>
+</html>

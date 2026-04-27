@@ -1,0 +1,251 @@
+id,sku,categoria,subcategoria,nome_produto,marca,unidade,preco_unitario_brl,estoque_minimo,estoque_atual
+1,FLT-OLE-001,Filtros,Filtro de Oleo,Filtro de oleo motor 1.0/1.4 flex,Tecfil,UN,18.90,20,45
+2,FLT-OLE-002,Filtros,Filtro de Oleo,Filtro de oleo motor 1.6/1.8 flex,Mann Filter,UN,22.50,15,30
+3,FLT-OLE-003,Filtros,Filtro de Oleo,Filtro de oleo motor 2.0 flex,Fram,UN,25.00,10,25
+4,FLT-OLE-004,Filtros,Filtro de Oleo,Filtro de oleo motor diesel,Tecfil,UN,35.00,8,18
+5,FLT-ARM-001,Filtros,Filtro de Ar Motor,Filtro de ar motor 1.0/1.4,Tecfil,UN,32.00,15,35
+6,FLT-ARM-002,Filtros,Filtro de Ar Motor,Filtro de ar motor 1.6/2.0,Mann Filter,UN,38.00,12,28
+7,FLT-ARM-003,Filtros,Filtro de Ar Motor,Filtro de ar motor pickup/SUV,Fram,UN,55.00,8,15
+8,FLT-CMB-001,Filtros,Filtro de Combustivel,Filtro combustivel flex/gasolina,Tecfil,UN,28.00,12,30
+9,FLT-CMB-002,Filtros,Filtro de Combustivel,Filtro combustivel diesel,Mann Filter,UN,45.00,8,15
+10,FLT-CMB-003,Filtros,Filtro de Combustivel,Filtro combustivel injecao (alta pressao),Bosch,UN,85.00,5,12
+11,FLT-CAB-001,Filtros,Filtro de Cabine,Filtro de ar condicionado/cabine universal,Tecfil,UN,35.00,15,30
+12,FLT-CAB-002,Filtros,Filtro de Cabine,Filtro de cabine carvao ativado,Mann Filter,UN,55.00,8,18
+13,FLT-TRN-001,Filtros,Filtro de Transmissao,Filtro de oleo cambio automatico,Wega,UN,42.00,5,10
+14,OLB-MOT-001,Oleos e Lubrificantes,Oleo Motor,Oleo motor 5W30 sintetico 1L,Mobil Super 3000,UN,42.00,30,60
+15,OLB-MOT-002,Oleos e Lubrificantes,Oleo Motor,Oleo motor 5W30 sintetico 1L,Castrol Magnatec,UN,40.00,25,50
+16,OLB-MOT-003,Oleos e Lubrificantes,Oleo Motor,Oleo motor 5W40 sintetico 1L,Petronas Syntium,UN,45.00,20,40
+17,OLB-MOT-004,Oleos e Lubrificantes,Oleo Motor,Oleo motor 10W40 semissintetico 1L,Lubrax,UN,28.00,20,45
+18,OLB-MOT-005,Oleos e Lubrificantes,Oleo Motor,Oleo motor 15W40 mineral diesel 1L,Mobil Delvac,UN,25.00,15,30
+19,OLB-MOT-006,Oleos e Lubrificantes,Oleo Motor,Oleo motor 0W20 sintetico 1L,Castrol Edge,UN,55.00,10,20
+20,OLB-CMB-001,Oleos e Lubrificantes,Oleo Cambio,Oleo cambio manual 75W90 1L,Castrol,UN,48.00,8,15
+21,OLB-CMB-002,Oleos e Lubrificantes,Oleo Cambio,Oleo cambio automatico ATF 1L,Mobil ATF,UN,38.00,10,20
+22,OLB-CMB-003,Oleos e Lubrificantes,Oleo Cambio,Oleo cambio CVT 1L,Castrol,UN,65.00,5,10
+23,OLB-DIR-001,Oleos e Lubrificantes,Fluido Direcao,Oleo direcao hidraulica ATF 500ml,Lubrax,UN,22.00,10,25
+24,OLB-GRX-001,Oleos e Lubrificantes,Graxa,Graxa para rolamento 500g,Uni Lub,UN,18.00,8,15
+25,OLB-GRX-002,Oleos e Lubrificantes,Graxa,Graxa grafitada 500g,Orbi,UN,22.00,5,12
+26,FLD-FRE-001,Fluidos,Fluido de Freio,Fluido de freio DOT4 500ml,Bosch,UN,28.00,15,35
+27,FLD-FRE-002,Fluidos,Fluido de Freio,Fluido de freio DOT3 500ml,TRW,UN,22.00,10,20
+28,FLD-RAD-001,Fluidos,Aditivo Radiador,Aditivo para radiador concentrado 1L,Paraflu,UN,25.00,15,30
+29,FLD-RAD-002,Fluidos,Aditivo Radiador,Aditivo para radiador pronto uso 1L,Tecbril,UN,18.00,12,25
+30,FLD-AGU-001,Fluidos,Agua Destilada,Agua destilada/desmineralizada 1L,Generico,UN,5.00,20,50
+31,FLD-LPB-001,Fluidos,Limpa Para-brisa,Liquido limpa para-brisa 500ml,Tecbril,UN,8.00,10,25
+32,FLD-ARL-001,Fluidos,Arla 32,Arla 32 para diesel 20L,Petronas,GL,65.00,3,8
+33,FRE-PST-001,Freios,Pastilha de Freio,Pastilha freio dianteira linha VW/Chevrolet,Fras-le,JG,65.00,12,25
+34,FRE-PST-002,Freios,Pastilha de Freio,Pastilha freio dianteira linha Fiat,Cobreq,JG,55.00,12,25
+35,FRE-PST-003,Freios,Pastilha de Freio,Pastilha freio dianteira linha Hyundai/Toyota,TRW,JG,75.00,10,20
+36,FRE-PST-004,Freios,Pastilha de Freio,Pastilha freio dianteira linha Ford/Renault,Bosch,JG,70.00,8,18
+37,FRE-PST-005,Freios,Pastilha de Freio,Pastilha freio traseira universal,Fras-le,JG,50.00,8,15
+38,FRE-SAP-001,Freios,Sapata de Freio,Sapata de freio traseira linha leve,Cobreq,JG,45.00,10,20
+39,FRE-SAP-002,Freios,Sapata de Freio,Sapata de freio traseira pickup,Fras-le,JG,55.00,6,12
+40,FRE-DSC-001,Freios,Disco de Freio,Disco freio dianteiro ventilado VW/Chevrolet,Fremax,UN,95.00,6,12
+41,FRE-DSC-002,Freios,Disco de Freio,Disco freio dianteiro ventilado Fiat,Hipper Freios,UN,85.00,6,12
+42,FRE-DSC-003,Freios,Disco de Freio,Disco freio dianteiro Hyundai/Toyota,Fremax,UN,110.00,4,10
+43,FRE-DSC-004,Freios,Disco de Freio,Disco freio traseiro solido,Fremax,UN,80.00,4,8
+44,FRE-CIL-001,Freios,Cilindro de Roda,Cilindro de roda traseiro,Bosch,UN,55.00,6,12
+45,FRE-REP-001,Freios,Reparo Freio,Kit reparo cilindro mestre,TRW,KT,35.00,4,10
+46,FRE-FLX-001,Freios,Flexivel de Freio,Flexivel de freio dianteiro,TRW,UN,28.00,8,15
+47,FRE-FLX-002,Freios,Flexivel de Freio,Flexivel de freio traseiro,Fras-le,UN,25.00,6,12
+48,SUS-AMR-001,Suspensao,Amortecedor,Amortecedor dianteiro linha leve,Monroe,UN,180.00,6,12
+49,SUS-AMR-002,Suspensao,Amortecedor,Amortecedor dianteiro linha VW/Chevrolet,Cofap,UN,165.00,6,12
+50,SUS-AMR-003,Suspensao,Amortecedor,Amortecedor traseiro linha leve,Monroe,UN,140.00,6,12
+51,SUS-AMR-004,Suspensao,Amortecedor,Amortecedor traseiro linha Fiat,Cofap,UN,130.00,6,10
+52,SUS-BAT-001,Suspensao,Kit Batente,Kit batente amortecedor dianteiro,Sampel,KT,45.00,8,15
+53,SUS-BAT-002,Suspensao,Kit Batente,Kit batente amortecedor traseiro,Sampel,KT,38.00,8,15
+54,SUS-MOL-001,Suspensao,Mola Helicoidal,Mola helicoidal dianteira,Fabrini,UN,120.00,4,8
+55,SUS-MOL-002,Suspensao,Mola Helicoidal,Mola helicoidal traseira,Fabrini,UN,105.00,4,8
+56,SUS-BIE-001,Suspensao,Bieleta,Bieleta barra estabilizadora dianteira,Nakata,UN,42.00,8,18
+57,SUS-BIE-002,Suspensao,Bieleta,Bieleta barra estabilizadora traseira,Nakata,UN,38.00,6,12
+58,SUS-PIV-001,Suspensao,Pivo,Pivo de suspensao inferior,Nakata,UN,65.00,6,14
+59,SUS-BUC-001,Suspensao,Bucha,Bucha bandeja dianteira (kit),Sampel,KT,35.00,8,18
+60,SUS-BUC-002,Suspensao,Bucha,Bucha barra estabilizadora,Sampel,UN,12.00,15,35
+61,SUS-ROL-001,Suspensao,Rolamento Roda,Rolamento de roda dianteira,NSK,UN,75.00,6,12
+62,SUS-ROL-002,Suspensao,Rolamento Roda,Rolamento de roda traseira,SKF,UN,68.00,6,12
+63,SUS-CUB-001,Suspensao,Cubo de Roda,Cubo de roda dianteiro com rolamento,NSK,UN,180.00,3,6
+64,DIR-TRM-001,Direcao,Terminal,Terminal de direcao lado direito,Nakata,UN,48.00,8,15
+65,DIR-TRM-002,Direcao,Terminal,Terminal de direcao lado esquerdo,Nakata,UN,48.00,8,15
+66,DIR-BAX-001,Direcao,Barra Axial,Barra axial de direcao,Viemar,UN,55.00,6,12
+67,DIR-CXD-001,Direcao,Caixa Direcao,Reparo caixa de direcao hidraulica,Trinter,KT,85.00,3,6
+68,DIR-BMB-001,Direcao,Bomba Direcao,Bomba de direcao hidraulica remanufaturada,Trinter,UN,350.00,2,4
+69,DIR-COI-001,Direcao,Coifa,Coifa da caixa de direcao (par),Uniflex,PR,22.00,6,15
+70,MOT-CRD-001,Motor,Correia Dentada,Kit correia dentada com tensor 1.0/1.4,Gates,KT,120.00,5,12
+71,MOT-CRD-002,Motor,Correia Dentada,Kit correia dentada com tensor 1.6/1.8,Continental,KT,145.00,5,10
+72,MOT-CRD-003,Motor,Correia Dentada,Kit correia dentada com tensor 2.0,Gates,KT,165.00,4,8
+73,MOT-CPV-001,Motor,Correia Poly-V,Correia poly-V alternador/AC 6PK,Gates,UN,55.00,8,18
+74,MOT-CPV-002,Motor,Correia Poly-V,Correia poly-V direcao hidraulica,Dayco,UN,45.00,6,12
+75,MOT-TNS-001,Motor,Tensor,Tensor da correia do alternador,INA,UN,85.00,4,10
+76,MOT-TNS-002,Motor,Tensor,Rolamento tensor correia dentada,SKF,UN,65.00,5,10
+77,MOT-BDA-001,Motor,Bomba Dagua,Bomba d'agua motor 1.0/1.4,Indisa,UN,95.00,4,8
+78,MOT-BDA-002,Motor,Bomba Dagua,Bomba d'agua motor 1.6/2.0,Indisa,UN,120.00,4,8
+79,MOT-JNT-001,Motor,Junta,Jogo de juntas do cabecote,Sabó,KT,85.00,3,6
+80,MOT-JNT-002,Motor,Junta,Junta do carter,Sabó,UN,25.00,5,12
+81,MOT-JNT-003,Motor,Junta,Junta do coletor de admissao,Sabó,UN,18.00,5,10
+82,MOT-JNT-004,Motor,Junta,Junta da tampa de valvulas,Sabó,UN,22.00,6,14
+83,MOT-RET-001,Motor,Retentor,Retentor do virabrequim dianteiro,Sabó,UN,18.00,6,12
+84,MOT-RET-002,Motor,Retentor,Retentor do virabrequim traseiro,Sabó,UN,22.00,5,10
+85,MOT-RET-003,Motor,Retentor,Retentor de valvula (jogo),Sabó,JG,28.00,5,12
+86,MOT-VEL-001,Motor,Vela de Ignicao,Vela de ignicao iridium (unidade),NGK,UN,38.00,20,50
+87,MOT-VEL-002,Motor,Vela de Ignicao,Vela de ignicao convencional (unidade),Bosch,UN,18.00,20,50
+88,MOT-VEL-003,Motor,Vela de Ignicao,Vela de ignicao platinum (unidade),Denso,UN,28.00,15,30
+89,MOT-BOB-001,Motor,Bobina de Ignicao,Bobina de ignicao individual,Bosch,UN,110.00,5,12
+90,MOT-BOB-002,Motor,Bobina de Ignicao,Bobina de ignicao rail (4 cil),Marelli,UN,180.00,3,6
+91,MOT-CBV-001,Motor,Cabo de Vela,Jogo de cabos de vela 4 cilindros,NGK,JG,85.00,5,12
+92,MOT-SEN-001,Motor,Sensor,Sensor de temperatura da agua,MTE-Thomson,UN,35.00,6,12
+93,MOT-SEN-002,Motor,Sensor,Sensor de posicao borboleta (TPS),MTE-Thomson,UN,65.00,4,8
+94,MOT-SEN-003,Motor,Sensor,Sensor de rotacao do virabrequim,Bosch,UN,75.00,4,8
+95,MOT-SEN-004,Motor,Sensor,Sensor MAP,MTE-Thomson,UN,55.00,4,8
+96,MOT-SEN-005,Motor,Sensor,Sonda lambda (sensor de oxigenio),Bosch,UN,120.00,5,10
+97,MOT-SEN-006,Motor,Sensor,Sensor de velocidade (VSS),MTE-Thomson,UN,48.00,4,8
+98,MOT-SEN-007,Motor,Sensor,Sensor de detonacao,Bosch,UN,55.00,3,6
+99,MOT-VLT-001,Motor,Valvula,Valvula termostatica,Wahler,UN,38.00,6,12
+100,MOT-ATU-001,Motor,Atuador,Atuador de marcha lenta (IAC),Marelli,UN,95.00,3,6
+101,MOT-BIC-001,Motor,Bico Injetor,Bico injetor combustivel flex,Bosch,UN,95.00,8,16
+102,MOT-BCB-001,Motor,Bomba Combustivel,Bomba de combustivel eletrica flex,Bosch,UN,185.00,3,6
+103,MOT-BCB-002,Motor,Bomba Combustivel,Bomba de combustivel mecanica diesel,Bosch,UN,450.00,2,3
+104,MOT-TMP-001,Motor,Tampa,Tampa do oleo do motor,Generico,UN,15.00,5,10
+105,MOT-TMP-002,Motor,Tampa,Tampa do reservatorio de agua,Gates,UN,12.00,6,15
+106,ARR-MNG-001,Arrefecimento,Mangueira,Mangueira superior do radiador,Gates,UN,35.00,6,12
+107,ARR-MNG-002,Arrefecimento,Mangueira,Mangueira inferior do radiador,Gates,UN,32.00,6,12
+108,ARR-MNG-003,Arrefecimento,Mangueira,Mangueira do aquecedor,Goodyear,UN,28.00,5,10
+109,ARR-RAD-001,Arrefecimento,Radiador,Radiador de agua linha leve,Visconde,UN,320.00,2,4
+110,ARR-VNT-001,Arrefecimento,Ventoinha,Motor da ventoinha do radiador,Bosch,UN,185.00,2,4
+111,ARR-INT-001,Arrefecimento,Interruptor,Interruptor termico do radiador,MTE-Thomson,UN,28.00,5,10
+112,ARR-RSV-001,Arrefecimento,Reservatorio,Reservatorio de expansao da agua,Generico,UN,35.00,3,6
+113,EMB-KIT-001,Embreagem,Kit Embreagem,Kit embreagem completo 1.0/1.4,LUK,KT,380.00,3,6
+114,EMB-KIT-002,Embreagem,Kit Embreagem,Kit embreagem completo 1.6/1.8,Sachs,KT,450.00,3,5
+115,EMB-KIT-003,Embreagem,Kit Embreagem,Kit embreagem completo 2.0,Valeo,KT,520.00,2,4
+116,EMB-ATU-001,Embreagem,Atuador,Atuador hidraulico de embreagem,LUK,UN,165.00,2,4
+117,EMB-ROL-001,Embreagem,Rolamento,Rolamento de embreagem (atuador),INA,UN,85.00,4,8
+118,ELE-BAT-001,Eletrica,Bateria,Bateria 60Ah,Moura,UN,420.00,3,6
+119,ELE-BAT-002,Eletrica,Bateria,Bateria 45Ah,Heliar,UN,350.00,3,6
+120,ELE-BAT-003,Eletrica,Bateria,Bateria 70Ah (SUV/pickup),Moura,UN,520.00,2,4
+121,ELE-ALT-001,Eletrica,Alternador,Alternador remanufaturado 12V,Bosch,UN,450.00,2,4
+122,ELE-MTP-001,Eletrica,Motor Partida,Motor de partida remanufaturado,Bosch,UN,380.00,2,4
+123,ELE-REG-001,Eletrica,Regulador,Regulador de voltagem do alternador,Gauss,UN,65.00,4,8
+124,ELE-ESC-001,Eletrica,Escova,Escova do alternador,Gauss,KT,28.00,5,10
+125,ELE-ESC-002,Eletrica,Escova,Escova do motor de partida,Gauss,KT,32.00,4,8
+126,ELE-RLE-001,Eletrica,Rele,Rele auxiliar 4 pinos 12V,DNI,UN,12.00,15,30
+127,ELE-RLE-002,Eletrica,Rele,Rele auxiliar 5 pinos 12V,Hella,UN,18.00,10,20
+128,ELE-FUS-001,Eletrica,Fusivel,Kit fusiveis lamina sortidos,Generico,KT,15.00,10,25
+129,ELE-CHV-001,Eletrica,Chave,Chave de seta/limpador,Kostal,UN,95.00,3,6
+130,ELE-MLP-001,Eletrica,Motor Limpador,Motor do limpador de para-brisa,Bosch,UN,145.00,2,4
+131,LMP-FAR-001,Lampadas,Farol,Lampada farol H4 60/55W,Osram,UN,22.00,15,35
+132,LMP-FAR-002,Lampadas,Farol,Lampada farol H7 55W,Philips,UN,25.00,12,25
+133,LMP-FAR-003,Lampadas,Farol,Lampada farol H1 55W,Osram,UN,20.00,10,20
+134,LMP-FAR-004,Lampadas,Farol,Lampada farol H3 55W (milha),Philips,UN,22.00,8,15
+135,LMP-FAR-005,Lampadas,Farol,Lampada farol HB4 55W,Osram,UN,28.00,8,15
+136,LMP-SIN-001,Lampadas,Sinalizacao,Lampada 1 polo 12V (freio/re),Osram,UN,5.00,20,50
+137,LMP-SIN-002,Lampadas,Sinalizacao,Lampada 2 polos 12V (lanterna/freio),Philips,UN,6.00,20,50
+138,LMP-SIN-003,Lampadas,Sinalizacao,Lampada pingo (esmagada) T10 12V,Osram,UN,3.50,25,60
+139,LMP-LED-001,Lampadas,LED,Lampada LED H4 6000K (par),Shocklight,PR,85.00,5,12
+140,LMP-LED-002,Lampadas,LED,Lampada LED torpedo placa,Generico,UN,8.00,15,30
+141,PLH-DIA-001,Palhetas,Dianteira,Palheta limpador dianteira convencional 20pol,Bosch,UN,28.00,10,20
+142,PLH-DIA-002,Palhetas,Dianteira,Palheta limpador dianteira convencional 22pol,Bosch,UN,30.00,8,18
+143,PLH-DIA-003,Palhetas,Dianteira,Palheta limpador silicone 20pol,Valeo,UN,42.00,6,12
+144,PLH-TRA-001,Palhetas,Traseira,Palheta limpador traseiro universal,Bosch,UN,32.00,6,12
+145,ESC-ABR-001,Escapamento,Abraçadeira,Abracadeira do escapamento,Generico,UN,8.00,15,30
+146,ESC-BOR-001,Escapamento,Borracha,Borracha suporte do escapamento,Generico,UN,6.00,12,25
+147,ESC-FLX-001,Escapamento,Flexivel,Flexivel do escapamento/descarga,Generico,UN,55.00,4,8
+148,ESC-SIL-001,Escapamento,Silencioso,Silencioso traseiro linha leve,Cofap,UN,180.00,2,4
+149,ESC-CAT-001,Escapamento,Catalisador,Catalisador remanufaturado,Generico,UN,350.00,1,3
+150,TRN-HMC-001,Transmissao,Homocinetica,Junta homocinetica lado roda,Cofap,UN,120.00,4,8
+151,TRN-HMC-002,Transmissao,Homocinetica,Junta homocinetica lado cambio (tripoide),Cofap,UN,95.00,4,8
+152,TRN-COI-001,Transmissao,Coifa,Coifa da homocinetica lado roda,Uniflex,UN,28.00,8,18
+153,TRN-COI-002,Transmissao,Coifa,Coifa da homocinetica lado cambio,Uniflex,UN,25.00,6,12
+154,TRN-SEX-001,Transmissao,Semieixo,Semieixo completo remanufaturado,Cofap,UN,280.00,2,4
+155,TRN-CRZ-001,Transmissao,Cruzeta,Cruzeta do cardan,Dana,UN,65.00,3,6
+156,ARC-CMP-001,Ar Condicionado,Compressor,Compressor do AC remanufaturado,Delphi,UN,850.00,1,2
+157,ARC-FLS-001,Ar Condicionado,Filtro Secador,Filtro secador do AC,Denso,UN,75.00,3,6
+158,ARC-VEX-001,Ar Condicionado,Valvula Expansao,Valvula de expansao do AC,Denso,UN,85.00,2,4
+159,ARC-GAS-001,Ar Condicionado,Gas,Gas refrigerante R134a 900g,Chemours,UN,95.00,5,12
+160,ARC-COR-001,Ar Condicionado,Correia,Correia do compressor AC,Gates,UN,42.00,5,10
+161,ARC-OLE-001,Ar Condicionado,Oleo,Oleo PAG para compressor AC 250ml,Generico,UN,35.00,4,8
+162,CXC-CMT-001,Coxins e Calcos,Coxim Motor,Coxim do motor dianteiro,Sampel,UN,65.00,4,10
+163,CXC-CMT-002,Coxins e Calcos,Coxim Motor,Coxim do motor traseiro,Sampel,UN,55.00,4,8
+164,CXC-CCB-001,Coxins e Calcos,Coxim Cambio,Coxim do cambio,Sampel,UN,48.00,4,8
+165,CXC-CLC-001,Coxins e Calcos,Calco,Calco do motor (hidraulico),Sampel,UN,120.00,2,4
+166,INS-EST-001,Insumos Gerais,Estopa,Estopa branca 1kg,Superestopa,KG,12.00,5,15
+167,INS-PAN-001,Insumos Gerais,Pano,Pano multiuso rolo 300m,Wypall,RL,55.00,2,6
+168,INS-DGX-001,Insumos Gerais,Desengraxante,Desengraxante/solupan 5L,Quimatic,GL,45.00,3,8
+169,INS-LCT-001,Insumos Gerais,Limpa Contato,Limpa contato eletrico spray 300ml,WD-40 Specialist,UN,28.00,6,15
+170,INS-WD4-001,Insumos Gerais,WD-40,Lubrificante multiuso WD-40 300ml,WD-40,UN,32.00,6,15
+171,INS-SIL-001,Insumos Gerais,Silicone,Silicone liquido 500ml,Orbi,UN,18.00,5,12
+172,INS-ADS-001,Insumos Gerais,Adesivo,Adesivo para espelho retrovisor,Loctite,UN,15.00,5,10
+173,INS-COL-001,Insumos Gerais,Cola,Cola para junta de motor (silicone cinza),3M,UN,32.00,5,12
+174,INS-COL-002,Insumos Gerais,Cola,Veda junta liquido preto,Hylomar,UN,38.00,4,10
+175,INS-FIT-001,Insumos Gerais,Fita,Fita isolante preta 20m,3M,UN,6.00,15,35
+176,INS-FIT-002,Insumos Gerais,Fita,Fita crepe automotiva 48mm,3M,UN,12.00,8,18
+177,INS-FIT-003,Insumos Gerais,Fita,Fita veda rosca 18mm,Tigre,UN,4.00,10,25
+178,INS-EPX-001,Insumos Gerais,Adesivo Estrutural,Adesivo epoxi 10min,Araldite,UN,18.00,5,12
+179,INS-TRV-001,Insumos Gerais,Trava Quimica,Trava quimica para parafusos media,Loctite 243,UN,28.00,4,8
+180,INS-AGP-001,Insumos Gerais,Anti-Gripante,Anti-gripante/anti-engripante spray,Orbi,UN,22.00,4,10
+181,INS-DCB-001,Insumos Gerais,Descarbonizante,Descarbonizante/limpa bicos spray,STP,UN,25.00,4,10
+182,INS-TBI-001,Insumos Gerais,Limpa TBI,Limpa corpo de borboleta spray,Wurth,UN,32.00,5,12
+183,FIX-PRF-001,Fixacao,Parafuso,Parafuso sextavado M8x1.25 sortidos (50pcs),Ciser,PCT,18.00,5,10
+184,FIX-PRF-002,Fixacao,Parafuso,Parafuso sextavado M10x1.5 sortidos (50pcs),Ciser,PCT,22.00,5,10
+185,FIX-PRF-003,Fixacao,Parafuso,Parafuso sextavado M12x1.75 sortidos (25pcs),Ciser,PCT,20.00,4,8
+186,FIX-PRC-001,Fixacao,Porca,Porca sextavada M8/M10/M12 sortidas (100pcs),Ciser,PCT,15.00,5,10
+187,FIX-ARR-001,Fixacao,Arruela,Arruela lisa/pressao sortidas (200pcs),Ciser,PCT,12.00,5,10
+188,FIX-ABR-001,Fixacao,Abraçadeira,Abracadeira de nylon (presilha) 200mm (100pcs),Generico,PCT,8.00,8,20
+189,FIX-ABR-002,Fixacao,Abraçadeira,Abracadeira aco inox tipo rosca sem-fim sortidas (20pcs),Suprens,PCT,25.00,5,12
+190,FIX-GRP-001,Fixacao,Grampo,Grampo/presilha para-choque/painel sortidos (50pcs),Generico,PCT,22.00,5,12
+191,ELG-FIO-001,Eletrica Geral,Fio,Fio automotivo 1.5mm vermelho 100m,Dni,RL,55.00,2,5
+192,ELG-FIO-002,Eletrica Geral,Fio,Fio automotivo 1.5mm preto 100m,Dni,RL,55.00,2,5
+193,ELG-FIO-003,Eletrica Geral,Fio,Fio automotivo 2.5mm vermelho 100m,Dni,RL,75.00,2,4
+194,ELG-TRM-001,Eletrica Geral,Terminal,Terminal eletrico macho/femea sortidos (100pcs),Dni,PCT,18.00,5,12
+195,ELG-CON-001,Eletrica Geral,Conector,Conector estanque/emenda rapida sortidos (50pcs),Generico,PCT,22.00,4,10
+196,ELG-CRG-001,Eletrica Geral,Corrugado,Mangueira corrugada 1/2pol 50m,Generico,RL,35.00,2,5
+197,ELG-TMD-001,Eletrica Geral,Tomada,Tomada de engate reboque 7 polos,DNI,UN,28.00,3,6
+198,BRV-ORI-001,Borrachas e Vedacao,Anel O-Ring,Kit aneis O-Ring sortidos (200pcs),Generico,KT,35.00,3,8
+199,BRV-VED-001,Borrachas e Vedacao,Vedacao,Retentor de oleo sortidos (kit oficina),Sabó,KT,85.00,2,5
+200,BRV-BOR-001,Borrachas e Vedacao,Borracha,Borracha do pedal freio/embreagem,Generico,UN,5.00,10,25
+201,BRV-CXM-001,Borrachas e Vedacao,Coxim,Coxim da barra estabilizadora,Sampel,UN,15.00,10,20
+202,RDP-BIC-001,Rodas e Pneus,Bico,Bico de pneu (valvula) TR413,Generico,UN,3.00,20,50
+203,RDP-CTP-001,Rodas e Pneus,Contrapeso,Contrapeso de balanceamento clip (cx 100pcs),Generico,CX,45.00,3,8
+204,RDP-CTP-002,Rodas e Pneus,Contrapeso,Contrapeso de balanceamento adesivo (cx 50pcs),Generico,CX,55.00,3,6
+205,RDP-REM-001,Rodas e Pneus,Remendo,Remendo a frio para pneu (cx 40pcs),Vipal,CX,35.00,3,8
+206,RDP-COL-001,Rodas e Pneus,Cola,Cola cimentada para remendo pneu 1L,Vipal,UN,42.00,2,5
+207,RDP-PRD-001,Rodas e Pneus,Parafuso Roda,Parafuso de roda M12 cromado,Generico,UN,5.00,20,50
+208,CRC-RTV-001,Carroceria,Retrovisor,Espelho retrovisor lado esquerdo universal,Generico,UN,45.00,3,6
+209,CRC-RTV-002,Carroceria,Retrovisor,Espelho retrovisor lado direito universal,Generico,UN,45.00,3,6
+210,CRC-MCN-001,Carroceria,Macaneta,Macaneta externa porta dianteira,Generico,UN,35.00,3,6
+211,CRC-VDE-001,Carroceria,Vidro Eletrico,Motor do vidro eletrico,Mabuchi,UN,85.00,2,4
+212,CRC-TRV-001,Carroceria,Trava,Fechadura da porta dianteira,Generico,UN,65.00,2,4
+213,CRC-TRE-001,Carroceria,Trava Eletrica,Kit trava eletrica 4 portas,Positron,KT,120.00,2,4
+214,CRC-AMT-001,Carroceria,Amortecedor Tampa,Amortecedor da tampa traseira (par),Marcon,PR,35.00,4,8
+215,EPI-LVN-001,EPI e Seguranca,Luva,Luva nitrila descartavel cx 100pcs,Supermax,CX,45.00,3,8
+216,EPI-LVM-001,EPI e Seguranca,Luva,Luva de mecanico nitrilica resistente (par),Volk,PR,18.00,10,25
+217,EPI-OCL-001,EPI e Seguranca,Oculos,Oculos de protecao transparente,Kalipso,UN,12.00,5,12
+218,EPI-PRA-001,EPI e Seguranca,Protetor Auricular,Protetor auricular tipo plug,3M,PR,3.00,20,50
+219,EPI-CRM-001,EPI e Seguranca,Creme Protetor,Creme protetor para maos 200g,Luvex,UN,15.00,5,12
+220,EPI-MSC-001,EPI e Seguranca,Mascara,Mascara descartavel PFF2 (cx 20pcs),3M,CX,55.00,2,5
+221,COF-DCC-001,Consumiveis Oficina,Disco Corte,Disco de corte 4.1/2pol,Norton,UN,5.00,15,35
+222,COF-DCD-001,Consumiveis Oficina,Disco Desbaste,Disco de desbaste 4.1/2pol,Norton,UN,8.00,10,20
+223,COF-LIX-001,Consumiveis Oficina,Lixa,Lixa d'agua 220/400/600 sortida (10 folhas),Norton,PCT,12.00,5,12
+224,COF-BRC-001,Consumiveis Oficina,Broca,Jogo de brocas aco rapido 1-10mm,Bosch,JG,45.00,2,5
+225,COF-MCH-001,Consumiveis Oficina,Macho,Jogo de machos M6/M8/M10,Dormer,JG,55.00,1,3
+226,COF-ELT-001,Consumiveis Oficina,Eletrodo,Eletrodo solda 6013 2.5mm (kg),ESAB,KG,28.00,3,8
+227,COF-ARM-001,Consumiveis Oficina,Arame MIG,Arame MIG 0.8mm 5kg,ESAB,RL,85.00,1,3
+228,COF-GAC-001,Consumiveis Oficina,Gas,Gas acetileno recarga,White Martins,UN,120.00,1,2
+229,COF-GOX-001,Consumiveis Oficina,Gas,Gas oxigenio recarga,White Martins,UN,85.00,1,2
+230,DGN-FUS-001,Diagnostico,Fusivel,Fusivel diagnose OBD (reserva scanner),Generico,UN,5.00,5,10
+231,DGN-CBO-001,Diagnostico,Cabo,Cabo extensao OBD2 1.5m,Generico,UN,35.00,2,4
+232,PLT-PLV-001,Polia e Tensores,Polia,Polia do virabrequim (damper),Generico,UN,120.00,2,4
+233,PLT-PLA-001,Polia e Tensores,Polia,Polia do alternador roda livre,INA,UN,145.00,2,4
+234,PLT-TNA-001,Polia e Tensores,Tensor,Tensor automatico correia poly-V,Gates,UN,95.00,3,6
+235,CTS-SL4-001,Catalisadores e Sondas,Sonda,Sonda lambda 4 fios universal,Bosch,UN,135.00,4,8
+236,CTS-SLP-001,Catalisadores e Sondas,Sonda,Sonda lambda aquecida planar,NTK,UN,165.00,3,6
+237,MOT-BRZ-001,Motor,Bronzina,Jogo bronzina de mancal STD,Metal Leve,JG,95.00,2,4
+238,MOT-BRZ-002,Motor,Bronzina,Jogo bronzina de biela STD,Metal Leve,JG,75.00,2,4
+239,MOT-ANL-001,Motor,Anel,Jogo de aneis de pistao STD,Mahle,JG,120.00,2,4
+240,MOT-VLM-001,Motor,Valvula Motor,Jogo de valvulas admissao/escape,Mahle,JG,180.00,1,3
+241,MOT-GVL-001,Motor,Guia Valvula,Guia de valvula (jogo),Riosulense,JG,85.00,1,3
+242,MOT-SDV-001,Motor,Sede Valvula,Sede de valvula (jogo),Riosulense,JG,75.00,1,3
+243,MOT-TCH-001,Motor,Tuchos,Jogo de tuchos hidraulicos,INA,JG,220.00,1,3
+244,MOT-CMD-001,Motor,Comando,Engrenagem/polia do comando de valvulas,Generico,UN,85.00,2,4
+245,RFM-CEB-001,Refrigeracao Motor,Cebolao,Sensor temperatura painel (cebolao),MTE-Thomson,UN,22.00,6,12
+246,RFM-VLT-001,Refrigeracao Motor,Valvula,Valvula termostatica com carcaca,Wahler,UN,65.00,3,6
+247,TRN-TRB-001,Transmissao,Trambulador,Kit reparo do trambulador/cambio,Generico,KT,35.00,3,6
+248,TRN-CBC-001,Transmissao,Cabo Cambio,Cabo de engate do cambio,Generico,UN,55.00,2,5
+249,TRN-CBE-001,Transmissao,Cabo Embreagem,Cabo de embreagem,Generico,UN,42.00,3,6
+250,TRN-SNC-001,Transmissao,Sincronizador,Anel sincronizador do cambio,Generico,UN,65.00,2,4

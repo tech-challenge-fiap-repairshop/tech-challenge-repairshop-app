@@ -1,0 +1,33 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: repairshop-db
+    environment:
+      POSTGRES_USER: repairshop
+      POSTGRES_PASSWORD: repairshop
+      POSTGRES_DB: repairshop
+    ports:
+      - "5432:5432"
+    volumes:
+      - repairshop-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U repairshop"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  app:
+    build: .
+    container_name: repairshop-app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/repairshop
+      SPRING_DATASOURCE_USERNAME: repairshop
+      SPRING_DATASOURCE_PASSWORD: repairshop
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  repairshop-data:

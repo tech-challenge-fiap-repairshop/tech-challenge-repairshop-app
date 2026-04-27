@@ -1,0 +1,5 @@
+/mvnw text eol=lf
+*.bat text eol=crlf
+*.jar binary
+*.kt text diff=kotlin
+*.kts text diff=kotlin
