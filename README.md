@@ -28,6 +28,7 @@
 - [Testes](#testes)
 - [Documentação DDD](#documentação-ddd)
 - [Segurança](#segurança)
+- [Avisos do Projeto](#avisos-do-projeto)
 - [Autores](#autores)
 
 ---
@@ -259,12 +260,21 @@ A documentação de Domain-Driven Design do projeto inclui:
 
 ---
 
+## Avisos do Projeto
+
+### Endpoint `/register` (Autenticação)
+
+O serviço `/register` (disponível na API de autenticação) existe **apenas para fins didáticos e de demonstração** no escopo deste projeto acadêmico (Tech Challenge). 
+
+Em um cenário de produção real, o cadastro de novos usuários administradores/funcionários do sistema não seria exposto em um endpoint de uso aberto. A criação de usuários seria feita de forma controlada, através de um painel administrativo com os devidos controles de acesso, ou por um processo interno de provisionamento.
+
+---
+
 ## Autores
 
 **Grupo CAO** — POSTECH 15SOAT
 
-| Nome           | RM     | GitHub |
-|----------------|--------|--------|
-| Alexandre      | 374016 | <!-- @username --> |
-| Caio Crevelaro | 373877 | <!-- @username --> |
-| Otávio Luiz    | 370552 | <!-- @username --> |
+| Nome           | RM     | GitHub               |
+|----------------|--------|----------------------|
+| Alexandre      | 374016 | [Alexandre-AGAMIN](https://github.com/Alexandre-AGAMIN) |
+| Otávio Luiz    | 370552 | [otaviolms](https://github.com/otaviolms) |
