@@ -1,18 +1,13 @@
-package com.cao.repairshop.payment.entity
+﻿package com.cao.repairshop.payment.entity
 
 import com.cao.repairshop.register.entity.Customer
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.FetchType
-import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.OneToOne
-import jakarta.persistence.Table
 import com.cao.repairshop.serviceorder.entity.ServiceOrder
+import jakarta.persistence.*
+import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.UpdateTimestamp
 import java.math.BigDecimal
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 @Entity
 @Table(name = "tb_invoice")
@@ -38,13 +33,16 @@ class Invoice(
     @Column(name = "emission_date", nullable = false)
     var emissionDate: LocalDateTime = LocalDateTime.now(),
 
+    @CreationTimestamp
     @Column(nullable = false)
-    var created: LocalDateTime = LocalDateTime.now(),
+    var created: LocalDateTime? = null,
 
+    @UpdateTimestamp
     @Column(nullable = false)
-    var updated: LocalDateTime = LocalDateTime.now()
+    var updated: LocalDateTime? = null
 ) {
     override fun equals(other: Any?): Boolean = other is Invoice && id == other.id
     override fun hashCode(): Int = id.hashCode()
     override fun toString(): String = "Invoice(id=$id, number=$invoiceNumber)"
 }
+

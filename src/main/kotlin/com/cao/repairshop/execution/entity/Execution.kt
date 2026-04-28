@@ -1,26 +1,18 @@
-package com.cao.repairshop.execution.entity
+﻿package com.cao.repairshop.execution.entity
 
 import com.cao.repairshop.core.exception.ErrorMessages
 import com.cao.repairshop.core.exception.InvalidStateTransitionException
-import com.cao.repairshop.execution.domain.ExecutionStatus
 import com.cao.repairshop.execution.domain.BasicExecution
+import com.cao.repairshop.execution.domain.ExecutionStatus
 import com.cao.repairshop.inventory.entity.Insume
 import com.cao.repairshop.serviceorder.entity.ServiceOrder
-import jakarta.persistence.CascadeType
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
-import jakarta.persistence.FetchType
-import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.OneToMany
-import jakarta.persistence.Table
+import jakarta.persistence.*
+import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.UpdateTimestamp
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-import java.util.UUID
+import java.util.*
 
 @Entity
 @Table(name = "tb_execution")
@@ -57,18 +49,19 @@ class Execution(
     @OneToMany(mappedBy = "execution", cascade = [CascadeType.ALL], orphanRemoval = true)
     var insumes: MutableSet<ExecutionInsume> = mutableSetOf(),
 
+    @CreationTimestamp
     @Column(nullable = false)
-    var created: LocalDateTime = LocalDateTime.now(),
+    var created: LocalDateTime? = null,
 
+    @UpdateTimestamp
     @Column(nullable = false)
-    var updated: LocalDateTime = LocalDateTime.now()
+    var updated: LocalDateTime? = null
 ) {
 
     fun advanceStatus(newStatus: ExecutionStatus) {
         if (newStatus !in status.allowedTransitions())
             throw InvalidStateTransitionException(ErrorMessages.StateTransition.invalid(status, newStatus))
         status = newStatus
-        updated = LocalDateTime.now()
         recordHistory(newStatus)
     }
 
@@ -106,3 +99,4 @@ class Execution(
     override fun hashCode(): Int = id.hashCode()
     override fun toString(): String = "Execution(id=$id, basicDescription=$basicDescription)"
 }
+

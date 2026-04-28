@@ -1,22 +1,14 @@
-package com.cao.repairshop.register.entity
+﻿package com.cao.repairshop.register.entity
 
 import com.cao.repairshop.register.domain.Plate
-
-import jakarta.persistence.Column
-import jakarta.persistence.Convert
-import jakarta.persistence.Entity
 import com.cao.repairshop.register.repository.converter.PlateConverter
-import jakarta.persistence.FetchType
-import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.OneToMany
-import jakarta.persistence.CascadeType
-import jakarta.persistence.Table
 import com.cao.repairshop.serviceorder.entity.ServiceOrder
+import jakarta.persistence.*
+import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.UpdateTimestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 @Entity
 @Table(name = "tb_vehicle")
@@ -52,11 +44,13 @@ class Vehicle(
     @JoinColumn(name = "vehicle_id", insertable = false, updatable = false)
     var serviceOrders: MutableSet<ServiceOrder> = mutableSetOf(),
 
+    @CreationTimestamp
     @Column(nullable = false)
-    var created: LocalDateTime = LocalDateTime.now(),
+    var created: LocalDateTime? = null,
 
+    @UpdateTimestamp
     @Column(nullable = false)
-    var updated: LocalDateTime = LocalDateTime.now()
+    var updated: LocalDateTime? = null
 ) {
     fun updateDetails(plate: Plate, brand: String, model: String, color: String?, manufacturingDate: LocalDate?) {
         this.plate = plate
@@ -64,10 +58,10 @@ class Vehicle(
         this.model = model
         this.color = color
         this.manufacturingDate = manufacturingDate
-        this.updated = LocalDateTime.now()
     }
 
     override fun equals(other: Any?): Boolean = other is Vehicle && id == other.id
     override fun hashCode(): Int = id.hashCode()
     override fun toString(): String = "Vehicle(id=$id, plate=${plate.normalized})"
 }
+

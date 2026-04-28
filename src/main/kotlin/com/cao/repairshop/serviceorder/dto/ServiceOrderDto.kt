@@ -48,9 +48,8 @@ data class CreateServiceOrderRequest(
     @field:NotNull val vehiclePlate: String,
 
     @Schema(description = "List of services to include in the order")
-    @field:NotEmpty(message = "At least one service is required to create a service order")
     @field:Size(max = 30, message = "Maximum of 30 services allowed per order")
-    val services: List<ExecutionDefinitionRequest>
+    val services: List<ExecutionDefinitionRequest> = emptyList()
 )
 
 data class ServiceOrderStatusUpdateRequest(

@@ -1,23 +1,17 @@
-package com.cao.repairshop.register.entity
+﻿package com.cao.repairshop.register.entity
 
+import com.cao.repairshop.payment.entity.Invoice
 import com.cao.repairshop.register.domain.Document
 import com.cao.repairshop.register.domain.Email
-
-import jakarta.persistence.CascadeType
-import jakarta.persistence.Column
-import jakarta.persistence.Convert
-import jakarta.persistence.Entity
-import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.OneToMany
-import jakarta.persistence.Table
 import com.cao.repairshop.register.repository.converter.DocumentConverter
 import com.cao.repairshop.register.repository.converter.EmailConverter
 import com.cao.repairshop.serviceorder.entity.ServiceOrder
-import com.cao.repairshop.payment.entity.Invoice
+import jakarta.persistence.*
+import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.UpdateTimestamp
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.UUID
+import java.util.*
 
 @Entity
 @Table(name = "tb_customer")
@@ -53,21 +47,23 @@ data class Customer(
     @OneToMany(mappedBy = "customer", cascade = [CascadeType.ALL], orphanRemoval = true)
     var invoices: MutableSet<Invoice> = mutableSetOf(),
 
+    @CreationTimestamp
     @Column(nullable = false)
-    var created: LocalDateTime = LocalDateTime.now(),
+    var created: LocalDateTime? = null,
 
+    @UpdateTimestamp
     @Column(nullable = false)
-    var updated: LocalDateTime = LocalDateTime.now()
+    var updated: LocalDateTime? = null
 ) {
     fun updateDetails(name: String, email: Email?, phone: String?, birthDate: LocalDate?) {
         this.name = name
         this.email = email
         this.phone = phone
         this.birthDate = birthDate
-        this.updated = LocalDateTime.now()
     }
 
     override fun equals(other: Any?): Boolean = other is Customer && id == other.id
     override fun hashCode(): Int = id.hashCode()
     override fun toString(): String = "Customer(id=$id, name=$name)"
 }
+

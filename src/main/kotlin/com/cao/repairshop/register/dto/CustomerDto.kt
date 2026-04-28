@@ -56,7 +56,7 @@ data class CustomerResponse(
     @Schema(description = "Date of birth", example = "1990-05-20")
     val birthDate: LocalDate?,
     @Schema(description = "Record creation timestamp")
-    val created: LocalDateTime,
+    val created: LocalDateTime?,
     @Schema(description = "Last update timestamp")
-    val updated: LocalDateTime
+    val updated: LocalDateTime?
 )

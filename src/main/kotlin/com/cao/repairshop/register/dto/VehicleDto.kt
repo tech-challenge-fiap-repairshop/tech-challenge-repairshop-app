@@ -67,7 +67,7 @@ data class VehicleResponse(
     @Schema(description = "Last maintenance date")
     val lastMaintenance: LocalDateTime?,
     @Schema(description = "Record creation timestamp")
-    val created: LocalDateTime,
+    val created: LocalDateTime?,
     @Schema(description = "Last update timestamp")
-    val updated: LocalDateTime
+    val updated: LocalDateTime?
 )

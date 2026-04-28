@@ -1,35 +1,24 @@
-package com.cao.repairshop.serviceorder.entity
-
-import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
+﻿package com.cao.repairshop.serviceorder.entity
 
 import com.cao.repairshop.core.exception.ErrorMessages
 import com.cao.repairshop.core.exception.InvalidStateTransitionException
 import com.cao.repairshop.execution.domain.BasicExecution
 import com.cao.repairshop.execution.domain.ExecutionStatus
 import com.cao.repairshop.execution.entity.Execution
-import com.cao.repairshop.execution.entity.ExecutionInsume
-import com.cao.repairshop.execution.entity.ExecutionInsumeId
+import com.cao.repairshop.execution.entity.ExecutionHistory
 import com.cao.repairshop.inventory.entity.Insume
 import com.cao.repairshop.payment.entity.Invoice
 import com.cao.repairshop.register.entity.Customer
 import com.cao.repairshop.register.entity.Vehicle
-import jakarta.persistence.CascadeType
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
-import jakarta.persistence.FetchType
-import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.OneToMany
-import jakarta.persistence.OneToOne
-import jakarta.persistence.Table
+import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
+import jakarta.persistence.*
+import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.UpdateTimestamp
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-import java.util.UUID
+import java.util.*
 
 @Entity
 @Table(name = "tb_service_order")
@@ -73,11 +62,13 @@ class ServiceOrder(
     @OneToOne(mappedBy = "serviceOrder", cascade = [CascadeType.ALL], orphanRemoval = true)
     var invoice: Invoice? = null,
 
+    @CreationTimestamp
     @Column(name = "created", updatable = false)
-    var created: LocalDateTime = LocalDateTime.now(),
+    var created: LocalDateTime? = null,
 
+    @UpdateTimestamp
     @Column(name = "updated")
-    var updated: LocalDateTime = LocalDateTime.now()
+    var updated: LocalDateTime? = null
 ) {
 
     fun advanceStatus(newStatus: ServiceOrderStatus) {
@@ -120,6 +111,12 @@ class ServiceOrder(
             price = price,
             estimatedTime = estimatedTime
         )
+        val executionHistory = ExecutionHistory(
+            execution = execution,
+            status = ExecutionStatus.INITIATED,
+            registerTime = LocalDateTime.now()
+        )
+        execution.histories.add(executionHistory)
         insumes.forEach { (insume, qty) -> execution.addInsume(insume, qty) }
         executions.add(execution)
         recalculateTotalPrice()
@@ -154,3 +151,4 @@ class ServiceOrder(
     override fun hashCode(): Int = id.hashCode()
     override fun toString(): String = "ServiceOrder(id=$id, status=$status)"
 }
+

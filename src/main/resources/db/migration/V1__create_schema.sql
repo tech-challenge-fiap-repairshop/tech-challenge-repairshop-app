@@ -139,4 +139,4 @@ INSERT INTO tb_insume (id_tb_insume, name, brand, sku_id, quantity, price, unity
 ('f98612ee-84cf-42e1-9e17-1bf1c370ec14', 'Filtro de oleo motor 2.0 flex', 'Fram', 'FLT-OLE-003', 25, 25.00, 25.00),
 ('effdcb5c-9733-4239-8086-0e5677088e51', 'Filtro de oleo motor diesel', 'Tecfil', 'FLT-OLE-004', 18, 35.00, 35.00),
 ('9c895a26-ef06-4a5b-9099-1e176580dae5', 'Filtro de ar motor 1.0/1.4', 'Tecfil', 'FLT-ARM-001', 35, 32.00, 32.00),
-('b0766379-73bc-4483-996a-ddadb05c0d44', 'Filtro de ar motor 1.6/2.0', 'Mann Filter', 'FLT-ARM-002', 28, 38.00, 38.00),
+('b0766379-73bc-4483-996a-ddadb05c0d44', 'Filtro de ar motor 1.6/2.0', 'Mann Filter', 'FLT-ARM-002', 28, 38.00, 38.00);
