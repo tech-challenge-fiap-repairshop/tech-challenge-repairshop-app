@@ -1,5 +1,6 @@
 package com.cao.repairshop.inventory.controller
 
+import com.cao.repairshop.inventory.controller.interfaces.InsumeApi
 import com.cao.repairshop.inventory.service.InsumeService
 import com.cao.repairshop.inventory.dto.CreateInsumeRequest
 import com.cao.repairshop.inventory.dto.UpdateInsumeRequest
@@ -24,7 +25,7 @@ import java.util.UUID
 @RequestMapping("/insumes")
 class InsumeController(
     private val insumeService: InsumeService
-) : com.cao.repairshop.inventory.controller.interfaces.InsumeApi {
+) : InsumeApi {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

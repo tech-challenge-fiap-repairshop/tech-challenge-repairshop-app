@@ -1,5 +1,6 @@
 package com.cao.repairshop.serviceorder.controller
 
+import com.cao.repairshop.serviceorder.controller.interfaces.ServiceOrderApi
 import com.cao.repairshop.serviceorder.service.ServiceOrderMetricsService
 import com.cao.repairshop.serviceorder.service.ServiceOrderService
 import com.cao.repairshop.serviceorder.dto.CreateServiceOrderRequest
@@ -28,7 +29,7 @@ import java.util.UUID
 class ServiceOrderController(
     private val serviceOrderService: ServiceOrderService,
     private val serviceOrderMetricsService: ServiceOrderMetricsService
-) : com.cao.repairshop.serviceorder.controller.interfaces.ServiceOrderApi {
+) : ServiceOrderApi {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

@@ -1,5 +1,6 @@
 package com.cao.repairshop.register.controller
 
+import com.cao.repairshop.register.controller.interfaces.VehicleApi
 import com.cao.repairshop.register.service.VehicleService
 import com.cao.repairshop.register.dto.CreateVehicleRequest
 import com.cao.repairshop.register.dto.UpdateVehicleRequest
@@ -25,7 +26,7 @@ import java.util.UUID
 @RequestMapping("/vehicles")
 class VehicleController(
     private val vehicleService: VehicleService
-) : com.cao.repairshop.register.controller.interfaces.VehicleApi {
+) : VehicleApi {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

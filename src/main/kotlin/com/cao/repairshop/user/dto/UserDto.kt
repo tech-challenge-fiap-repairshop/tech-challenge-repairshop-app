@@ -20,7 +20,7 @@ data class CreateUserRequest(
     @field:NotBlank @field:VerifyEmail val email: String,
 
     @Schema(description = "User phone number", example = "+55 11 99999-9999")
-    @field:Phone val phone: String? = null,
+    @field:NotBlank @field:Phone val phone: String? = null,
 
     @Schema(description = "Account password", example = "securePass123")
     @field:NotBlank val password: String

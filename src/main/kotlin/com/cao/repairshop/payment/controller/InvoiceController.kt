@@ -1,5 +1,6 @@
 package com.cao.repairshop.payment.controller
 
+import com.cao.repairshop.payment.controller.interfaces.InvoiceApi
 import com.cao.repairshop.payment.service.InvoiceService
 import com.cao.repairshop.payment.dto.CreateInvoiceRequest
 import com.cao.repairshop.payment.dto.InvoiceResponse
@@ -22,7 +23,7 @@ import java.util.UUID
 @RequestMapping("/invoices")
 class InvoiceController(
     private val invoiceService: InvoiceService
-) : com.cao.repairshop.payment.controller.interfaces.InvoiceApi {
+) : InvoiceApi {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

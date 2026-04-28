@@ -21,7 +21,7 @@ import java.util.UUID
 
 @Entity
 @Table(name = "tb_customer")
-class Customer(
+data class Customer(
     @Id
     @Column(name = "id_tb_customer")
     val id: UUID = UUID.randomUUID(),

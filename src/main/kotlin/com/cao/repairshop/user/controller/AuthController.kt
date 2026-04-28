@@ -1,5 +1,6 @@
 package com.cao.repairshop.user.controller
 
+import com.cao.repairshop.user.controller.interfaces.AuthApi
 import com.cao.repairshop.user.service.UserService
 import com.cao.repairshop.user.dto.CreateUserRequest
 import com.cao.repairshop.user.dto.LoginRequest
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/auth")
 class AuthController(
     private val userService: UserService
-) : com.cao.repairshop.user.controller.interfaces.AuthApi {
+) : AuthApi {
 
     @PostMapping("/login")
     override fun login(@Valid @RequestBody request: LoginRequest): TokenResponse =

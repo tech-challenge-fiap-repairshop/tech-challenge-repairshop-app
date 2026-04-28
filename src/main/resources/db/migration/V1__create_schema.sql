@@ -2,25 +2,6 @@
 -- Repair Shop — Initial Schema
 -- ============================================================
 
--- Enums
-CREATE TYPE status_os AS ENUM (
-    'RECEIVED',
-    'IN_DIAGNOSIS',
-    'WAITING_APPROVAL',
-    'APPROVED',
-    'REFUSED',
-    'IN_EXECUTION',
-    'FINALIZED',
-    'PAID',
-    'CANCELED'
-);
-
-CREATE TYPE status_service AS ENUM (
-    'INITIATED',
-    'PENDING',
-    'FINALIZED'
-);
-
 -- Customer
 CREATE TABLE tb_customer (
     id_tb_customer UUID PRIMARY KEY,
@@ -148,3 +129,14 @@ CREATE TABLE tb_invoice (
 
 CREATE INDEX idx_invoice_customer_id ON tb_invoice(customer_id);
 CREATE INDEX idx_invoice_service_order_id ON tb_invoice(service_order_id);
+
+
+--Initial INSERTS
+
+INSERT INTO tb_insume (id_tb_insume, name, brand, sku_id, quantity, price, unity_price) VALUES
+('0b42ed55-22ea-4116-8a86-9d0e7dc03d4f', 'Filtro de oleo motor 1.0/1.4 flex', 'Tecfil', 'FLT-OLE-001', 45, 18.90, 18.90),
+('6ff595dd-8bcd-450f-9167-d746f69b1333', 'Filtro de oleo motor 1.6/1.8 flex', 'Mann Filter', 'FLT-OLE-002', 30, 22.50, 22.50),
+('f98612ee-84cf-42e1-9e17-1bf1c370ec14', 'Filtro de oleo motor 2.0 flex', 'Fram', 'FLT-OLE-003', 25, 25.00, 25.00),
+('effdcb5c-9733-4239-8086-0e5677088e51', 'Filtro de oleo motor diesel', 'Tecfil', 'FLT-OLE-004', 18, 35.00, 35.00),
+('9c895a26-ef06-4a5b-9099-1e176580dae5', 'Filtro de ar motor 1.0/1.4', 'Tecfil', 'FLT-ARM-001', 35, 32.00, 32.00),
+('b0766379-73bc-4483-996a-ddadb05c0d44', 'Filtro de ar motor 1.6/2.0', 'Mann Filter', 'FLT-ARM-002', 28, 38.00, 38.00),

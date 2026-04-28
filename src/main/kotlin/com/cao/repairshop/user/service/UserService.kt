@@ -32,17 +32,13 @@ class UserService(
             throw DuplicateEntityException(ErrorMessages.User.DUPLICATE_EMAIL)
         }
 
-        val role = UserRole.valueOf(request.function.uppercase())
-        if (role != UserRole.CUSTOMER)
-            throw BusinessRuleViolationException("Self-registration is only allowed for CUSTOMER role. Contact an administrator for other roles.")
-
         val user = User(
             name = request.name,
-            function = role,
+            function = UserRole.valueOf(request.function.uppercase()),
             email = request.email,
             phone = request.phone,
             password = passwordEncoder.encode(request.password)
-                ?: throw PasswordEncodingException(ErrorMessages.User.PASSWORD_ENCODING_FAILED)
+                ?: throw PasswordEncodingException(ErrorMessages.User.PASSWORD_ENCODING_FAILED),
         )
 
         return userRepository.save(user).toResponse()
@@ -61,8 +57,6 @@ class UserService(
     fun verifyRegisteredCustomer(email: String): User {
         val user = userRepository.findByEmail(email)
             ?: throw EntityNotFoundException(ErrorMessages.Customer.USER_NOT_FOUND_FOR_EMAIL)
-        if (user.function != UserRole.CUSTOMER)
-            throw BusinessRuleViolationException(ErrorMessages.Customer.USER_NOT_CUSTOMER_ROLE)
         return user
     }
 }

@@ -1,5 +1,6 @@
 package com.cao.repairshop.register.controller
 
+import com.cao.repairshop.register.controller.interfaces.CustomerApi
 import com.cao.repairshop.register.service.CustomerService
 import com.cao.repairshop.register.dto.CreateCustomerRequest
 import com.cao.repairshop.register.dto.UpdateCustomerRequest
@@ -25,7 +26,7 @@ import java.util.UUID
 @RequestMapping("/customers")
 class CustomerController(
     private val customerService: CustomerService
-) : com.cao.repairshop.register.controller.interfaces.CustomerApi {
+) : CustomerApi {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
