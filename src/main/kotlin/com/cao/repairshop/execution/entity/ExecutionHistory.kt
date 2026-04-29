@@ -29,6 +29,9 @@ class ExecutionHistory(
     @Column(nullable = false, length = 20)
     var status: ExecutionStatus,
 
+    @Column(length = 255)
+    var description: String? = null,
+
     @Column(name = "register_time", nullable = false)
     var registerTime: LocalDateTime = LocalDateTime.now(),
 

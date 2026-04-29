@@ -1,4 +1,4 @@
-﻿package com.cao.repairshop.execution.entity
+package com.cao.repairshop.execution.entity
 
 import com.cao.repairshop.core.exception.ErrorMessages
 import com.cao.repairshop.core.exception.InvalidStateTransitionException
@@ -58,11 +58,11 @@ class Execution(
     var updated: LocalDateTime? = null
 ) {
 
-    fun advanceStatus(newStatus: ExecutionStatus) {
+    fun advanceStatus(newStatus: ExecutionStatus, description: String? = null) {
         if (newStatus !in status.allowedTransitions())
             throw InvalidStateTransitionException(ErrorMessages.StateTransition.invalid(status, newStatus))
         status = newStatus
-        recordHistory(newStatus)
+        recordHistory(newStatus, description ?: newStatus.defaultMessage)
     }
 
     fun addInsume(insume: Insume, quantity: Int) {
@@ -80,7 +80,7 @@ class Execution(
         )
     }
 
-    fun recordHistory(newStatus: ExecutionStatus) {
+    fun recordHistory(newStatus: ExecutionStatus, description: String? = null) {
         val lastHistory = histories.maxByOrNull { it.registerTime }
         val now = LocalDateTime.now()
         val interval = lastHistory?.let { ChronoUnit.SECONDS.between(it.registerTime, now) }
@@ -89,6 +89,7 @@ class Execution(
             ExecutionHistory(
                 execution = this,
                 status = newStatus,
+                description = description ?: newStatus.defaultMessage,
                 registerTime = now,
                 intervalTime = interval
             )

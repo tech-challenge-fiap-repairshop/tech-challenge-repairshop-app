@@ -31,7 +31,7 @@ class InvoiceService(
             Invoice(
                 customer = customer,
                 serviceOrder = this,
-                price = request.price,
+                price = totalPrice,
                 invoiceNumber = request.invoiceNumber
             ).also {
                 advanceStatus(ServiceOrderStatus.PAID)

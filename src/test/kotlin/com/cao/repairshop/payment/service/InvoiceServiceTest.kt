@@ -54,11 +54,10 @@ class InvoiceServiceTest {
 
     @Test
     fun `create invoice success - transitions SO to PAID`() {
-        val order = buildOrder(ServiceOrderStatus.FINALIZED)
+        val order = buildOrder(ServiceOrderStatus.FINALIZED).apply { totalPrice = BigDecimal("1000.00") }
         val request = CreateInvoiceRequest(
             serviceOrderId = order.id,
-            invoiceNumber = "NF-001",
-            price = BigDecimal("1000.00")
+            invoiceNumber = "NF-001"
         )
 
         every { serviceOrderService.findServiceOrderById(order.id) } returns order
@@ -69,6 +68,7 @@ class InvoiceServiceTest {
         val result = invoiceService.create(request)
 
         assertThat(result).isNotNull
+        assertThat(result.price).isEqualTo(BigDecimal("1000.00"))
         assertThat(order.status).isEqualTo(ServiceOrderStatus.PAID)
         verify { invoiceRepository.save(any()) }
     }
@@ -78,8 +78,7 @@ class InvoiceServiceTest {
         val order = buildOrder(ServiceOrderStatus.IN_EXECUTION)
         val request = CreateInvoiceRequest(
             serviceOrderId = order.id,
-            invoiceNumber = "NF-001",
-            price = BigDecimal("1000.00")
+            invoiceNumber = "NF-001"
         )
 
         every { serviceOrderService.findServiceOrderById(order.id) } returns order
@@ -94,8 +93,7 @@ class InvoiceServiceTest {
         val order = buildOrder(ServiceOrderStatus.FINALIZED)
         val request = CreateInvoiceRequest(
             serviceOrderId = order.id,
-            invoiceNumber = "NF-EXISTING",
-            price = BigDecimal("1000.00")
+            invoiceNumber = "NF-EXISTING"
         )
         val existingInvoice = mockk<Invoice>()
 

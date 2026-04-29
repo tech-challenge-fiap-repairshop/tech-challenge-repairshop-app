@@ -301,7 +301,7 @@ Itens resolvidos marcados com ~~tachado~~ e data de resolucao.
 - **Correcao:** Criar `ServiceOrderDomainTest`, `ExecutionDomainTest`, `CustomerDomainTest`.
 - **Origem:** Analise do especialista de Testes + anotacao "Testar cadastro da OS e dos insumos"
 
-### BKL-043: ApprovalDomainService sem testes
+### ~~BKL-043: ApprovalDomainService sem testes~~ (RESOLVIDO 2026-04-29)
 
 - **Arquivo:** `ApprovalDomainService.kt`
 - **Problema:** Domain service novo, zero cobertura. Metodos `approve()` e `refuse()` nao testados.
@@ -328,15 +328,30 @@ Itens resolvidos marcados com ~~tachado~~ e data de resolucao.
 - **Correcao:** Adicionar Testcontainers (PostgreSQL) ao pom.xml. Criar `ServiceOrderIntegrationTest` com fluxo completo: criar OS -> aprovar -> verificar estoque. Habilitar `RepairshopApplicationTests`.
 - **Origem:** Analise do especialista de Testes
 
+### BKL-047: Auditoria da rota de métricas (getMetrics)
+
+- **Arquivo:** `ServiceOrderMetricsService.kt`
+- **Problema:** Validar se a lógica agregada via Query Nativa está retornando os dados corretos após a introdução dos novos status (`IN_EXECUTION`, `PAID`).
+- **Correcao:** Criar testes de integração ou auditoria manual de banco para validar os agrupamentos de métricas.
+- **Origem:** Analise de consistência financeira.
+
+### BKL-048: Proteção contra retrocesso de status no Update
+
+- **Arquivo:** `ServiceOrderService.kt` / `ServiceOrder.kt`
+- **Problema:** O método de atualização da Ordem de Serviço deve garantir que um status avançado (ex: `PAID`) não possa ser alterado manualmente para um status anterior (ex: `IN_DIAGNOSIS`), quebrando a integridade da máquina de estados.
+- **Correcao:** Aplicar as mesmas regras de `allowedTransitions()` no momento de salvar atualizações parciais da OS.
+- **Origem:** Especialista em Arquitetura.
+
 ---
 
 ## Resumo de status
 
 | Status | Qtd |
 |---|---|
-| Resolvido / Excluído | 38 |
+| Resolvido | 38 |
+| Excluído / Epic | 2 |
 | Pendente | 8 |
-| **Total** | **46** |
+| **Total** | **48** |
 
 ### Tabela de Tarefas Pendentes (Análise de Sentido)
 
@@ -346,52 +361,59 @@ Itens resolvidos marcados com ~~tachado~~ e data de resolucao.
 | BKL-039 | ✅ Sim | Zero logging na aplicação dificulta imensamente debugging e rastreabilidade em produção. | [BKL-039](#bkl-039-zero-logging-em-toda-a-aplicacao) |
 | BKL-041 | ⚠️ Analisar | Correlation ID é útil, mas menos crítico em monolito que em microsserviços. Depende do padrão desejado. | [BKL-041](#bkl-041-sem-correlation-id-para-rastreamento-de-requests) |
 | BKL-042 | ✅ Sim | Ausência de testes em Domain Services recém criados (`ServiceOrder`, `Execution`, etc). | [BKL-042](#bkl-042-metodos-de-dominio-novos-sem-testes-diretos) |
-| BKL-043 | ✅ Sim | `ApprovalDomainService` sem testes de regras de aprovação de estoque. | [BKL-043](#bkl-043-approvaldomainservice-sem-testes) |
 | BKL-044 | ✅ Sim | AttributeConverters sem testes de fluxo com banco de dados. | [BKL-044](#bkl-044-attributeconverters-sem-testes-documentconverter-emailconverter-plateconverter) |
 | BKL-045 | ✅ Sim | `Email` Value Object sem cobertura para validar regras de regex. | [BKL-045](#bkl-045-email-value-object-sem-testes-de-validacao) |
 | BKL-046 | ✅ Sim | Nenhum teste de integração que valide o fluxo completo no PostgreSQL via Testcontainers. | [BKL-046](#bkl-046-zero-testes-de-integracao-com-banco-real) |
+| BKL-047 | ✅ Sim | Garantir que o Dashboard financeiro reflete a realidade dos novos status automáticos. | [BKL-047](#bkl-047-auditoria-da-rota-de-métricas-getmetrics) |
+| BKL-048 | ✅ Sim | Evitar manipulação inconsistente de estados após o faturamento/aprovação. | [BKL-048](#bkl-048-proteção-contra-retrocesso-de-status-no-update) |
 
-### Tabela de Tarefas Excluídas / Resolvidas
+### Tabela de Tarefas Resolvidas
 
-| Tarefa | Motivo da Exclusão / Resolução | Data |
+| Tarefa | Motivo da Resolução | Data |
 |---|---|---|
-| [BKL-001](#bkl-001-post-authlogin-estourando-500-internal-server-error-sem-body) | Exceção customizada e AuthenticationEntryPoint | 2026-04-26 |
-| [BKL-002](#bkl-002-post-customers-estourando-500-internal-server-error-quando-viola-constraint-de-db) | Exception Handler para MethodArgumentNotValid | 2026-04-26 |
-| [BKL-003](#bkl-003-toda-excecao-nao-tratada-vaza-stacktrace-completa-para-o-client) | GlobalExceptionHandler catch-all | 2026-04-26 |
+| [BKL-001](#bkl-001-mismatch-execution-service_order_id-vs-schema-service_order) | JoinColumn corrigido para `name = "service_order"` | 2026-04-27 |
+| [BKL-002](#bkl-002-mismatch-serviceorder-createdatupdatedat-vs-schema-createdupdated) | Campos renomeados para `created`/`updated` | 2026-04-27 |
+| [BKL-003](#bkl-003-logica-invertida-em-customerservice-create) | Substituído por verificação de duplicata | 2026-04-27 |
 | [BKL-004](#bkl-004-jwt-secret-hardcoded-no-applicationproperties) | Variáveis de ambiente configuradas no properties | 2026-04-28 |
 | [BKL-005](#bkl-005-credenciais-de-banco-hardcoded) | Variáveis de ambiente configuradas no properties | 2026-04-28 |
-| [BKL-006](#bkl-006-registro-aberto-permite-criar-attendant-sem-restricao) | Excluído para virar Epic de Keycloak / IdentityManager | 2026-04-28 |
-| [BKL-007](#bkl-007-jwtservicevalidatetoken-engole-todas-as-excecoes) | Exceções tratadas no validateToken | 2026-04-28 |
-| [BKL-008](#bkl-008-endpoints-services-insumes-e-invoices-sem-autorizacao-por-role) | Rotas validadas e protegidas no SecurityConfig | 2026-04-28 |
-| [BKL-009](#bkl-009-endpoints-de-listagem-findall-sem-paginacao) | Paginação adicionada em todos os repositórios | 2026-04-26 |
-| [BKL-010](#bkl-010-serviceordermetricsservicegetmetrics-carrega-todos-os-registros-em-memoria) | Uso de native query para cálculo no BD | 2026-04-28 |
-| [BKL-011](#bkl-011-vehicle-placa-aceita-formatos-invalidos) | Validadores customizados para Placa | 2026-04-26 |
-| [BKL-012](#bkl-012-customer-telefone-aceita-letras) | Validadores customizados para Telefone | 2026-04-26 |
+| [BKL-007](#bkl-007-jwtservicevalidatetoken-engole-todas-as-excecoes) | Captura de `JwtException` específica | 2026-04-28 |
+| [BKL-008](#bkl-008-endpoints-services-insumes-e-invoices-sem-autorizacao-por-role) | Adicionadas regras de autorização no SecurityConfig | 2026-04-28 |
+| [BKL-009](#bkl-009-userservice-verifyregisteredcustomer-nao-verifica-role-customer) | Adicionada verificação de `UserRole.CUSTOMER` | 2026-04-27 |
+| [BKL-010](#bkl-010-serviceordermetricsservicegetmetrics-carrega-todos-os-registros-em-memoria) | Uso de query nativa com agregação no banco | 2026-04-28 |
+| [BKL-011](#bkl-011-document-init-usa-require-com-throw-interno-redundante) | Substituído por `if (...) throw` explícito | 2026-04-27 |
+| [BKL-012](#bkl-012-invoiceservicecreate-usa-require-ao-inves-de-exception-de-dominio) | Substituído por `InvalidStateTransitionException` | 2026-04-27 |
 | [BKL-013](#bkl-013-convencao-de-timestamps-misturada-entre-entidades) | Padronizado com @CreationTimestamp e @UpdateTimestamp | 2026-04-28 |
-| [BKL-014](#bkl-014-executionhistory-usa-uuid-direto-vs-serviceorderhistory-usa-manytoone) | `ExecutionHistory` agora usa @ManyToOne | 2026-04-28 |
-| [BKL-015](#bkl-015-safestring-no-campo-password-rejeita-caracteres-validos) | `@SafeString` removido do password | 2026-04-28 |
-| [BKL-016](#bkl-016-falta-safestring-no-invoicenumber) | `@SafeString` adicionado em invoiceNumber | 2026-04-28 |
+| [BKL-014](#bkl-014-executionhistory-usa-uuid-direto-vs-serviceorderhistory-usa-manytoone) | Padronizado para @ManyToOne em ambas as entidades | 2026-04-28 |
+| [BKL-015](#bkl-015-safestring-no-campo-password-rejeita-caracteres-validos) | `@SafeString` removido do campo password | 2026-04-28 |
+| [BKL-016](#bkl-016-falta-safestring-no-invoicenumber) | `@SafeString` adicionado em `invoiceNumber` | 2026-04-28 |
 | [BKL-017](#bkl-017-insumeservicegetentitybyid-sem-transactional) | Adicionado `@Transactional(readOnly = true)` | 2026-04-27 |
 | [BKL-018](#bkl-018-customerserviceverifyandtakebyemail--nome-confuso) | Renomeado para `findByEmailOrThrow` | 2026-04-27 |
-| [BKL-019](#bkl-019-enums-postgresql-criados-no-schema-mas-nao-utilizados) | Drop dos enums em script V2 | 2026-04-27 |
-| [BKL-020](#bkl-020-wildcard-import-com-ponto-e-virgula-estilo-java) | Remoção de wildcard import | 2026-04-27 |
-| [BKL-021](#bkl-021-null-coalescing-operator-idiomatico-em-kotlin-nao-utilizado-em-authcontroller) | Uso de `?:` no AuthController | 2026-04-27 |
-| [BKL-022](#bkl-022-complianceexception-usada-para-regras-de-negocio-simples) | Substituído por exceções de domínio | 2026-04-28 |
-| [BKL-023](#bkl-023-executionservice-usa-alias-de-import-para-service) | Service removido, consolidado no agregado | 2026-04-28 |
-| [BKL-024](#bkl-024-serviceorderservice-e-invoiceservice-tem-metodos-privados-gigantescos) | Refatoração de métodos complexos | 2026-04-26 |
-| [BKL-025](#bkl-025-executionservice-acessava-repositories-de-outros-bounded-contexts) | Restrições de contexto aplicadas | 2026-04-26 |
-| [BKL-026](#bkl-026-vehicle-sendo-atualizado-de-forma-imperativa-ao-inves-de-copy) | Refatorado para métodos declarativos | 2026-04-26 |
-| [BKL-027](#bkl-027-invoiceservice-injeta-securitcontext-direto) | Abstraído o acesso ao contexto de segurança | 2026-04-26 |
-| [BKL-028](#bkl-028-faltam-domain-events-quando-os-e-aprovada) | Regras movidas para Aggregates | 2026-04-26 |
-| [BKL-030](#bkl-030-executionservice-ainda-dispara-save-no-serviceorder-filho-atualiza-pai) | Filho não atualiza mais pai por fora do Aggregate | 2026-04-28 |
-| [BKL-031](#bkl-031-sonarqube--collection-deveria-ser-imutavel-no-metricsservice) | Remoção do `findAll()` mitigou o problema | 2026-04-28 |
-| [BKL-032](#bkl-032-os-pode-ser-criada-sem-nenhum-servico-lista-vazia) | Regra de negócio válida. Execuções podem ser adicionadas posteriormente. | 2026-04-28 |
-| [BKL-033](#bkl-033-sem-validacao-de-que-diagnostico-produziu-executions-antes-de-avancar-para-waiting_approval) | Validação `executions.isEmpty()` já existia no código. | 2026-04-28 |
-| [BKL-034](#bkl-034-insumedeductstock-aceita-quantidades-negativas-e-zero) | Validado `require(amount > 0)` em `deductStock` | 2026-04-28 |
-| [BKL-035](#bkl-035-insumeitemrequestquantity-sem-validacao-de-minimo) | `@field:Min(1)` adicionado em `quantity` | 2026-04-28 |
-| [BKL-036](#bkl-036-mesmo-insume-pode-ser-adicionado-duas-vezes-na-mesma-execution) | Impede duplicidade de insumo adicionado | 2026-04-28 |
-| [BKL-037](#bkl-037-approvaldomainservice-instanciado-manualmente-ao-inves-de-injetado) | Injetado via construtor agora | 2026-04-28 |
-| [BKL-038](#bkl-038-executionservice-manipula-colecao-interna-do-serviceorder-diretamente) | Protegido escopo interno (Aggregate Root) | 2026-04-28 |
-| [BKL-040](#bkl-040-sem-spring-boot-actuator-health-checks-info) | Spring Boot Actuator configurado no POM e Properties | 2026-04-28 |
+| [BKL-019](#bkl-019-enums-postgresql-criados-no-schema-mas-nao-utilizados) | Migration V2 de Drop de enums não utilizados | 2026-04-27 |
+| [BKL-020](#bkl-020-wildcard-import-com-ponto-e-virgula-estilo-java) | Remoção de wildcard imports e estilo Java | 2026-04-27 |
+| [BKL-021](#bkl-021-imports-nao-utilizados-em-varias-classes) | Limpeza de imports via análise estática | 2026-04-27 |
+| [BKL-022](#bkl-022-complianceexception-usada-para-regras-de-negocio-simples) | Substituído por exceções de domínio mais semânticas | 2026-04-28 |
+| [BKL-023](#bkl-023-executionservice-usa-alias-de-import-para-service) | Removido alias atípico em favor de FQN ou padrão | 2026-04-28 |
+| [BKL-024](#bkl-024-bounded-context-register-dependia-de-serviceorder-direcao-errada) | Inversão de dependência via interfaces e adapters | 2026-04-27 |
+| [BKL-025](#bkl-025-executionservice-acessava-repositories-de-outros-bounded-contexts) | Acesso via serviços de domínio e interfaces seguras | 2026-04-27 |
+| [BKL-026](#bkl-026-serviceorderservice-construia-entidades-de-outro-bounded-context) | Lógica movida para Aggregates (Domain-Driven) | 2026-04-27 |
+| [BKL-027](#bkl-027-modelo-de-dominio-anemico) | Comportamento movido para Entidades de Domínio | 2026-04-27 |
+| [BKL-028](#bkl-028-value-objects-acoplados-ao-jpa) | Uso de AttributeConverters para desacoplar JPA | 2026-04-27 |
+| [BKL-030](#bkl-030-executionservice-ainda-dispara-save-no-serviceorder-filho-atualiza-pai) | Responsabilidade de persistência movida para o Pai | 2026-04-28 |
+| [BKL-031](#bkl-031-sonarqube--collection-deveria-ser-imutavel-no-metricsservice) | Uso de `.toList()` para garantir imutabilidade | 2026-04-28 |
+| [BKL-033](#bkl-033-sem-validacao-de-que-diagnostico-produziu-executions-antes-de-avancar-para-waiting_approval) | Validação `executions.isEmpty()` adicionada no domínio | 2026-04-28 |
+| [BKL-034](#bkl-034-insume-deductstock-aceita-quantidades-negativas-e-zero) | Proteção `amount <= 0` adicionada no Insume | 2026-04-28 |
+| [BKL-035](#bkl-035-insumeitemrequest-quantity-sem-validacao-de-minimo) | `@field:Min(1)` adicionado ao DTO de Insumo | 2026-04-28 |
+| [BKL-036](#bkl-036-mesmo-insume-pode-ser-adicionado-duas-vezes-na-mesma-execution) | Validação de duplicidade em `addInsume()` | 2026-04-28 |
+| [BKL-037](#bkl-037-approvaldomainservice-instanciado-manualmente-ao-inves-de-injetado) | Registro como `@Component` e injeção de dependência | 2026-04-28 |
+| [BKL-038](#bkl-038-executionservice-manipula-colecao-interna-do-serviceorder-diretamente) | Encapsulamento via Aggregate Root | 2026-04-28 |
+| [BKL-040](#bkl-040-sem-spring-boot-actuator-health-checks-info) | Actuator configurado para observabilidade básica | 2026-04-28 |
+| [BKL-043](#bkl-043-approvaldomainservice-sem-testes) | Criada suíte `ApprovalDomainServiceTest.kt` | 2026-04-29 |
+
+### Tabela de Tarefas Excluídas / Descontinuadas
+
+| Tarefa | Motivo da Exclusão | Data |
+|---|---|---|
+| [BKL-006](#bkl-006-registro-aberto-permite-criar-attendant-sem-restricao) | Transformado em Épico de Autenticação Externa (Keycloak) | 2026-04-28 |
+| [BKL-032](#bkl-032-os-pode-ser-criada-sem-nenhum-servico-lista-vazia) | Regra de Negócio: OS pode nascer vazia para diagnóstico posterior | 2026-04-28 |
 
 

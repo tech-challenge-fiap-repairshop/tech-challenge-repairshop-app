@@ -159,6 +159,7 @@ class ServiceOrderService(
             price = request.price
             estimatedTime = request.estimatedTime
             updated = LocalDateTime.now()
+            recordHistory(status, "Execution attributes updated (price, description or time)")
         }
 
         order.recalculateTotalPrice()

@@ -58,7 +58,7 @@ data class UpdateExecutionRequest(
 )
 
 data class ExecutionStatusUpdateRequest(
-    @Schema(description = "New execution status", example = "FINALIZED")
+    @Schema(description = "New execution status", examples = ["FINALIZED","INITIATED","PENDING"])
     @field:NotNull val status: ExecutionStatus
 )
 

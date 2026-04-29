@@ -51,11 +51,11 @@ class ServiceOrder(
     @Column(name = "valid_date")
     var validDate: LocalDate? = null,
 
-    @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "service_order_id", insertable = false, updatable = false)
     var histories: MutableSet<ServiceOrderHistory> = mutableSetOf(),
 
-    @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "service_order", insertable = false, updatable = false)
     var executions: MutableSet<Execution> = mutableSetOf(),
 
@@ -71,7 +71,7 @@ class ServiceOrder(
     var updated: LocalDateTime? = null
 ) {
 
-    fun advanceStatus(newStatus: ServiceOrderStatus) {
+    fun advanceStatus(newStatus: ServiceOrderStatus, description: String? = null) {
         if (newStatus !in status.allowedTransitions())
             throw InvalidStateTransitionException(ErrorMessages.StateTransition.invalid(status, newStatus))
 
@@ -86,7 +86,7 @@ class ServiceOrder(
         }
 
         status = newStatus
-        recordHistory(newStatus)
+        recordHistory(newStatus, description ?: newStatus.defaultMessage)
     }
 
     fun approve() {
@@ -132,7 +132,7 @@ class ServiceOrder(
             ?.advanceStatus(ServiceOrderStatus.FINALIZED)
     }
 
-    fun recordHistory(newStatus: ServiceOrderStatus) {
+    fun recordHistory(newStatus: ServiceOrderStatus, description: String? = null) {
         val lastHistory = histories.maxByOrNull { it.registerTime }
         val now = LocalDateTime.now()
         val interval = lastHistory?.let { ChronoUnit.SECONDS.between(it.registerTime, now) }
@@ -141,6 +141,7 @@ class ServiceOrder(
             ServiceOrderHistory(
                 serviceOrder = this,
                 status = newStatus,
+                description = description,
                 registerTime = now,
                 intervalTime = interval
             )

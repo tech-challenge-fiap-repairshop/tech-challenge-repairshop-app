@@ -21,6 +21,9 @@ class ServiceOrderHistory(
     @Enumerated(EnumType.STRING)
     var status: ServiceOrderStatus = ServiceOrderStatus.RECEIVED,
 
+    @Column(length = 255)
+    var description: String? = null,
+
     @Column(name = "interval_time")
     var intervalTime: Long? = null,
 

@@ -1,15 +1,15 @@
 package com.cao.repairshop.serviceorder.domain
 
-enum class ServiceOrderStatus {
-    RECEIVED,
-    IN_DIAGNOSIS,
-    WAITING_APPROVAL,
-    APPROVED,
-    REFUSED,
-    IN_EXECUTION,
-    FINALIZED,
-    PAID,
-    CANCELED;
+enum class ServiceOrderStatus(val defaultMessage: String) {
+    RECEIVED("Service order received and initiated"),
+    IN_DIAGNOSIS("Diagnosis in progress"),
+    WAITING_APPROVAL("Waiting for customer approval"),
+    APPROVED("Order approved by customer"),
+    REFUSED("Order refused by customer"),
+    IN_EXECUTION("Service execution in progress"),
+    FINALIZED("All services completed and finalized"),
+    PAID("Payment confirmed and invoice issued"),
+    CANCELED("Service order canceled");
 
     fun allowedTransitions(): Set<ServiceOrderStatus> = when (this) {
         RECEIVED -> setOf(IN_DIAGNOSIS)

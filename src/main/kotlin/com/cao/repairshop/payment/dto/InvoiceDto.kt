@@ -14,10 +14,7 @@ data class CreateInvoiceRequest(
     @field:NotNull val serviceOrderId: UUID,
 
     @Schema(description = "Invoice number", example = "NF-2026-000001")
-    @field:NotBlank @field:SafeString val invoiceNumber: String,
-
-    @Schema(description = "Invoice price", example = "1500.00")
-    @field:NotNull @field:Positive val price: BigDecimal
+    @field:NotBlank @field:SafeString val invoiceNumber: String
 )
 
 data class InvoiceResponse(
