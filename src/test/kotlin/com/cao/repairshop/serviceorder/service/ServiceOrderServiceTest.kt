@@ -190,17 +190,35 @@ class ServiceOrderServiceTest {
         order.executions.add(service)
 
         every { serviceOrderRepository.findById(order.id) } returns Optional.of(order)
-        every { approvalDomainService.approve(order) } answers {
-            order.approve()
-            order.collectInsumeRequirements().map { (id, qty) -> ApprovalDomainService.StockRequirement(id, qty) }
+        every { approvalDomainService.approve(any()) } answers {
+            val o = firstArg<ServiceOrder>()
+            o.approve()
+            o.advanceStatus(ServiceOrderStatus.IN_EXECUTION)
+            o.collectInsumeRequirements().map { (id, qty) -> ApprovalDomainService.StockRequirement(id, qty) }
         }
         every { insumeService.deductStock(any(), any()) } just runs
         every { serviceOrderRepository.save(any()) } returns order
 
         val result = serviceOrderService.approve(order.id, ApprovalRequest(approved = true))
 
-        assertThat(result.status).isEqualTo(ServiceOrderStatus.APPROVED)
+        assertThat(result.status).isEqualTo(ServiceOrderStatus.IN_EXECUTION)
         verify(exactly = 1) { insumeService.deductStock(any(), any()) }
+    }
+
+    @Test
+    fun `advanceExecutionStatus automates SO finalization when last execution is finished`() {
+        val order = buildOrder(ServiceOrderStatus.IN_EXECUTION)
+        val execution = buildExecution(order, ExecutionStatus.PENDING)
+        order.executions.add(execution)
+
+        every { serviceOrderRepository.findById(order.id) } returns Optional.of(order)
+        every { serviceOrderRepository.save(any()) } returns order
+
+        val result = serviceOrderService.advanceExecutionStatus(order.id, execution.id, ExecutionStatus.FINALIZED)
+
+        assertThat(result.status).isEqualTo(ExecutionStatus.FINALIZED)
+        assertThat(order.status).isEqualTo(ServiceOrderStatus.FINALIZED)
+        verify(exactly = 1) { serviceOrderRepository.save(any()) }
     }
 
     @Test

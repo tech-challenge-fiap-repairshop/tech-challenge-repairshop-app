@@ -30,7 +30,7 @@ class ApprovalDomainServiceTest {
 
         val requirements = service.approve(order)
 
-        assertThat(order.status).isEqualTo(ServiceOrderStatus.APPROVED)
+        assertThat(order.status).isEqualTo(ServiceOrderStatus.IN_EXECUTION)
         assertThat(requirements).hasSize(1)
         assertThat(requirements.first().quantity).isEqualTo(3)
     }
@@ -42,7 +42,7 @@ class ApprovalDomainServiceTest {
 
         val requirements = service.approve(order)
 
-        assertThat(order.status).isEqualTo(ServiceOrderStatus.APPROVED)
+        assertThat(order.status).isEqualTo(ServiceOrderStatus.IN_EXECUTION)
         assertThat(requirements).isEmpty()
     }
 

@@ -11,6 +11,7 @@ class ApprovalDomainService {
 
     fun approve(order: ServiceOrder): List<StockRequirement> {
         order.approve()
+        order.advanceStatus(ServiceOrderStatus.IN_EXECUTION)
         return order.collectInsumeRequirements()
             .map { (id, qty) -> StockRequirement(id, qty) }
     }

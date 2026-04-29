@@ -117,7 +117,6 @@ class ServiceOrderService(
             estimatedTime = request.estimatedTime,
             insumes = resolvedInsumes
         )
-        execution.recordHistory(execution.status)
 
         serviceOrderRepository.save(order)
         return execution.toResponse()
@@ -136,7 +135,6 @@ class ServiceOrderService(
                 estimatedTime = execDef.estimatedTime,
                 insumes = resolvedInsumes
             )
-            execution.recordHistory(execution.status)
             execution
         }
 
@@ -179,14 +177,15 @@ class ServiceOrderService(
     }
 
     @Transactional
-    fun advanceExecutionStatus(serviceOrderId: UUID, executionId: UUID, newStatus: ExecutionStatus): ExecutionResponse {
-        val order = findServiceOrderById(serviceOrderId)
-        val execution = findExecutionInOrder(order, executionId)
+    fun advanceExecutionStatus(serviceOrderId: UUID, executionId: UUID, newStatus: ExecutionStatus): ExecutionResponse =
+        findServiceOrderById(serviceOrderId).run {
+            val execution = findExecutionInOrder(this, executionId).apply { advanceStatus(newStatus) }
 
-        execution.advanceStatus(newStatus)
-        serviceOrderRepository.save(order)
-        return execution.toResponse()
-    }
+            checkCompletion()
+
+            serviceOrderRepository.save(this)
+            execution.toResponse()
+        }
 
     // ---- Internal helpers ----
 

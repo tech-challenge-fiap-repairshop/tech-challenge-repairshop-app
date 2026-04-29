@@ -1,4 +1,4 @@
-﻿package com.cao.repairshop.serviceorder.entity
+package com.cao.repairshop.serviceorder.entity
 
 import com.cao.repairshop.core.exception.ErrorMessages
 import com.cao.repairshop.core.exception.InvalidStateTransitionException
@@ -111,12 +111,7 @@ class ServiceOrder(
             price = price,
             estimatedTime = estimatedTime
         )
-        val executionHistory = ExecutionHistory(
-            execution = execution,
-            status = ExecutionStatus.INITIATED,
-            registerTime = LocalDateTime.now()
-        )
-        execution.histories.add(executionHistory)
+        execution.recordHistory(execution.status)
         insumes.forEach { (insume, qty) -> execution.addInsume(insume, qty) }
         executions.add(execution)
         recalculateTotalPrice()
@@ -130,6 +125,11 @@ class ServiceOrder(
 
     fun recalculateTotalPrice() {
         totalPrice = executions.fold(BigDecimal.ZERO) { acc, exec -> acc.add(exec.price) }
+    }
+
+    fun checkCompletion() {
+        takeIf { status == ServiceOrderStatus.IN_EXECUTION && executions.all { it.status == ExecutionStatus.FINALIZED } }
+            ?.advanceStatus(ServiceOrderStatus.FINALIZED)
     }
 
     fun recordHistory(newStatus: ServiceOrderStatus) {
