@@ -342,6 +342,13 @@ Itens resolvidos marcados com ~~tachado~~ e data de resolucao.
 - **Correcao:** Aplicar as mesmas regras de `allowedTransitions()` no momento de salvar atualizações parciais da OS.
 - **Origem:** Especialista em Arquitetura.
 
+### BKL-049: Imutabilidade de Entidades Finalizadas/Pagas
+
+- **Arquivos:** `ServiceOrder.kt`, `Execution.kt`, `ServiceOrderService.kt`
+- **Problema:** Atualmente, o sistema permite atualizar atributos de execuções ou adicionar novos itens mesmo após a OS estar `FINALIZED` ou `PAID`. Isso compromete a integridade histórica e financeira.
+- **Correcao:** Implementar travas no domínio e no service. Se a entidade estiver em um estado terminal (`FINALIZED`, `PAID`, `CANCELED`), qualquer tentativa de alteração de preço, descrição, insumos ou remoção de itens deve ser bloqueada.
+- **Origem:** Especialistas (Arquitetura e Produto).
+
 ---
 
 ## Resumo de status
@@ -350,8 +357,8 @@ Itens resolvidos marcados com ~~tachado~~ e data de resolucao.
 |---|---|
 | Resolvido | 38 |
 | Excluído / Epic | 2 |
-| Pendente | 8 |
-| **Total** | **48** |
+| Pendente | 10 |
+| **Total** | **50** |
 
 ### Tabela de Tarefas Pendentes (Análise de Sentido)
 
@@ -366,6 +373,7 @@ Itens resolvidos marcados com ~~tachado~~ e data de resolucao.
 | BKL-046 | ✅ Sim | Nenhum teste de integração que valide o fluxo completo no PostgreSQL via Testcontainers. | [BKL-046](#bkl-046-zero-testes-de-integracao-com-banco-real) |
 | BKL-047 | ✅ Sim | Garantir que o Dashboard financeiro reflete a realidade dos novos status automáticos. | [BKL-047](#bkl-047-auditoria-da-rota-de-métricas-getmetrics) |
 | BKL-048 | ✅ Sim | Evitar manipulação inconsistente de estados após o faturamento/aprovação. | [BKL-048](#bkl-048-proteção-contra-retrocesso-de-status-no-update) |
+| BKL-049 | ✅ Sim | Invariante de negócio crítica para garantir a imutabilidade de dados históricos e financeiros. | [BKL-049](#bkl-049-imutabilidade-de-entidades-finalizadaspagas) |
 
 ### Tabela de Tarefas Resolvidas
 
