@@ -6,8 +6,10 @@ import java.util.UUID
 import com.cao.repairshop.serviceorder.dto.ServiceOrderHistoryEntry
 import com.cao.repairshop.serviceorder.dto.ServiceOrderResponse
 import com.cao.repairshop.serviceorder.dto.ExecutionSummary
+import com.cao.repairshop.serviceorder.dto.InsumeSummaryResponse
 import com.cao.repairshop.serviceorder.entity.ServiceOrder
 import com.cao.repairshop.serviceorder.entity.ServiceOrderHistory
+import java.math.BigDecimal
 
 fun ServiceOrder.toResponse() = ServiceOrderResponse(
     id = id,
@@ -24,7 +26,16 @@ fun ServiceOrder.toResponse() = ServiceOrderResponse(
             id = it.id,
             basicDescription = it.basicDescription,
             fullDescription = it.fullDescription,
-            price = it.price,
+            laborPrice = it.price,
+            insumes = it.insumes.map { ei ->
+                InsumeSummaryResponse(
+                    name = ei.insume.name,
+                    quantity = ei.quantity,
+                    unitPrice = ei.insume.price,
+                    totalPrice = ei.insume.price.multiply(BigDecimal.valueOf(ei.quantity.toLong()))
+                )
+            },
+            totalPrice = it.getTotalPrice(),
             status = it.status.name
         ) 
     },

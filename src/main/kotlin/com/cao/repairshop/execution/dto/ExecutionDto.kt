@@ -12,6 +12,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.UUID
 import com.cao.repairshop.serviceorder.dto.InsumeItemRequest
+import com.cao.repairshop.serviceorder.dto.InsumeSummaryResponse
 
 data class CreateExecutionRequest(
     @Schema(description = "Service order ID this execution belongs to")
@@ -71,8 +72,12 @@ data class ExecutionResponse(
     val basicDescription: BasicExecution,
     @Schema(description = "Detailed execution description", example = "Transmission fluid replacement using 5W30")
     val fullDescription: String?,
-    @Schema(description = "Execution price", example = "450.00")
-    val price: BigDecimal,
+    @Schema(description = "Labor price only", example = "450.00")
+    val laborPrice: BigDecimal,
+    @Schema(description = "List of insumes used in this execution")
+    val insumes: List<InsumeSummaryResponse> = emptyList(),
+    @Schema(description = "Total price for this execution (labor + insumes)", example = "650.00")
+    val totalPrice: BigDecimal,
     @Schema(description = "Estimated time in hours", example = "3.0")
     val estimatedTime: BigDecimal?,
     @Schema(description = "Current status", example = "INITIATED")

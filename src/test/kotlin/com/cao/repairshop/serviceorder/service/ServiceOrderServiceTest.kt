@@ -22,6 +22,7 @@ import com.cao.repairshop.inventory.entity.Insume
 import com.cao.repairshop.execution.entity.ExecutionInsume
 import com.cao.repairshop.execution.entity.ExecutionInsumeId
 import com.cao.repairshop.execution.domain.ExecutionStatus
+import com.cao.repairshop.core.notification.EmailService
 import io.mockk.*
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
@@ -52,6 +53,9 @@ class ServiceOrderServiceTest {
 
     @MockK
     private lateinit var approvalDomainService: ApprovalDomainService
+
+    @MockK
+    private lateinit var emailService: EmailService
 
     @InjectMockKs
     private lateinit var serviceOrderService: ServiceOrderService
@@ -132,7 +136,7 @@ class ServiceOrderServiceTest {
     fun `advanceStatus valid transition RECEIVED to IN_DIAGNOSIS`() {
         val order = buildOrder(ServiceOrderStatus.RECEIVED)
 
-        every { serviceOrderRepository.findById(order.id) } returns Optional.of(order)
+        every { serviceOrderRepository.findDetailedById(order.id) } returns Optional.of(order)
         every { serviceOrderRepository.save(any()) } returns order
 
         val result = serviceOrderService.advanceStatus(order.id, ServiceOrderStatus.IN_DIAGNOSIS)
@@ -141,11 +145,26 @@ class ServiceOrderServiceTest {
     }
 
     @Test
+    fun `advanceStatus to WAITING_APPROVAL sends email`() {
+        val order = buildOrder(ServiceOrderStatus.IN_DIAGNOSIS)
+        order.executions.add(buildExecution(order))
+
+        every { serviceOrderRepository.findDetailedById(order.id) } returns Optional.of(order)
+        every { serviceOrderRepository.save(any()) } returns order
+        every { emailService.sendEmail(any()) } just runs
+
+        val result = serviceOrderService.advanceStatus(order.id, ServiceOrderStatus.WAITING_APPROVAL)
+
+        assertThat(result.status).isEqualTo(ServiceOrderStatus.WAITING_APPROVAL)
+        verify(exactly = 1) { emailService.sendEmail(match { it.to == defaultEmail }) }
+    }
+
+    @Test
     fun `advanceStatus FINALIZED when not all services finalized - throws InvalidStateTransitionException`() {
         val order = buildOrder(ServiceOrderStatus.IN_EXECUTION)
         val unfinishedService = buildExecution(order, ExecutionStatus.PENDING)
 
-        every { serviceOrderRepository.findById(order.id) } returns Optional.of(order)
+        every { serviceOrderRepository.findDetailedById(order.id) } returns Optional.of(order)
         order.executions.add(unfinishedService)
 
         assertThatThrownBy { serviceOrderService.advanceStatus(order.id, ServiceOrderStatus.FINALIZED) }
@@ -157,7 +176,7 @@ class ServiceOrderServiceTest {
     fun `findById success - returns ServiceOrder`() {
         val order = buildOrder()
 
-        every { serviceOrderRepository.findById(order.id) } returns Optional.of(order)
+        every { serviceOrderRepository.findDetailedById(order.id) } returns Optional.of(order)
 
         val result = serviceOrderService.findServiceOrder(order.id)
 
@@ -168,7 +187,7 @@ class ServiceOrderServiceTest {
     fun `findById not found - throws EntityNotFoundException`() {
         val id = UUID.randomUUID()
 
-        every { serviceOrderRepository.findById(id) } returns Optional.empty()
+        every { serviceOrderRepository.findDetailedById(id) } returns Optional.empty()
 
         assertThatThrownBy { serviceOrderService.findServiceOrder(id) }
             .isInstanceOf(EntityNotFoundException::class.java)
@@ -189,7 +208,7 @@ class ServiceOrderServiceTest {
         service.insumes.add(ExecutionInsume(ExecutionInsumeId(service.id, insumeId), service, insume, 2))
         order.executions.add(service)
 
-        every { serviceOrderRepository.findById(order.id) } returns Optional.of(order)
+        every { serviceOrderRepository.findDetailedById(order.id) } returns Optional.of(order)
         every { approvalDomainService.approve(any()) } answers {
             val o = firstArg<ServiceOrder>()
             o.approve()
@@ -211,7 +230,7 @@ class ServiceOrderServiceTest {
         val execution = buildExecution(order, ExecutionStatus.PENDING)
         order.executions.add(execution)
 
-        every { serviceOrderRepository.findById(order.id) } returns Optional.of(order)
+        every { serviceOrderRepository.findDetailedById(order.id) } returns Optional.of(order)
         every { serviceOrderRepository.save(any()) } returns order
 
         val result = serviceOrderService.advanceExecutionStatus(order.id, execution.id, ExecutionStatus.FINALIZED)
@@ -225,7 +244,7 @@ class ServiceOrderServiceTest {
     fun `approve with approved=false - transitions status to REFUSED`() {
         val order = buildOrder(ServiceOrderStatus.WAITING_APPROVAL)
 
-        every { serviceOrderRepository.findById(order.id) } returns Optional.of(order)
+        every { serviceOrderRepository.findDetailedById(order.id) } returns Optional.of(order)
         every { approvalDomainService.refuse(order) } answers { order.refuse() }
         every { serviceOrderRepository.save(any()) } returns order
 

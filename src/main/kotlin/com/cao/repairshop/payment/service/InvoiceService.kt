@@ -56,7 +56,7 @@ class InvoiceService(
 
     @Transactional(readOnly = true)
     fun findById(id: UUID): Invoice =
-        invoiceRepository.findById(id)
+        invoiceRepository.findDetailedById(id)
             .orElseThrow { EntityNotFoundException(ErrorMessages.Invoice.NOT_FOUND) }
 
     @Transactional(readOnly = true)

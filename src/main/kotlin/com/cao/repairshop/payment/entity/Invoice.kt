@@ -1,4 +1,4 @@
-﻿package com.cao.repairshop.payment.entity
+package com.cao.repairshop.payment.entity
 
 import com.cao.repairshop.register.entity.Customer
 import com.cao.repairshop.serviceorder.entity.ServiceOrder

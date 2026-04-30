@@ -1,5 +1,6 @@
 package com.cao.repairshop.execution.controller
 
+import com.cao.repairshop.execution.controller.interfaces.ExecutionApi
 import com.cao.repairshop.execution.dto.CreateExecutionBatchRequest
 import com.cao.repairshop.execution.dto.CreateExecutionRequest
 import com.cao.repairshop.execution.dto.UpdateExecutionRequest
@@ -7,8 +8,6 @@ import com.cao.repairshop.execution.dto.ExecutionStatusUpdateRequest
 import com.cao.repairshop.execution.dto.ExecutionResponse
 import com.cao.repairshop.serviceorder.service.ServiceOrderService
 
-import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -25,37 +24,32 @@ import java.util.UUID
 
 @RestController
 @RequestMapping("/service-orders/{serviceOrderId}/executions")
-@Tag(name = "Executions", description = "Service execution management within service orders")
 class ExecutionController(
     private val serviceOrderService: ServiceOrderService
-) {
+) : ExecutionApi {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Add a new execution to a service order")
-    fun create(
+    override fun create(
         @PathVariable serviceOrderId: UUID,
         @Valid @RequestBody request: CreateExecutionRequest
     ): ExecutionResponse = serviceOrderService.addExecution(serviceOrderId, request)
 
     @PostMapping("/batch")
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Add multiple executions in batch")
-    fun createBatch(
+    override fun createBatch(
         @PathVariable serviceOrderId: UUID,
         @Valid @RequestBody request: CreateExecutionBatchRequest
     ): List<ExecutionResponse> = serviceOrderService.addExecutionBatch(serviceOrderId, request)
 
     @GetMapping("/{executionId}")
-    @Operation(summary = "Find execution by ID within a service order")
-    fun findById(
+    override fun findById(
         @PathVariable serviceOrderId: UUID,
         @PathVariable executionId: UUID
     ): ExecutionResponse = serviceOrderService.findExecution(serviceOrderId, executionId)
 
     @PutMapping("/{executionId}")
-    @Operation(summary = "Update execution details")
-    fun update(
+    override fun update(
         @PathVariable serviceOrderId: UUID,
         @PathVariable executionId: UUID,
         @Valid @RequestBody request: UpdateExecutionRequest
@@ -63,15 +57,13 @@ class ExecutionController(
 
     @DeleteMapping("/{executionId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @Operation(summary = "Remove an execution from a service order")
-    fun delete(
+    override fun delete(
         @PathVariable serviceOrderId: UUID,
         @PathVariable executionId: UUID
     ) = serviceOrderService.removeExecution(serviceOrderId, executionId)
 
     @PatchMapping("/{executionId}/status")
-    @Operation(summary = "Advance execution status")
-    fun advanceStatus(
+    override fun advanceStatus(
         @PathVariable serviceOrderId: UUID,
         @PathVariable executionId: UUID,
         @Valid @RequestBody request: ExecutionStatusUpdateRequest

@@ -1,6 +1,8 @@
 package com.cao.repairshop.serviceorder.service
 
 import mu.KotlinLogging
+import com.cao.repairshop.core.notification.EmailService
+import com.cao.repairshop.core.notification.dto.EmailRequest
 import com.cao.repairshop.core.exception.EntityNotFoundException
 import com.cao.repairshop.core.exception.ErrorMessages
 import com.cao.repairshop.execution.domain.ExecutionStatus
@@ -21,7 +23,6 @@ import com.cao.repairshop.serviceorder.dto.ApprovalRequest
 import com.cao.repairshop.serviceorder.dto.CreateServiceOrderRequest
 import com.cao.repairshop.serviceorder.entity.ServiceOrder
 import com.cao.repairshop.serviceorder.repository.ServiceOrderRepository
-import org.hibernate.Hibernate
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -38,7 +39,8 @@ class ServiceOrderService(
     private val customerService: CustomerService,
     private val vehicleService: VehicleService,
     private val insumeService: InsumeService,
-    private val approvalDomainService: ApprovalDomainService
+    private val approvalDomainService: ApprovalDomainService,
+    private val emailService: EmailService
 ) {
 
     // ---- Service Order lifecycle ----
@@ -80,11 +82,11 @@ class ServiceOrderService(
     fun findAll(pageable: Pageable): Page<ServiceOrder> = serviceOrderRepository.findAll(pageable)
 
     @Transactional
-    fun advanceStatus(id: UUID, newStatus: ServiceOrderStatus): ServiceOrder {
-        val order = findServiceOrderById(id)
-        order.advanceStatus(newStatus)
-        return serviceOrderRepository.save(order)
-    }
+    fun advanceStatus(id: UUID, newStatus: ServiceOrderStatus): ServiceOrder =
+        findServiceOrderById(id)
+            .apply { advanceStatus(newStatus) }
+            .let { serviceOrderRepository.save(it) }
+            .also { if (newStatus == ServiceOrderStatus.WAITING_APPROVAL) notifyCustomerForApproval(it) }
 
     @Transactional
     fun approve(id: UUID, request: ApprovalRequest): ServiceOrder {
@@ -190,16 +192,35 @@ class ServiceOrderService(
 
     // ---- Internal helpers ----
 
-    fun findServiceOrderById(id: UUID): ServiceOrder {
-        val order = serviceOrderRepository.findById(id)
+    fun findServiceOrderById(id: UUID): ServiceOrder =
+        serviceOrderRepository.findDetailedById(id)
             .orElseThrow { EntityNotFoundException(ErrorMessages.ServiceOrder.NOT_FOUND) }
-        Hibernate.initialize(order.executions)
-        Hibernate.initialize(order.histories)
-        order.executions.forEach { Hibernate.initialize(it.insumes) }
-        return order
-    }
 
     private fun findExecutionInOrder(order: ServiceOrder, executionId: UUID): Execution =
         order.executions.find { it.id == executionId }
             ?: throw EntityNotFoundException(ErrorMessages.Execution.NOT_FOUND)
+
+    private fun notifyCustomerForApproval(order: ServiceOrder) {
+        order.customer.email?.value?.let { customerEmail ->
+            val request = EmailRequest(
+                to = customerEmail,
+                subject = "Ordem de Serviço #${order.id} - Aguardando Aprovação",
+                body = buildApprovalEmailBody(order)
+            )
+            emailService.sendEmail(request)
+        }
+    }
+
+    private fun buildApprovalEmailBody(order: ServiceOrder): String = """
+        Olá ${order.customer.name},
+        
+        Sua ordem de serviço #${order.id} para o veículo ${order.vehicle.plate.value} está aguardando sua aprovação.
+        
+        Valor total: R$ ${order.totalPrice}
+        
+        Por favor, entre em contato ou acesse o sistema para aprovar/recusar o orçamento.
+        
+        Atenciosamente,
+        Equipe RepairShop
+    """.trimIndent()
 }

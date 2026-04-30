@@ -44,7 +44,7 @@ data class Customer(
     @JoinColumn(name = "customer_id", insertable = false, updatable = false)
     var serviceOrders: MutableSet<ServiceOrder> = mutableSetOf(),
 
-    @OneToMany(mappedBy = "customer", cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(mappedBy = "customer", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     var invoices: MutableSet<Invoice> = mutableSetOf(),
 
     @CreationTimestamp

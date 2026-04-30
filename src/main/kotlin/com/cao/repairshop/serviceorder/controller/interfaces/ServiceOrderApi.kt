@@ -3,6 +3,7 @@ package com.cao.repairshop.serviceorder.controller.interfaces
 import com.cao.repairshop.serviceorder.dto.ApprovalRequest
 import com.cao.repairshop.serviceorder.dto.CreateServiceOrderRequest
 import com.cao.repairshop.serviceorder.dto.ServiceOrderMetricsResponse
+import com.cao.repairshop.execution.dto.ExecutionMetricsResponse
 import com.cao.repairshop.serviceorder.dto.ServiceOrderStatusUpdateRequest
 import com.cao.repairshop.serviceorder.dto.ServiceOrderResponse
 import io.swagger.v3.oas.annotations.Operation
@@ -63,4 +64,11 @@ interface ServiceOrderApi {
             content = [Content(schema = Schema(implementation = ServiceOrderMetricsResponse::class))])
     )
     fun getMetrics(): ServiceOrderMetricsResponse
+
+    @Operation(summary = "Get individual services execution time metrics")
+    @ApiResponses(
+        ApiResponse(responseCode = "200", description = "Execution metrics retrieved",
+            content = [Content(schema = Schema(implementation = ExecutionMetricsResponse::class))])
+    )
+    fun getExecutionMetrics(): ExecutionMetricsResponse
 }

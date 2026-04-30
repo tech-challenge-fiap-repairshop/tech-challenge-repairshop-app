@@ -8,6 +8,7 @@ import com.cao.repairshop.serviceorder.dto.ServiceOrderStatusUpdateRequest
 import com.cao.repairshop.serviceorder.dto.ApprovalRequest
 import com.cao.repairshop.serviceorder.dto.ServiceOrderResponse
 import com.cao.repairshop.serviceorder.dto.ServiceOrderMetricsResponse
+import com.cao.repairshop.execution.dto.ExecutionMetricsResponse
 import com.cao.repairshop.serviceorder.mapper.toResponse
 
 import jakarta.validation.Valid
@@ -61,4 +62,8 @@ class ServiceOrderController(
     @GetMapping("/metrics")
     override fun getMetrics(): ServiceOrderMetricsResponse =
         serviceOrderMetricsService.getMetrics()
+
+    @GetMapping("/executions/metrics")
+    override fun getExecutionMetrics(): ExecutionMetricsResponse =
+        serviceOrderMetricsService.getExecutionMetrics()
 }

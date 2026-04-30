@@ -58,6 +58,13 @@ class Execution(
     var updated: LocalDateTime? = null
 ) {
 
+    fun getTotalPrice(): BigDecimal {
+        val insumesTotal = insumes.fold(BigDecimal.ZERO) { acc, ei ->
+            acc.add(ei.insume.price.multiply(BigDecimal.valueOf(ei.quantity.toLong())))
+        }
+        return price.add(insumesTotal)
+    }
+
     fun advanceStatus(newStatus: ExecutionStatus, description: String? = null) {
         if (newStatus !in status.allowedTransitions())
             throw InvalidStateTransitionException(ErrorMessages.StateTransition.invalid(status, newStatus))

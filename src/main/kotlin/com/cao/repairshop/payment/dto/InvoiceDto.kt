@@ -26,14 +26,42 @@ data class InvoiceResponse(
     val customerName: String,
     @Schema(description = "Service Order ID")
     val serviceOrderId: UUID,
+    @Schema(description = "Vehicle plate linked to the order", example = "ABC-1234")
+    val vehiclePlate: String,
+    @Schema(description = "Current status of the service order", example = "FINALIZED")
+    val serviceOrderStatus: String,
     @Schema(description = "Invoice number", example = "NF-2026-000001")
     val invoiceNumber: String,
-    @Schema(description = "Invoice price", example = "1500.00")
+    @Schema(description = "Final invoice price", example = "1500.00")
     val price: BigDecimal,
     @Schema(description = "Emission date")
     val emissionDate: LocalDateTime,
+    @Schema(description = "Detailed breakdown of services and parts")
+    val items: List<InvoiceItemResponse> = emptyList(),
     @Schema(description = "Record creation timestamp")
     val created: LocalDateTime?,
     @Schema(description = "Last update timestamp")
     val updated: LocalDateTime?
+)
+
+data class InvoiceItemResponse(
+    @Schema(description = "Service description", example = "OIL_CHANGE")
+    val description: String,
+    @Schema(description = "Labor price", example = "150.00")
+    val laborPrice: BigDecimal,
+    @Schema(description = "List of parts/insumes used in this service")
+    val insumes: List<InvoiceInsumeResponse>,
+    @Schema(description = "Total price for this service item (labor + insumes)", example = "350.00")
+    val totalItemPrice: BigDecimal
+)
+
+data class InvoiceInsumeResponse(
+    @Schema(description = "Insume name", example = "Synthetic Oil 5W30")
+    val name: String,
+    @Schema(description = "Quantity used", example = "4")
+    val quantity: Int,
+    @Schema(description = "Unit price", example = "50.00")
+    val unitPrice: BigDecimal,
+    @Schema(description = "Total price for this insume (unit price * quantity)", example = "200.00")
+    val totalPrice: BigDecimal
 )

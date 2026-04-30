@@ -124,7 +124,7 @@ class ServiceOrder(
         }
 
     fun recalculateTotalPrice() {
-        totalPrice = executions.fold(BigDecimal.ZERO) { acc, exec -> acc.add(exec.price) }
+        totalPrice = executions.fold(BigDecimal.ZERO) { acc, exec -> acc.add(exec.getTotalPrice()) }
     }
 
     fun checkCompletion() {

@@ -94,10 +94,25 @@ data class ExecutionSummary(
     val basicDescription: BasicExecution,
     @Schema(description = "Detailed execution description", example = "Brake pad replacement and bleeding")
     val fullDescription: String?,
-    @Schema(description = "Service price", example = "350.00")
-    val price: BigDecimal,
+    @Schema(description = "Labor price only", example = "350.00")
+    val laborPrice: BigDecimal,
+    @Schema(description = "List of insumes used in this service")
+    val insumes: List<InsumeSummaryResponse> = emptyList(),
+    @Schema(description = "Total price for this service (labor + insumes)", example = "450.00")
+    val totalPrice: BigDecimal,
     @Schema(description = "Current status", example = "INITIATED")
     val status: String
+)
+
+data class InsumeSummaryResponse(
+    @Schema(description = "Insume name", example = "Synthetic Oil 5W30")
+    val name: String,
+    @Schema(description = "Quantity used", example = "4")
+    val quantity: Int,
+    @Schema(description = "Unit price", example = "50.00")
+    val unitPrice: BigDecimal,
+    @Schema(description = "Total price for this insume", example = "200.00")
+    val totalPrice: BigDecimal
 )
 
 data class ServiceOrderHistoryEntry(
