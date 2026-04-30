@@ -52,27 +52,16 @@ jobs:
         run: mvn clean compile -B -ntp -DskipTests
 
   # ==========================================================================
-  # STAGE 2 — TEST: Testes unitários + integração + JaCoCo coverage
+  # STAGE 2 — TEST: Testes unitários + integração (Testcontainers) + JaCoCo
+  #
+  # Nota: NÃO precisa de service container — o Testcontainers JDBC driver
+  #       (jdbc:tc:postgresql:17:///) cria o container automaticamente via
+  #       Docker, que já vem instalado no runner ubuntu-latest.
   # ==========================================================================
   test:
     name: "\U0001F9EA Test"
     needs: build
     runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:17
-        env:
-          POSTGRES_DB: test
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd="pg_isready -U test"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
 
     steps:
       - name: Checkout repository
@@ -89,9 +78,6 @@ jobs:
         run: mvn clean verify -B -ntp
         env:
           SPRING_PROFILES_ACTIVE: test
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/test
-          SPRING_DATASOURCE_USERNAME: test
-          SPRING_DATASOURCE_PASSWORD: test
 
       - name: Upload JaCoCo coverage report
         if: always()
