@@ -20,9 +20,9 @@
 	<properties>
 		<java.version>24</java.version>
 		<kotlin.version>2.2.21</kotlin.version>
-		<sonar.organization>Alexandre-AGAMIN</sonar.organization>
+		<sonar.organization>alexandre-agamin</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
-		<sonar.projectKey>Alexandre-AGAMIN_tech-challenge-FIAP</sonar.projectKey>
+		<sonar.projectKey>alexandre-agamin_tech-challenge-fiap</sonar.projectKey>
 		<sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 		<sonar.exclusions>
 			**/config/**,
