@@ -111,10 +111,13 @@ jobs:
         with:
           fetch-depth: 0  # Full history for SonarCloud blame data
 
-      - name: Set up JDK ${{ env.JAVA_VERSION }}
+      # JDK 17 é usado aqui porque o sonar-maven-plugin tem problemas de
+      # compatibilidade com JDK 24. O Sonar Scanner usa Spring DI internamente
+      # e ainda não suporta JDK 24. Build e Test rodam no JDK 24 do projeto.
+      - name: Set up JDK 17 (required by SonarCloud Scanner)
         uses: actions/setup-java@v4
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: '17'
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           cache: maven
 
