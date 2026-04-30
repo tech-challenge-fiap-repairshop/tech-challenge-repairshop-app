@@ -22,7 +22,7 @@ class ExecutionDomainTest {
         return Execution(serviceOrder = order, basicDescription = BasicExecution.OIL_CHANGE, price = BigDecimal("100"), status = status)
     }
 
-    private fun buildInsume() = Insume(name = "Oil Filter", price = BigDecimal("25"), unityPrice = BigDecimal("25"), quantity = 10)
+    private fun buildInsume(price: String = "25") = Insume(name = "Oil Filter", price = BigDecimal(price), unityPrice = BigDecimal(price), quantity = 10)
 
     @Test
     fun `advanceStatus valid transition INITIATED to PENDING records history`() {
@@ -76,5 +76,19 @@ class ExecutionDomainTest {
 
         val sorted = exec.histories.sortedBy { it.registerTime }
         assertThat(sorted.last().intervalTime).isNotNull
+    }
+    @Test
+    fun `getTotalPrice calculates sum of base price and all insumes`() {
+        val exec = buildExecution()
+        exec.price = BigDecimal("100.00")
+        
+        val insume1 = buildInsume("50.00")
+        val insume2 = buildInsume("30.00")
+        
+        exec.addInsume(insume1, 2) // 100.00
+        exec.addInsume(insume2, 1) // 30.00
+        
+        // Total: 100 (base) + 100 (insume1) + 30 (insume2) = 230
+        assertThat(exec.getTotalPrice()).isEqualByComparingTo(BigDecimal("230.00"))
     }
 }

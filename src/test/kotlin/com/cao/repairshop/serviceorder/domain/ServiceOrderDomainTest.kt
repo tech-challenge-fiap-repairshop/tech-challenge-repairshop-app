@@ -131,12 +131,35 @@ class ServiceOrderDomainTest {
     }
 
     @Test
-    fun `recalculateTotalPrice sums all execution prices`() {
+    fun `recalculateTotalPrice sums all execution prices including insumes`() {
         val order = buildOrder()
-        order.addExecution(BasicExecution.OIL_CHANGE, null, BigDecimal("100"), null, emptyList())
+        val insume = buildInsume() // 25.00
+        
+        // Exec1: 100 base + (25 * 2) = 150
+        order.addExecution(BasicExecution.OIL_CHANGE, null, BigDecimal("100"), null, listOf(insume to 2))
+        // Exec2: 250 base = 250
         order.addExecution(BasicExecution.BRAKE_INSPECTION, null, BigDecimal("250"), null, emptyList())
 
         order.recalculateTotalPrice()
-        assertThat(order.totalPrice).isEqualByComparingTo(BigDecimal("350"))
+        assertThat(order.totalPrice).isEqualByComparingTo(BigDecimal("400"))
+    }
+
+    @Test
+    fun `checkCompletion advances to FINALIZED if all executions are finished`() {
+        val order = buildOrder(ServiceOrderStatus.IN_EXECUTION)
+        val exec = order.addExecution(BasicExecution.OIL_CHANGE, null, BigDecimal("100"), null, emptyList())
+        exec.status = ExecutionStatus.FINALIZED
+        
+        order.checkCompletion()
+        assertThat(order.status).isEqualTo(ServiceOrderStatus.FINALIZED)
+    }
+
+    @Test
+    fun `checkCompletion does nothing if not all executions are finished`() {
+        val order = buildOrder(ServiceOrderStatus.IN_EXECUTION)
+        order.addExecution(BasicExecution.OIL_CHANGE, null, BigDecimal("100"), null, emptyList())
+        
+        order.checkCompletion()
+        assertThat(order.status).isEqualTo(ServiceOrderStatus.IN_EXECUTION)
     }
 }

@@ -6,6 +6,7 @@ import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
 import com.cao.repairshop.serviceorder.dto.*
 import com.cao.repairshop.serviceorder.repository.ServiceOrderRepository
 import com.cao.repairshop.execution.domain.BasicExecution
+import com.cao.repairshop.execution.dto.*
 
 import com.cao.repairshop.register.entity.Customer
 import com.cao.repairshop.register.service.CustomerService
@@ -252,5 +253,61 @@ class ServiceOrderServiceTest {
 
         assertThat(result.status).isEqualTo(ServiceOrderStatus.REFUSED)
         verify(exactly = 0) { insumeService.deductStock(any(), any()) }
+    }
+
+    @Test
+    fun `addExecutionBatch success - adds multiple executions and recalculates total`() {
+        val order = buildOrder()
+        val batchRequest = CreateExecutionBatchRequest(
+            serviceOrderId = order.id,
+            executions = listOf(
+                ExecutionDefinitionRequest(basicDescription = BasicExecution.OIL_CHANGE, price = BigDecimal("100.00")),
+                ExecutionDefinitionRequest(basicDescription = BasicExecution.BRAKE_INSPECTION, price = BigDecimal("200.00"))
+            )
+        )
+
+        every { serviceOrderRepository.findDetailedById(order.id) } returns Optional.of(order)
+        every { serviceOrderRepository.save(any()) } returns order
+
+        val result = serviceOrderService.addExecutionBatch(order.id, batchRequest)
+
+        assertThat(result).hasSize(2)
+        assertThat(order.totalPrice).isEqualByComparingTo(BigDecimal("300.00"))
+    }
+
+    @Test
+    fun `updateExecution success - updates attributes and recalculates total`() {
+        val order = buildOrder()
+        val execution = buildExecution(order)
+        order.executions.add(execution)
+        val updateRequest = UpdateExecutionRequest(
+            basicDescription = BasicExecution.SUSPENSION_REPLACEMENT,
+            fullDescription = "New desc",
+            price = BigDecimal("500.00")
+        )
+
+        every { serviceOrderRepository.findDetailedById(order.id) } returns Optional.of(order)
+        every { serviceOrderRepository.save(any()) } returns order
+
+        val result = serviceOrderService.updateExecution(order.id, execution.id, updateRequest)
+
+        assertThat(result.basicDescription).isEqualTo(BasicExecution.SUSPENSION_REPLACEMENT)
+        assertThat(order.totalPrice).isEqualByComparingTo(BigDecimal("500.00"))
+    }
+
+    @Test
+    fun `removeExecution success - removes from order and recalculates total`() {
+        val order = buildOrder()
+        val execution = buildExecution(order)
+        order.executions.add(execution)
+        order.recalculateTotalPrice()
+
+        every { serviceOrderRepository.findDetailedById(order.id) } returns Optional.of(order)
+        every { serviceOrderRepository.save(any()) } returns order
+
+        serviceOrderService.removeExecution(order.id, execution.id)
+
+        assertThat(order.executions).isEmpty()
+        assertThat(order.totalPrice).isEqualByComparingTo(BigDecimal.ZERO)
     }
 }

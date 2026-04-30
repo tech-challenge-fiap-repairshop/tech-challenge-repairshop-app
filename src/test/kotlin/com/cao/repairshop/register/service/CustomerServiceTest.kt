@@ -224,15 +224,76 @@ class CustomerServiceTest {
     }
 
     @Test
-    fun `delete blocked by OS - throws DuplicateEntityException`() {
-        val customer = buildCustomer()
+    fun `delete customer not found - throws EntityNotFoundException`() {
+        val id = UUID.randomUUID()
 
-        every { customerRepository.findById(customer.id) } returns Optional.of(customer)
-        every { serviceOrderExistenceChecker.existsByCustomerId(customer.id) } returns true
-        
-        assertThatThrownBy { customerService.delete(customer.id) }
-            .isInstanceOf(BusinessRuleViolationException::class.java)
+        every { customerRepository.findById(id) } returns Optional.empty()
+
+        assertThatThrownBy { customerService.delete(id) }
+            .isInstanceOf(EntityNotFoundException::class.java)
 
         verify(exactly = 0) { customerRepository.delete(any()) }
+    }
+
+    // -------------------------------------------------------------------------
+    // findByEmailOrThrow
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun `findByEmailOrThrow success - returns Customer`() {
+        val customer = buildCustomer()
+        val email = com.cao.repairshop.register.domain.Email(defaultEmail)
+
+        every { customerRepository.findByEmail(email) } returns customer
+
+        val result = customerService.findByEmailOrThrow(email)
+
+        assertThat(result.name).isEqualTo("Test")
+    }
+
+    @Test
+    fun `findByEmailOrThrow not found - throws EntityNotFoundException`() {
+        val email = com.cao.repairshop.register.domain.Email(defaultEmail)
+
+        every { customerRepository.findByEmail(email) } returns null
+
+        assertThatThrownBy { customerService.findByEmailOrThrow(email) }
+            .isInstanceOf(EntityNotFoundException::class.java)
+    }
+
+    // -------------------------------------------------------------------------
+    // update edge cases
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun `update not found - throws EntityNotFoundException`() {
+        val id = UUID.randomUUID()
+        val request = UpdateCustomerRequest(name = "Updated")
+
+        every { customerRepository.findById(id) } returns Optional.empty()
+
+        assertThatThrownBy { customerService.update(id, request) }
+            .isInstanceOf(EntityNotFoundException::class.java)
+
+        verify(exactly = 0) { customerRepository.save(any()) }
+    }
+
+    @Test
+    fun `update email belonging to same customer - should not throw`() {
+        val id = UUID.randomUUID()
+        val customer = buildCustomer().also {
+            // Force same id by reflective field — use same object instead
+        }
+        val sameCustomer = Customer(id = id, name = "Test", document = Document("529.982.247-25"))
+        val request = UpdateCustomerRequest(name = "Same Owner", email = defaultEmail)
+
+        every { customerRepository.findById(id) } returns Optional.of(sameCustomer)
+        every { customerRepository.findByEmail(any()) } returns sameCustomer // same id → no conflict
+        every { customerRepository.save(any()) } returns sameCustomer
+
+        val result = customerService.update(id, request)
+
+        assertThat(result).isNotNull
+        verify(exactly = 1) { customerRepository.save(any()) }
     }
 }

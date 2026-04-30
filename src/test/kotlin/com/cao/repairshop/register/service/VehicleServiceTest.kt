@@ -200,16 +200,73 @@ class VehicleServiceTest {
     }
 
     @Test
-    fun `delete blocked by OS - throws BusinessRuleViolationException`() {
+    fun `delete vehicle not found - throws EntityNotFoundException`() {
+        val id = UUID.randomUUID()
+
+        every { vehicleRepository.findById(id) } returns Optional.empty()
+
+        assertThatThrownBy { vehicleService.delete(id) }
+            .isInstanceOf(EntityNotFoundException::class.java)
+
+        verify(exactly = 0) { vehicleRepository.delete(any()) }
+    }
+
+    // -------------------------------------------------------------------------
+    // verifyAndTakeByPlate
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun `verifyAndTakeByPlate success - returns Vehicle`() {
         val customer = buildCustomer()
         val vehicle = buildVehicle(customer)
 
+        every { vehicleRepository.findByPlate(vehicle.plate) } returns vehicle
+
+        val result = vehicleService.verifyAndTakeByPlate(vehicle.plate)
+
+        assertThat(result.brand).isEqualTo("Toyota")
+    }
+
+    @Test
+    fun `verifyAndTakeByPlate not found - throws EntityNotFoundException`() {
+        val plate = Plate("XYZ9999")
+
+        every { vehicleRepository.findByPlate(plate) } returns null
+
+        assertThatThrownBy { vehicleService.verifyAndTakeByPlate(plate) }
+            .isInstanceOf(EntityNotFoundException::class.java)
+    }
+
+    // -------------------------------------------------------------------------
+    // update edge cases
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun `update not found - throws EntityNotFoundException`() {
+        val id = UUID.randomUUID()
+        val request = UpdateVehicleRequest(plate = "ABC-1234", brand = "Honda", model = "Civic")
+
+        every { vehicleRepository.findById(id) } returns Optional.empty()
+
+        assertThatThrownBy { vehicleService.update(id, request) }
+            .isInstanceOf(EntityNotFoundException::class.java)
+
+        verify(exactly = 0) { vehicleRepository.save(any()) }
+    }
+
+    @Test
+    fun `update plate belonging to same vehicle - should not throw`() {
+        val customer = buildCustomer()
+        val vehicle = buildVehicle(customer)
+        val request = UpdateVehicleRequest(plate = "ABC-1234", brand = "Honda", model = "Civic")
+
         every { vehicleRepository.findById(vehicle.id) } returns Optional.of(vehicle)
-        every { serviceOrderExistenceChecker.existsByVehicleId(vehicle.id) } returns true
+        every { vehicleRepository.findByPlate(any()) } returns vehicle // same vehicle → same id → no conflict
+        every { vehicleRepository.save(any()) } returns vehicle
 
-        assertThatThrownBy { vehicleService.delete(vehicle.id) }
-            .isInstanceOf(BusinessRuleViolationException::class.java)
+        val result = vehicleService.update(vehicle.id, request)
 
-        verify(exactly = 0) { vehicleRepository.delete(any()) }
+        assertThat(result).isNotNull
+        verify(exactly = 1) { vehicleRepository.save(any()) }
     }
 }

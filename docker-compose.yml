@@ -18,6 +18,11 @@ services:
   mailhog:
     image: mailhog/mailhog:v1.0.1
     container_name: mailhog
+    environment:
+      MH_STORAGE: maildir
+      MH_MAILDIR_PATH: /tmp/mailhog
+    volumes:
+      - mailhog-data:/tmp/mailhog
     ports:
       - "1025:1025" # Porta SMTP
       - "8025:8025" # Porta Interface Web (Dashboard)
@@ -36,3 +41,4 @@ services:
 
 volumes:
   repairshop-data:
+  mailhog-data:

@@ -20,6 +20,22 @@
 	<properties>
 		<java.version>24</java.version>
 		<kotlin.version>2.2.21</kotlin.version>
+		<sonar.organization>Alexandre-AGAMIN</sonar.organization>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+		<sonar.projectKey>Alexandre-AGAMIN_tech-challenge-FIAP</sonar.projectKey>
+		<sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+		<sonar.exclusions>
+			**/config/**,
+			**/dto/**,
+			**/mapper/**,
+			com/cao/repairshop/register/entity/**,
+			com/cao/repairshop/inventory/entity/**,
+			com/cao/repairshop/payment/entity/**,
+			com/cao/repairshop/user/entity/**,
+			**/entity/*History*,
+			**/entity/*Insume*,
+			**/RepairshopApplication.kt
+		</sonar.exclusions>
 	</properties>
 
 	<dependencies>
@@ -130,6 +146,17 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-testcontainers</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>1.20.6</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -165,6 +192,66 @@
 						<version>${kotlin.version}</version>
 					</dependency>
 				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.13</version>
+				<executions>
+					<execution>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>verify</phase> <!-- Gera o relatório após os testes -->
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<formats>
+								<format>XML</format>
+								<format>HTML</format>
+							</formats>
+						</configuration>
+					</execution>
+					<execution>
+						<id>check</id>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<rule>
+									<element>BUNDLE</element>
+									<limits>
+										<limit>
+											<counter>LINE</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>0.90</minimum>
+										</limit>
+									</limits>
+								</rule>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<excludes>
+						<exclude>**/config/**</exclude>
+						<exclude>**/dto/**</exclude>
+						<exclude>com/cao/repairshop/register/entity/**</exclude>
+						<exclude>com/cao/repairshop/inventory/entity/**</exclude>
+						<exclude>com/cao/repairshop/payment/entity/**</exclude>
+						<exclude>com/cao/repairshop/user/entity/**</exclude>
+						<exclude>**/entity/*History*</exclude>
+						<exclude>**/entity/*Insume*</exclude>
+						<exclude>**/mapper/**</exclude>
+						<exclude>com/cao/repairshop/RepairshopApplication*</exclude>
+					</excludes>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

@@ -104,4 +104,26 @@ class InvoiceServiceTest {
         assertThatThrownBy { invoiceService.create(request) }
             .isInstanceOf(DuplicateEntityException::class.java)
     }
+
+    @Test
+    fun `findById success - returns Invoice`() {
+        val id = UUID.randomUUID()
+        val invoice = mockk<Invoice>()
+        every { invoiceRepository.findDetailedById(id) } returns java.util.Optional.of(invoice)
+
+        val result = invoiceService.findById(id)
+
+        assertThat(result).isNotNull
+    }
+
+    @Test
+    fun `findAll paginated - returns Page of Invoice`() {
+        val pageable = org.springframework.data.domain.PageRequest.of(0, 10)
+        val page = org.springframework.data.domain.PageImpl(listOf(mockk<Invoice>()))
+        every { invoiceRepository.findAll(pageable) } returns page
+
+        val result = invoiceService.findAll(pageable)
+
+        assertThat(result.totalElements).isEqualTo(1)
+    }
 }

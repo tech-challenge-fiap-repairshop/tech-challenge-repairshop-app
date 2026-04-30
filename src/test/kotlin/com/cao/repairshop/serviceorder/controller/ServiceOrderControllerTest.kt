@@ -149,4 +149,14 @@ class ServiceOrderControllerTest {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.averageExecutionTimeMinutes").value(120.0))
     }
+
+    @Test
+    fun `GET execution metrics should return 200`() {
+        val metrics = com.cao.repairshop.execution.dto.ExecutionMetricsResponse(averageExecutionTimeMinutes = 45.0)
+        every { serviceOrderMetricsService.getExecutionMetrics() } returns metrics
+
+        mockMvc.perform(get("/service-orders/executions/metrics"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.averageExecutionTimeMinutes").value(45.0))
+    }
 }

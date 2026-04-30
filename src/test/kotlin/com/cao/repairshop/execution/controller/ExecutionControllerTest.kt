@@ -137,4 +137,36 @@ class ExecutionControllerTest {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.status").value("PENDING"))
     }
+
+    @Test
+    fun `POST executions batch should return 201 with list`() {
+        val batchRequest = CreateExecutionBatchRequest(
+            serviceOrderId = serviceOrderId,
+            executions = listOf(
+                com.cao.repairshop.serviceorder.dto.ExecutionDefinitionRequest(
+                    basicDescription = BasicExecution.OIL_CHANGE,
+                    price = BigDecimal("150.00")
+                ),
+                com.cao.repairshop.serviceorder.dto.ExecutionDefinitionRequest(
+                    basicDescription = BasicExecution.BRAKE_INSPECTION,
+                    price = BigDecimal("200.00")
+                )
+            )
+        )
+        val batchResponse = listOf(
+            sampleResponse,
+            sampleResponse.copy(id = UUID.randomUUID(), basicDescription = BasicExecution.BRAKE_INSPECTION)
+        )
+        every { serviceOrderService.addExecutionBatch(serviceOrderId, any()) } returns batchResponse
+
+        mockMvc.perform(
+            post("$basePath/batch")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(batchRequest))
+        )
+            .andExpect(status().isCreated)
+            .andExpect(jsonPath("$.length()").value(2))
+            .andExpect(jsonPath("$[0].basicDescription").value("OIL_CHANGE"))
+            .andExpect(jsonPath("$[1].basicDescription").value("BRAKE_INSPECTION"))
+    }
 }
