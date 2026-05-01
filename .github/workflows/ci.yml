@@ -1,0 +1,151 @@
+name: CI/CD Pipeline
+
+# ============================================================================
+# Trigger: push e PR para branches protegidas
+# ============================================================================
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+
+# ============================================================================
+# Variáveis reutilizáveis em todos os jobs
+# ============================================================================
+env:
+  JAVA_VERSION: '24'
+  JAVA_DISTRIBUTION: 'temurin'
+
+# ============================================================================
+# PIPELINE — Jobs separados por responsabilidade
+#
+#   ┌──────────┐     ┌──────────┐     ┌──────────────┐
+#   │  Build   │────▶│  Test    │────▶│  Quality     │
+#   │ Compile  │     │ Unit+IT  │     │  Gate (Sonar)│
+#   └──────────┘     └──────────┘     └──────────────┘
+#
+# ============================================================================
+jobs:
+
+  # ==========================================================================
+  # STAGE 1 — BUILD: Compila o projeto e valida dependências
+  # ==========================================================================
+  build:
+    name: "\U0001F3D7\uFE0F Build"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: maven
+
+      - name: Compile project (skip tests)
+        run: mvn clean compile -B -ntp -DskipTests
+
+  # ==========================================================================
+  # STAGE 2 — TEST: Testes unitários + integração (Testcontainers) + JaCoCo
+  #
+  # Nota: NÃO precisa de service container — o Testcontainers JDBC driver
+  #       (jdbc:tc:postgresql:17:///) cria o container automaticamente via
+  #       Docker, que já vem instalado no runner ubuntu-latest.
+  # ==========================================================================
+  test:
+    name: "\U0001F9EA Test"
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: maven
+
+      - name: Run tests and generate JaCoCo report
+        run: mvn clean verify -B -ntp
+        env:
+          SPRING_PROFILES_ACTIVE: test
+
+      - name: Upload JaCoCo coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            target/site/jacoco/
+            target/jacoco.exec
+          retention-days: 14
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: target/surefire-reports/
+          retention-days: 14
+
+  # ==========================================================================
+  # STAGE 3 — QUALITY GATE: SonarCloud analysis + coverage report
+  # ==========================================================================
+  quality:
+    name: "\U0001F50D Quality Gate (SonarCloud)"
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for SonarCloud blame data
+
+      # JDK 17 é usado aqui porque o sonar-maven-plugin tem problemas de
+      # compatibilidade com JDK 24. O Sonar Scanner usa Spring DI internamente
+      # e ainda não suporta JDK 24. Build e Test rodam no JDK 24 do projeto.
+      - name: Set up JDK 21 (required by SonarCloud Scanner)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: maven
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: target/
+
+      - name: Recompile for Sonar binaries
+        run: mvn compile -B -ntp -DskipTests
+
+      - name: SonarCloud Scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: >
+          mvn -B -ntp sonar:sonar
+          -Dsonar.projectKey=repairshop
+          -Dsonar.organization=alexandre-agamin
+          -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+          -Dsonar.java.binaries=target/classes
+          -Dsonar.kotlin.binaries=target/classes
