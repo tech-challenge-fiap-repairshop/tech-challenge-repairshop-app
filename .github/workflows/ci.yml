@@ -117,7 +117,7 @@ jobs:
       - name: Set up JDK 21 (required by SonarCloud Scanner)
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '17'
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           cache: maven
 
