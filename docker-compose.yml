@@ -38,7 +38,19 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
 
 volumes:
   repairshop-data:
   mailhog-data:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
