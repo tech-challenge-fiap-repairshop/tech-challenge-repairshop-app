@@ -84,6 +84,8 @@ Optamos pelo **PostgreSQL** pelos seguintes motivos:
 | **Ecossistema** | Integração madura com Spring Data JPA/Hibernate |
 | **Open source** | Sem custos de licenciamento, com comunidade ativa e documentação extensa |
 
+> 📊 O **Diagrama de Entidade e Relacionamento (ERD)** do banco de dados pode ser encontrado em [`docs/spec/database-er-diagram.png`](docs/spec/database-er-diagram.png).
+
 ---
 
 ## Tecnologias Utilizadas
@@ -102,6 +104,7 @@ Optamos pelo **PostgreSQL** pelos seguintes motivos:
 ## Pré-requisitos
 
 - [Docker](https://docs.docker.com/get-docker/) e [Docker Compose](https://docs.docker.com/compose/install/)
+- **Java 24** (Obrigatório apenas caso deseje rodar a aplicação ou os testes localmente sem o Docker)
 
 ---
 
@@ -109,8 +112,8 @@ Optamos pelo **PostgreSQL** pelos seguintes motivos:
 
 ```bash
 # 1. Clone o repositório
-git clone https://github.com/seu-usuario/tech-challenge-fase-1.git
-cd tech-challenge-fase-1/repairshop
+git clone https://github.com/Alexandre-AGAMIN/tech-challenge-FIAP.git
+cd tech-challenge-FIAP
 
 # 2. Suba os containers (PostgreSQL + aplicação)
 docker compose up --build -d
@@ -236,6 +239,8 @@ http://localhost:8080/swagger-ui.html
 
 Cobertura de **80%+** nos domínios críticos (transições de status, cálculo de orçamento, dedução de estoque, validações de CPF/CNPJ/placa).
 
+> 📊 Os relatórios de análise de qualidade de código e cobertura gerados pelo **SonarQube** estão disponíveis na pasta [`docs/sonar/`](docs/sonar/).
+
 ---
 
 ## Documentação DDD
@@ -246,7 +251,8 @@ A documentação de Domain-Driven Design do projeto inclui:
 - **Linguagem Ubíqua** — Glossário de termos do domínio
 - **Diagramas** — Bounded Contexts, Aggregates e fluxos de domínio
 
-> 📄 Disponível na pasta [`docs/`](docs/) e no [Miro do projeto](link-do-miro).
+> 📄 O **Dicionário de Linguagem Ubíqua** está disponível em [`docs/delivery/dicionario-linguagem-ubiqua.md`](docs/delivery/dicionario-linguagem-ubiqua.md).
+> 🗺️ Os quadros do **Miro** (Event Storming e Storytelling) exportados em PDF estão na pasta [`docs/miro/`](docs/miro/).
 
 ---
 
@@ -257,6 +263,8 @@ A documentação de Domain-Driven Design do projeto inclui:
 | **Autenticação** | JWT (JSON Web Tokens) para APIs administrativas |
 | **Validação** | Dados sensíveis validados (CPF/CNPJ, placa de veículo) |
 | **Testes** | Unitários e de integração para os principais fluxos |
+
+> 🛡️ O relatório de escaneamento de vulnerabilidades gerado pelo **OWASP ZAP** está disponível na pasta [`docs/owaspzap/`](docs/owaspzap/).
 
 ---
 
