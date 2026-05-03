@@ -10,7 +10,7 @@ interface InvoiceRepository : JpaRepository<Invoice, UUID> {
     @EntityGraph(attributePaths = ["customer", "serviceOrder", "serviceOrder.executions", "serviceOrder.executions.insumes", "serviceOrder.executions.insumes.insume"])
     fun findDetailedById(id: UUID): Optional<Invoice>
 
-    @EntityGraph(attributePaths = ["customer", "serviceOrder", "serviceOrder.executions", "serviceOrder.executions.insumes", "serviceOrder.executions.insumes.insume"])
+    @EntityGraph(attributePaths = ["customer", "serviceOrder.vehicle", "serviceOrder", "serviceOrder.executions", "serviceOrder.executions.insumes", "serviceOrder.executions.insumes.insume"])
     override fun findAll(pageable: org.springframework.data.domain.Pageable): org.springframework.data.domain.Page<Invoice>
 
     fun findByServiceOrderId(serviceOrderId: UUID): Invoice?

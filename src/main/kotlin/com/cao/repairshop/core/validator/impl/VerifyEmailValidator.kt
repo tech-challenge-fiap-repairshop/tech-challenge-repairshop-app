@@ -7,7 +7,7 @@ import jakarta.validation.ConstraintValidatorContext
 class VerifyEmailValidator : ConstraintValidator<VerifyEmail, String> {
 
     companion object {
-        private val EMAIL_REGEX = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
+        private val EMAIL_REGEX = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")
     }
 
     override fun isValid(value: String?, context: ConstraintValidatorContext?): Boolean {
