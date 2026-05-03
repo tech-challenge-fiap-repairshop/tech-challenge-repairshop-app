@@ -1,26 +1,15 @@
-FROM eclipse-temurin:24-jdk AS build
+FROM maven:3-eclipse-temurin-24
+
 WORKDIR /app
 
-# Copy Maven wrapper and pom.xml
-COPY .mvn .mvn
-COPY mvnw pom.xml ./
+# Copia o pom.xml e o código fonte
+COPY pom.xml .
+COPY src ./src
 
-# Fix line endings and permissions for the wrapper
-RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
-
-# Download dependencies
-RUN ./mvnw dependency:go-offline -q
-
-# Copy source and build
-COPY src src
-RUN ./mvnw package -DskipTests -q
-
-# Final stage
-FROM eclipse-temurin:24-jre
-WORKDIR /app
-
-COPY --from=build /app/target/repairshop-0.0.1-SNAPSHOT.jar app.jar
+# Realiza o build da aplicação pulando os testes
+RUN mvn clean package -DskipTests
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
 
+# O ENTRYPOINT continua rodando o .jar gerado, mas agora em um container único usando a imagem do Maven
+ENTRYPOINT ["java", "-jar", "target/repairshop-0.0.1-SNAPSHOT.jar"]
