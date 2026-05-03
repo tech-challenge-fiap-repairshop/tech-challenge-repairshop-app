@@ -33,6 +33,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/repairshop
       SPRING_DATASOURCE_USERNAME: repairshop
       SPRING_DATASOURCE_PASSWORD: repairshop
+      SPRING_MAIL_HOST: mailhog
+      SPRING_MAIL_PORT: 1025
     ports:
       - "8080:8080"
     depends_on:

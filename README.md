@@ -122,7 +122,7 @@ git clone https://github.com/Alexandre-AGAMIN/tech-challenge-FIAP.git
 cd tech-challenge-FIAP
 
 # 2. (Opcional) Faça o build e rode os testes locais usando o Maven Wrapper
-./mvnw clean install
+./.mvn/mvnw clean install
 
 # 3. Suba a infraestrutura completa via Docker
 docker compose up --build -d
@@ -158,7 +158,9 @@ Com os containers rodando, as interfaces estão disponíveis nos seguintes ender
 
 A grande maioria dos endpoints exige autenticação JWT. Recomendamos realizar o primeiro uso diretamente pelo **Swagger UI** (`http://localhost:8080/swagger-ui/index.html`) para evitar problemas de formatação de JSON no terminal do Windows (como no caso do `curl`):
 
-> 💡 **Dica para o Postman:** Se preferir, temos uma collection pronta para importação! Basta utilizar os arquivos localizados no diretório [`docs/postman-collections/`](docs/postman-collections/).
+> 💡 **Dica para o Postman:** Se preferir, temos coleções prontas no diretório [`docs/postman/`](docs/postman/):
+> - **Repair Shop API - Swagger**: Importada diretamente da especificação OpenAPI, ideal para explorar todos os endpoints de forma técnica.
+> - **Tech Challenge Fiap - Passo a Passo**: Uma coleção organizada com um fluxo lógico de negócio (Cadastro -> Login -> OS -> Execução -> Pagamento) para facilitar a validação do desafio.
 
 1. Vá até o endpoint `POST /auth/register` no Swagger e cadastre o usuário inicial:
    ```json
@@ -177,7 +179,7 @@ A grande maioria dos endpoints exige autenticação JWT. Recomendamos realizar o
 
 ```bash
 # Rodar análise de código local e enviar pro SonarQube container (requer Java 24)
-./mvnw clean verify sonar:sonar -Dsonar.projectKey=repairshop -Dsonar.host.url=http://localhost:9000
+mvn clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=repairshop -Dsonar.projectName='repairshop' -Dsonar.host.url=http://localhost:9000 -Dsonar.token=<SONAR_TOKEN>
 
 # Parar os containers (mantém os dados)
 docker compose down
