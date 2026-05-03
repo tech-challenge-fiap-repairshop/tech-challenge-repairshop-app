@@ -1,12 +1,9 @@
 package com.cao.repairshop.serviceorder.mapper
  
-import java.time.LocalDateTime
-import java.util.UUID
-
-import com.cao.repairshop.serviceorder.dto.ServiceOrderHistoryEntry
-import com.cao.repairshop.serviceorder.dto.ServiceOrderResponse
 import com.cao.repairshop.serviceorder.dto.ExecutionSummary
 import com.cao.repairshop.serviceorder.dto.InsumeSummaryResponse
+import com.cao.repairshop.serviceorder.dto.ServiceOrderHistoryEntry
+import com.cao.repairshop.serviceorder.dto.ServiceOrderResponse
 import com.cao.repairshop.serviceorder.entity.ServiceOrder
 import com.cao.repairshop.serviceorder.entity.ServiceOrderHistory
 import java.math.BigDecimal

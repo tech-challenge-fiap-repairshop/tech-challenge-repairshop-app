@@ -5,7 +5,6 @@ import com.cao.repairshop.core.exception.InvalidStateTransitionException
 import com.cao.repairshop.execution.domain.BasicExecution
 import com.cao.repairshop.execution.domain.ExecutionStatus
 import com.cao.repairshop.execution.entity.Execution
-import com.cao.repairshop.execution.entity.ExecutionHistory
 import com.cao.repairshop.inventory.entity.Insume
 import com.cao.repairshop.payment.entity.Invoice
 import com.cao.repairshop.register.entity.Customer
@@ -18,7 +17,7 @@ import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-import java.util.*
+import java.util.UUID
 
 @Entity
 @Table(name = "tb_service_order")

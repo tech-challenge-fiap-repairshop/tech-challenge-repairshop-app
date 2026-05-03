@@ -1,20 +1,18 @@
 package com.cao.repairshop.user.service
 
-import com.cao.repairshop.user.entity.User
+import com.cao.repairshop.core.exception.DuplicateEntityException
+import com.cao.repairshop.core.exception.EntityNotFoundException
+import com.cao.repairshop.core.exception.ErrorMessages
+import com.cao.repairshop.core.exception.PasswordEncodingException
+import com.cao.repairshop.core.security.JwtService
 import com.cao.repairshop.user.domain.UserRole
 import com.cao.repairshop.user.dto.CreateUserRequest
 import com.cao.repairshop.user.dto.LoginRequest
 import com.cao.repairshop.user.dto.TokenResponse
 import com.cao.repairshop.user.dto.UserResponse
+import com.cao.repairshop.user.entity.User
 import com.cao.repairshop.user.mapper.toResponse
 import com.cao.repairshop.user.repository.UserRepository
-
-import com.cao.repairshop.core.exception.BusinessRuleViolationException
-import com.cao.repairshop.core.exception.DuplicateEntityException
-import com.cao.repairshop.core.exception.EntityNotFoundException
-import com.cao.repairshop.core.exception.ErrorMessages
-import com.cao.repairshop.core.security.JwtService
-import com.cao.repairshop.core.exception.PasswordEncodingException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

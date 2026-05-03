@@ -4,11 +4,10 @@ import com.cao.repairshop.core.exception.InsufficientStockException
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
-import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import java.math.BigDecimal
 import java.text.Normalizer
-import java.util.*
+import java.util.UUID
 
 @Entity
 @Table(name = "tb_insume")

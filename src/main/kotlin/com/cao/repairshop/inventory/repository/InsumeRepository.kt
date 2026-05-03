@@ -1,7 +1,6 @@
 package com.cao.repairshop.inventory.repository
 
 import com.cao.repairshop.inventory.entity.Insume
-
 import jakarta.persistence.LockModeType
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Lock

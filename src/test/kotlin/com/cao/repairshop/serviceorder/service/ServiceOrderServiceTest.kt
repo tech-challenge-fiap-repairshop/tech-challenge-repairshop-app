@@ -1,33 +1,38 @@
 package com.cao.repairshop.serviceorder.service
 
-import com.cao.repairshop.serviceorder.entity.ServiceOrder
-import com.cao.repairshop.serviceorder.entity.ServiceOrderHistory
-import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
-import com.cao.repairshop.serviceorder.dto.*
-import com.cao.repairshop.serviceorder.repository.ServiceOrderRepository
-import com.cao.repairshop.execution.domain.BasicExecution
-import com.cao.repairshop.execution.dto.*
-
-import com.cao.repairshop.register.entity.Customer
-import com.cao.repairshop.register.service.CustomerService
-import com.cao.repairshop.register.domain.Document
-import com.cao.repairshop.register.domain.Email
-import com.cao.repairshop.register.entity.Vehicle
-import com.cao.repairshop.register.domain.Plate
-import com.cao.repairshop.register.service.VehicleService
 import com.cao.repairshop.core.exception.EntityNotFoundException
 import com.cao.repairshop.core.exception.InvalidStateTransitionException
-import com.cao.repairshop.serviceorder.domain.ApprovalDomainService
-import com.cao.repairshop.inventory.service.InsumeService
-import com.cao.repairshop.inventory.entity.Insume
+import com.cao.repairshop.core.notification.EmailService
+import com.cao.repairshop.execution.domain.BasicExecution
+import com.cao.repairshop.execution.domain.ExecutionStatus
+import com.cao.repairshop.execution.dto.CreateExecutionBatchRequest
+import com.cao.repairshop.execution.dto.UpdateExecutionRequest
+import com.cao.repairshop.execution.entity.Execution
 import com.cao.repairshop.execution.entity.ExecutionInsume
 import com.cao.repairshop.execution.entity.ExecutionInsumeId
-import com.cao.repairshop.execution.domain.ExecutionStatus
-import com.cao.repairshop.core.notification.EmailService
-import io.mockk.*
+import com.cao.repairshop.inventory.entity.Insume
+import com.cao.repairshop.inventory.service.InsumeService
+import com.cao.repairshop.register.domain.Document
+import com.cao.repairshop.register.domain.Email
+import com.cao.repairshop.register.domain.Plate
+import com.cao.repairshop.register.entity.Customer
+import com.cao.repairshop.register.entity.Vehicle
+import com.cao.repairshop.register.service.CustomerService
+import com.cao.repairshop.register.service.VehicleService
+import com.cao.repairshop.serviceorder.domain.ApprovalDomainService
+import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
+import com.cao.repairshop.serviceorder.dto.ApprovalRequest
+import com.cao.repairshop.serviceorder.dto.CreateServiceOrderRequest
+import com.cao.repairshop.serviceorder.dto.ExecutionDefinitionRequest
+import com.cao.repairshop.serviceorder.entity.ServiceOrder
+import com.cao.repairshop.serviceorder.repository.ServiceOrderRepository
+import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.just
+import io.mockk.runs
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
@@ -82,7 +87,7 @@ class ServiceOrderServiceTest {
     private fun buildExecution(
         serviceOrder: ServiceOrder,
         status: ExecutionStatus = ExecutionStatus.FINALIZED
-    ) = com.cao.repairshop.execution.entity.Execution(
+    ) = Execution(
         serviceOrder = serviceOrder,
         basicDescription = BasicExecution.OIL_CHANGE,
         fullDescription = "Oil change",
@@ -97,7 +102,7 @@ class ServiceOrderServiceTest {
         val customer = buildCustomer()
         val vehicle = buildVehicle(customer)
         val serviceDefinition = ExecutionDefinitionRequest(
-            basicDescription = BasicExecution.OIL_CHANGE,
+            basicDescription = "OIL_CHANGE",
             fullDescription = "Oil change",
             price = BigDecimal("100.00"),
             insumes = emptyList()
@@ -261,8 +266,8 @@ class ServiceOrderServiceTest {
         val batchRequest = CreateExecutionBatchRequest(
             serviceOrderId = order.id,
             executions = listOf(
-                ExecutionDefinitionRequest(basicDescription = BasicExecution.OIL_CHANGE, price = BigDecimal("100.00")),
-                ExecutionDefinitionRequest(basicDescription = BasicExecution.BRAKE_INSPECTION, price = BigDecimal("200.00"))
+                ExecutionDefinitionRequest(basicDescription = "OIL_CHANGE", price = BigDecimal("100.00")),
+                ExecutionDefinitionRequest(basicDescription = "BRAKE_INSPECTION", price = BigDecimal("200.00"))
             )
         )
 
@@ -281,7 +286,7 @@ class ServiceOrderServiceTest {
         val execution = buildExecution(order)
         order.executions.add(execution)
         val updateRequest = UpdateExecutionRequest(
-            basicDescription = BasicExecution.SUSPENSION_REPLACEMENT,
+            basicDescription = "SUSPENSION_REPLACEMENT",
             fullDescription = "New desc",
             price = BigDecimal("500.00")
         )

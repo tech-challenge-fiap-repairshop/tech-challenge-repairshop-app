@@ -1,21 +1,23 @@
 package com.cao.repairshop.register.service
 
-import com.cao.repairshop.register.entity.Customer
-import com.cao.repairshop.register.entity.Vehicle
-import com.cao.repairshop.register.domain.Document
-import com.cao.repairshop.register.domain.Plate
-import com.cao.repairshop.register.domain.ServiceOrderExistenceChecker
-import com.cao.repairshop.register.dto.*
-import com.cao.repairshop.register.repository.VehicleRepository
-
-import com.cao.repairshop.core.exception.BusinessRuleViolationException
 import com.cao.repairshop.core.exception.DuplicateEntityException
 import com.cao.repairshop.core.exception.EntityNotFoundException
 import com.cao.repairshop.core.exception.InvalidPlateException
-import io.mockk.*
+import com.cao.repairshop.register.domain.Document
+import com.cao.repairshop.register.domain.Plate
+import com.cao.repairshop.register.domain.ServiceOrderExistenceChecker
+import com.cao.repairshop.register.dto.CreateVehicleRequest
+import com.cao.repairshop.register.dto.UpdateVehicleRequest
+import com.cao.repairshop.register.entity.Customer
+import com.cao.repairshop.register.entity.Vehicle
+import com.cao.repairshop.register.repository.VehicleRepository
+import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.just
+import io.mockk.runs
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test

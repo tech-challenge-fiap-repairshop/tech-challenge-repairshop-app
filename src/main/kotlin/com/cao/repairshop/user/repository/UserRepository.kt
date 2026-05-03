@@ -1,7 +1,6 @@
 package com.cao.repairshop.user.repository
 
 import com.cao.repairshop.user.entity.User
-
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
 

@@ -1,28 +1,16 @@
 package com.cao.repairshop.serviceorder.controller
 
+import com.cao.repairshop.execution.dto.ExecutionMetricsResponse
 import com.cao.repairshop.serviceorder.controller.interfaces.ServiceOrderApi
+import com.cao.repairshop.serviceorder.dto.*
+import com.cao.repairshop.serviceorder.mapper.toResponse
 import com.cao.repairshop.serviceorder.service.ServiceOrderMetricsService
 import com.cao.repairshop.serviceorder.service.ServiceOrderService
-import com.cao.repairshop.serviceorder.dto.CreateServiceOrderRequest
-import com.cao.repairshop.serviceorder.dto.ServiceOrderStatusUpdateRequest
-import com.cao.repairshop.serviceorder.dto.ApprovalRequest
-import com.cao.repairshop.serviceorder.dto.ServiceOrderResponse
-import com.cao.repairshop.serviceorder.dto.ServiceOrderMetricsResponse
-import com.cao.repairshop.execution.dto.ExecutionMetricsResponse
-import com.cao.repairshop.serviceorder.mapper.toResponse
-
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PatchMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.ResponseStatus
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.util.UUID
 
 @RestController

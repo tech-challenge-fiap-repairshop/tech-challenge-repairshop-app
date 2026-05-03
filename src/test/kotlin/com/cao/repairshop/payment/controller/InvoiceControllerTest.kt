@@ -1,20 +1,17 @@
 package com.cao.repairshop.payment.controller
 
-import com.cao.repairshop.payment.service.InvoiceService
+import com.cao.repairshop.core.exception.EntityNotFoundException
+import com.cao.repairshop.core.exception.GlobalExceptionHandler
 import com.cao.repairshop.payment.dto.CreateInvoiceRequest
-import com.cao.repairshop.payment.dto.InvoiceItemResponse
 import com.cao.repairshop.payment.entity.Invoice
-import com.cao.repairshop.payment.mapper.toResponse
-import com.cao.repairshop.register.entity.Customer
-import com.cao.repairshop.register.entity.Vehicle
+import com.cao.repairshop.payment.service.InvoiceService
 import com.cao.repairshop.register.domain.Document
 import com.cao.repairshop.register.domain.Email
 import com.cao.repairshop.register.domain.Plate
-import com.cao.repairshop.serviceorder.entity.ServiceOrder
+import com.cao.repairshop.register.entity.Customer
+import com.cao.repairshop.register.entity.Vehicle
 import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
-import com.cao.repairshop.core.exception.EntityNotFoundException
-import com.cao.repairshop.core.exception.GlobalExceptionHandler
-
+import com.cao.repairshop.serviceorder.entity.ServiceOrder
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach

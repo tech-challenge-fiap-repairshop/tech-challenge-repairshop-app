@@ -1,14 +1,11 @@
 package com.cao.repairshop.serviceorder.dto
 
 import com.cao.repairshop.core.validator.annotation.SafeString
-import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
+import com.cao.repairshop.core.validator.annotation.ValidBasicExecution
 import com.cao.repairshop.execution.domain.BasicExecution
+import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
 import io.swagger.v3.oas.annotations.media.Schema
-import jakarta.validation.constraints.Email
-import jakarta.validation.constraints.Min
-import jakarta.validation.constraints.NotEmpty
-import jakarta.validation.constraints.NotNull
-import jakarta.validation.constraints.Size
+import jakarta.validation.constraints.*
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.UUID
@@ -22,8 +19,8 @@ data class InsumeItemRequest(
 )
 
 data class ExecutionDefinitionRequest(
-    @Schema(description = "Basic service execution category", example = "OIL_CHANGE")
-    @field:NotNull val basicDescription: BasicExecution,
+    @Schema(description = "Basic service execution category", example = "OIL_CHANGE", allowableValues = ["OIL_CHANGE", "SUSPENSION_REPLACEMENT", "WHEEL_ALIGNMENT", "BRAKE_INSPECTION", "ENGINE_DIAGNOSIS", "OTHER"])
+    @field:NotBlank @field:ValidBasicExecution val basicDescription: String,
 
     @Schema(description = "Detailed execution description", example = "Engine oil change using synthetic oil")
     @field:SafeString val fullDescription: String? = null,

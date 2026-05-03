@@ -1,11 +1,7 @@
 package com.cao.repairshop.serviceorder.controller.interfaces
 
-import com.cao.repairshop.serviceorder.dto.ApprovalRequest
-import com.cao.repairshop.serviceorder.dto.CreateServiceOrderRequest
-import com.cao.repairshop.serviceorder.dto.ServiceOrderMetricsResponse
 import com.cao.repairshop.execution.dto.ExecutionMetricsResponse
-import com.cao.repairshop.serviceorder.dto.ServiceOrderStatusUpdateRequest
-import com.cao.repairshop.serviceorder.dto.ServiceOrderResponse
+import com.cao.repairshop.serviceorder.dto.*
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema

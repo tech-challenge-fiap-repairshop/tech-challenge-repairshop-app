@@ -3,7 +3,6 @@ package com.cao.repairshop.serviceorder.domain
 import com.cao.repairshop.core.exception.InvalidStateTransitionException
 import com.cao.repairshop.execution.domain.BasicExecution
 import com.cao.repairshop.execution.domain.ExecutionStatus
-import com.cao.repairshop.execution.entity.Execution
 import com.cao.repairshop.inventory.entity.Insume
 import com.cao.repairshop.register.domain.Document
 import com.cao.repairshop.register.domain.Plate

@@ -1,25 +1,22 @@
 package com.cao.repairshop.user.service
 
-import com.cao.repairshop.user.entity.User
+import com.cao.repairshop.core.exception.DuplicateEntityException
+import com.cao.repairshop.core.security.JwtService
 import com.cao.repairshop.user.domain.UserRole
 import com.cao.repairshop.user.dto.CreateUserRequest
 import com.cao.repairshop.user.dto.LoginRequest
-import com.cao.repairshop.user.dto.TokenResponse
-import com.cao.repairshop.user.dto.UserResponse
+import com.cao.repairshop.user.entity.User
 import com.cao.repairshop.user.repository.UserRepository
-
-import com.cao.repairshop.core.exception.DuplicateEntityException
-import com.cao.repairshop.core.security.JwtService
-import io.mockk.*
+import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.security.crypto.password.PasswordEncoder
-import java.util.UUID
 
 @ExtendWith(MockKExtension::class)
 class UserServiceTest {

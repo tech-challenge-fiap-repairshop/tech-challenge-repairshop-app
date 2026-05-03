@@ -1,18 +1,16 @@
 package com.cao.repairshop.serviceorder.controller
 
-import com.cao.repairshop.serviceorder.service.ServiceOrderMetricsService
-import com.cao.repairshop.serviceorder.service.ServiceOrderService
-import com.cao.repairshop.execution.domain.BasicExecution
-import com.cao.repairshop.serviceorder.dto.*
-import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
-import com.cao.repairshop.serviceorder.entity.ServiceOrder
-import com.cao.repairshop.register.entity.Customer
-import com.cao.repairshop.register.entity.Vehicle
+import com.cao.repairshop.core.exception.GlobalExceptionHandler
 import com.cao.repairshop.register.domain.Document
 import com.cao.repairshop.register.domain.Plate
-import com.cao.repairshop.register.domain.Email
-
-import com.cao.repairshop.core.exception.GlobalExceptionHandler
+import com.cao.repairshop.register.entity.Customer
+import com.cao.repairshop.register.entity.Vehicle
+import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
+import com.cao.repairshop.serviceorder.dto.*
+import com.cao.repairshop.serviceorder.entity.ServiceOrder
+import com.cao.repairshop.serviceorder.service.ServiceOrderMetricsService
+import com.cao.repairshop.serviceorder.service.ServiceOrderService
+import com.cao.repairshop.execution.dto.ExecutionMetricsResponse
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
@@ -23,15 +21,12 @@ import org.springframework.data.web.config.SpringDataJackson3Configuration
 import org.springframework.http.MediaType
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import tools.jackson.databind.json.JsonMapper
 import java.math.BigDecimal
-import java.time.LocalDateTime
 import java.util.UUID
 
 class ServiceOrderControllerTest {
@@ -78,7 +73,7 @@ class ServiceOrderControllerTest {
         val request = CreateServiceOrderRequest(
             customerEmail = defaultEmail,
             vehiclePlate = defaultPlate,
-            services = listOf(ExecutionDefinitionRequest(basicDescription = BasicExecution.OIL_CHANGE, price = java.math.BigDecimal("100.00")))
+            services = listOf(ExecutionDefinitionRequest(basicDescription = "OIL_CHANGE", price = BigDecimal("100.00")))
         )
         every { serviceOrderService.createServiceOrder(any()) } returns sampleOrder()
 
@@ -152,7 +147,7 @@ class ServiceOrderControllerTest {
 
     @Test
     fun `GET execution metrics should return 200`() {
-        val metrics = com.cao.repairshop.execution.dto.ExecutionMetricsResponse(averageExecutionTimeMinutes = 45.0)
+        val metrics = ExecutionMetricsResponse(averageExecutionTimeMinutes = 45.0)
         every { serviceOrderMetricsService.getExecutionMetrics() } returns metrics
 
         mockMvc.perform(get("/service-orders/executions/metrics"))

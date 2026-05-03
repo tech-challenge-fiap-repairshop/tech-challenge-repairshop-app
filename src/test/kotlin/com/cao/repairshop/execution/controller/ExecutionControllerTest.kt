@@ -1,11 +1,11 @@
 package com.cao.repairshop.execution.controller
 
-import com.cao.repairshop.execution.dto.*
-import com.cao.repairshop.execution.domain.ExecutionStatus
-import com.cao.repairshop.execution.domain.BasicExecution
-import com.cao.repairshop.serviceorder.service.ServiceOrderService
-
 import com.cao.repairshop.core.exception.GlobalExceptionHandler
+import com.cao.repairshop.execution.domain.BasicExecution
+import com.cao.repairshop.execution.domain.ExecutionStatus
+import com.cao.repairshop.execution.dto.*
+import com.cao.repairshop.serviceorder.dto.ExecutionDefinitionRequest
+import com.cao.repairshop.serviceorder.service.ServiceOrderService
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
@@ -15,11 +15,7 @@ import org.springframework.data.web.config.SpringDataJackson3Configuration
 import org.springframework.http.MediaType
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
@@ -69,7 +65,7 @@ class ExecutionControllerTest {
     fun `POST executions should return 201`() {
         val request = CreateExecutionRequest(
             serviceOrderId = serviceOrderId,
-            basicDescription = BasicExecution.OIL_CHANGE,
+            basicDescription = "OIL_CHANGE",
             fullDescription = "Oil change",
             price = BigDecimal("150.00")
         )
@@ -97,7 +93,7 @@ class ExecutionControllerTest {
     @Test
     fun `PUT execution should return 200`() {
         val updateRequest = UpdateExecutionRequest(
-            basicDescription = BasicExecution.SUSPENSION_REPLACEMENT,
+            basicDescription = "SUSPENSION_REPLACEMENT",
             fullDescription = "Full service",
             price = BigDecimal("300.00")
         )
@@ -143,12 +139,12 @@ class ExecutionControllerTest {
         val batchRequest = CreateExecutionBatchRequest(
             serviceOrderId = serviceOrderId,
             executions = listOf(
-                com.cao.repairshop.serviceorder.dto.ExecutionDefinitionRequest(
-                    basicDescription = BasicExecution.OIL_CHANGE,
+                ExecutionDefinitionRequest(
+                    basicDescription = "OIL_CHANGE",
                     price = BigDecimal("150.00")
                 ),
-                com.cao.repairshop.serviceorder.dto.ExecutionDefinitionRequest(
-                    basicDescription = BasicExecution.BRAKE_INSPECTION,
+                ExecutionDefinitionRequest(
+                    basicDescription = "BRAKE_INSPECTION",
                     price = BigDecimal("200.00")
                 )
             )

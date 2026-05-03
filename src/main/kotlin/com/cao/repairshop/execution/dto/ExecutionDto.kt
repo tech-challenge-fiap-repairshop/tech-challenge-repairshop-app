@@ -1,9 +1,12 @@
 package com.cao.repairshop.execution.dto
 
 import com.cao.repairshop.core.validator.annotation.SafeString
-import com.cao.repairshop.execution.domain.ExecutionStatus
+import com.cao.repairshop.core.validator.annotation.ValidBasicExecution
 import com.cao.repairshop.execution.domain.BasicExecution
+import com.cao.repairshop.execution.domain.ExecutionStatus
 import com.cao.repairshop.serviceorder.dto.ExecutionDefinitionRequest
+import com.cao.repairshop.serviceorder.dto.InsumeItemRequest
+import com.cao.repairshop.serviceorder.dto.InsumeSummaryResponse
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
@@ -11,15 +14,13 @@ import jakarta.validation.constraints.Size
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.UUID
-import com.cao.repairshop.serviceorder.dto.InsumeItemRequest
-import com.cao.repairshop.serviceorder.dto.InsumeSummaryResponse
 
 data class CreateExecutionRequest(
     @Schema(description = "Service order ID this execution belongs to")
     @field:NotNull val serviceOrderId: UUID,
 
-    @Schema(description = "Basic service execution category", example = "OIL_CHANGE")
-    @field:NotNull val basicDescription: BasicExecution,
+    @Schema(description = "Basic service execution category", example = "OIL_CHANGE", allowableValues = ["OIL_CHANGE", "SUSPENSION_REPLACEMENT", "WHEEL_ALIGNMENT", "BRAKE_INSPECTION", "ENGINE_DIAGNOSIS", "OTHER"])
+    @field:NotBlank @field:ValidBasicExecution val basicDescription: String,
 
     @Schema(description = "Detailed execution description", example = "Transmission fluid replacement using 5W30")
     @field:SafeString val fullDescription: String? = null,
@@ -45,8 +46,8 @@ data class CreateExecutionBatchRequest(
 )
 
 data class UpdateExecutionRequest(
-    @Schema(description = "Basic service execution category", example = "OIL_CHANGE")
-    @field:NotNull val basicDescription: BasicExecution,
+    @Schema(description = "Basic service execution category", example = "OIL_CHANGE", allowableValues = ["OIL_CHANGE", "SUSPENSION_REPLACEMENT", "WHEEL_ALIGNMENT", "BRAKE_INSPECTION", "ENGINE_DIAGNOSIS", "OTHER"])
+    @field:NotBlank @field:ValidBasicExecution val basicDescription: String,
 
     @Schema(description = "Detailed execution description", example = "Transmission fluid replacement using 5W30")
     @field:SafeString val fullDescription: String? = null,

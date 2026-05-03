@@ -1,10 +1,10 @@
 package com.cao.repairshop.serviceorder.service
 
-import mu.KotlinLogging
-import com.cao.repairshop.core.notification.EmailService
-import com.cao.repairshop.core.notification.dto.EmailRequest
 import com.cao.repairshop.core.exception.EntityNotFoundException
 import com.cao.repairshop.core.exception.ErrorMessages
+import com.cao.repairshop.core.notification.EmailService
+import com.cao.repairshop.core.notification.dto.EmailRequest
+import com.cao.repairshop.execution.domain.BasicExecution
 import com.cao.repairshop.execution.domain.ExecutionStatus
 import com.cao.repairshop.execution.dto.CreateExecutionBatchRequest
 import com.cao.repairshop.execution.dto.CreateExecutionRequest
@@ -23,6 +23,7 @@ import com.cao.repairshop.serviceorder.dto.ApprovalRequest
 import com.cao.repairshop.serviceorder.dto.CreateServiceOrderRequest
 import com.cao.repairshop.serviceorder.entity.ServiceOrder
 import com.cao.repairshop.serviceorder.repository.ServiceOrderRepository
+import mu.KotlinLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -60,7 +61,7 @@ class ServiceOrderService(
         request.services.forEach { sd ->
             val resolvedInsumes = sd.insumes.map { insumeService.getEntityById(it.insumeId) to it.quantity }
             order.addExecution(
-                basicDescription = sd.basicDescription,
+                basicDescription = BasicExecution.valueOf(sd.basicDescription.uppercase()),
                 fullDescription = sd.fullDescription,
                 price = sd.price ?: BigDecimal.ZERO,
                 estimatedTime = sd.estimatedTime,
@@ -113,7 +114,7 @@ class ServiceOrderService(
 
         val resolvedInsumes = request.insumes.map { insumeService.getEntityById(it.insumeId) to it.quantity }
         val execution = order.addExecution(
-            basicDescription = request.basicDescription,
+            basicDescription = BasicExecution.valueOf(request.basicDescription.uppercase()),
             fullDescription = request.fullDescription,
             price = request.price,
             estimatedTime = request.estimatedTime,
@@ -131,7 +132,7 @@ class ServiceOrderService(
         val executions = request.executions.map { execDef ->
             val resolvedInsumes = execDef.insumes.map { insumeService.getEntityById(it.insumeId) to it.quantity }
             val execution = order.addExecution(
-                basicDescription = execDef.basicDescription,
+                basicDescription = BasicExecution.valueOf(execDef.basicDescription.uppercase()),
                 fullDescription = execDef.fullDescription,
                 price = execDef.price ?: BigDecimal.ZERO,
                 estimatedTime = execDef.estimatedTime,
@@ -156,7 +157,7 @@ class ServiceOrderService(
         val execution = findExecutionInOrder(order, executionId)
 
         execution.apply {
-            basicDescription = request.basicDescription
+            basicDescription = BasicExecution.valueOf(request.basicDescription.uppercase())
             fullDescription = request.fullDescription
             price = request.price
             estimatedTime = request.estimatedTime

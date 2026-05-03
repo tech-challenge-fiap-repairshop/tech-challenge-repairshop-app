@@ -1,8 +1,6 @@
 package com.cao.repairshop.execution.repository
 
 import com.cao.repairshop.execution.entity.Execution
-import com.cao.repairshop.execution.entity.ExecutionHistory
-
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import java.util.UUID

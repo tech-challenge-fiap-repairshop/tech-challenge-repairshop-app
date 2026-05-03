@@ -7,7 +7,7 @@ import com.cao.repairshop.core.validator.annotation.VerifyEmail
 import com.cao.repairshop.user.domain.UserRole
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.NotBlank
-import java.util.*
+import java.util.UUID
 
 data class CreateUserRequest(
     @Schema(description = "User full name", example = "Carlos Mechanic")

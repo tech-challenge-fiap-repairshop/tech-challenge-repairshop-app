@@ -1,33 +1,33 @@
 package com.cao.repairshop.execution.controller
 
-import com.cao.repairshop.execution.domain.BasicExecution
 import com.cao.repairshop.execution.dto.CreateExecutionRequest
-import com.cao.repairshop.execution.domain.ExecutionStatus
-import com.cao.repairshop.register.entity.Customer
-import com.cao.repairshop.register.entity.Vehicle
 import com.cao.repairshop.register.domain.Document
 import com.cao.repairshop.register.domain.Email
 import com.cao.repairshop.register.domain.Plate
+import com.cao.repairshop.register.entity.Customer
+import com.cao.repairshop.register.entity.Vehicle
 import com.cao.repairshop.register.repository.CustomerRepository
 import com.cao.repairshop.register.repository.VehicleRepository
+import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
 import com.cao.repairshop.serviceorder.entity.ServiceOrder
 import com.cao.repairshop.serviceorder.repository.ServiceOrderRepository
-import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
-import tools.jackson.databind.json.JsonMapper
-import org.springframework.data.web.config.SpringDataJackson3Configuration
+import org.hamcrest.Matchers.containsString
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.web.config.SpringDataJackson3Configuration
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.web.context.WebApplicationContext
-import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.context.WebApplicationContext
+import tools.jackson.databind.json.JsonMapper
 import java.math.BigDecimal
 import java.util.UUID
 
@@ -76,7 +76,7 @@ class ExecutionControllerIT {
     fun `should create, list and update execution status in a real database environment`() {
         val createRequest = CreateExecutionRequest(
             serviceOrderId = serviceOrder.id,
-            basicDescription = BasicExecution.OIL_CHANGE,
+            basicDescription = "OIL_CHANGE",
             fullDescription = "Detailed oil change",
             price = BigDecimal("150.00")
         )
@@ -121,5 +121,23 @@ class ExecutionControllerIT {
         mockMvc.perform(get("/service-orders/${serviceOrder.id}"))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.status").value("FINALIZED"))
+    }
+
+    @Test
+    @WithMockUser(roles = ["ATTENDANT"])
+    fun `should return 400 with dynamic message when basicDescription is invalid`() {
+        val createRequest = mapOf(
+            "serviceOrderId" to serviceOrder.id.toString(),
+            "basicDescription" to "INVALID_SERVICE",
+            "price" to 150.0
+        )
+
+        mockMvc.perform(
+            post("/service-orders/${serviceOrder.id}/executions")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(createRequest))
+        )
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.message").value(containsString("basicDescription: Invalid service category. Valid values are: OIL_CHANGE, SUSPENSION_REPLACEMENT, WHEEL_ALIGNMENT, BRAKE_INSPECTION, ENGINE_DIAGNOSIS, OTHER")))
     }
 }

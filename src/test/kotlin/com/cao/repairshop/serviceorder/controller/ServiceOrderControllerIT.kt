@@ -1,31 +1,30 @@
 package com.cao.repairshop.serviceorder.controller
 
-import com.cao.repairshop.execution.domain.BasicExecution
-import com.cao.repairshop.serviceorder.dto.CreateServiceOrderRequest
-import com.cao.repairshop.serviceorder.dto.ExecutionDefinitionRequest
-import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
-import com.cao.repairshop.register.entity.Customer
-import com.cao.repairshop.register.entity.Vehicle
 import com.cao.repairshop.register.domain.Document
 import com.cao.repairshop.register.domain.Email
 import com.cao.repairshop.register.domain.Plate
+import com.cao.repairshop.register.entity.Customer
+import com.cao.repairshop.register.entity.Vehicle
 import com.cao.repairshop.register.repository.CustomerRepository
 import com.cao.repairshop.register.repository.VehicleRepository
-import tools.jackson.databind.json.JsonMapper
-import org.springframework.data.web.config.SpringDataJackson3Configuration
+import com.cao.repairshop.serviceorder.dto.CreateServiceOrderRequest
+import com.cao.repairshop.serviceorder.dto.ExecutionDefinitionRequest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.web.config.SpringDataJackson3Configuration
 import org.springframework.http.MediaType
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.web.context.WebApplicationContext
-import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.context.WebApplicationContext
+import tools.jackson.databind.json.JsonMapper
 import java.math.BigDecimal
 import java.util.UUID
 
@@ -72,7 +71,7 @@ class ServiceOrderControllerIT {
             vehiclePlate = vehiclePlate,
             services = listOf(
                 ExecutionDefinitionRequest(
-                    basicDescription = BasicExecution.BRAKE_INSPECTION,
+                    basicDescription = "BRAKE_INSPECTION",
                     fullDescription = "Brake repair",
                     price = BigDecimal("500.00")
                 )

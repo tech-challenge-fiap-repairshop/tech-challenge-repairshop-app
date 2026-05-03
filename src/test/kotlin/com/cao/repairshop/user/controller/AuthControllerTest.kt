@@ -1,13 +1,12 @@
 package com.cao.repairshop.user.controller
 
-import com.cao.repairshop.user.service.UserService
+import com.cao.repairshop.core.exception.GlobalExceptionHandler
 import com.cao.repairshop.user.domain.UserRole
 import com.cao.repairshop.user.dto.CreateUserRequest
 import com.cao.repairshop.user.dto.LoginRequest
 import com.cao.repairshop.user.dto.TokenResponse
 import com.cao.repairshop.user.dto.UserResponse
-
-import com.cao.repairshop.core.exception.GlobalExceptionHandler
+import com.cao.repairshop.user.service.UserService
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach

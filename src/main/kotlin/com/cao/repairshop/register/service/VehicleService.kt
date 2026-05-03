@@ -6,17 +6,16 @@ import com.cao.repairshop.core.exception.EntityNotFoundException
 import com.cao.repairshop.core.exception.ErrorMessages
 import com.cao.repairshop.register.domain.Email
 import com.cao.repairshop.register.domain.Plate
+import com.cao.repairshop.register.domain.ServiceOrderExistenceChecker
 import com.cao.repairshop.register.dto.CreateVehicleRequest
 import com.cao.repairshop.register.dto.UpdateVehicleRequest
 import com.cao.repairshop.register.entity.Vehicle
 import com.cao.repairshop.register.repository.VehicleRepository
-import com.cao.repairshop.register.domain.ServiceOrderExistenceChecker
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 @Service
 class VehicleService(

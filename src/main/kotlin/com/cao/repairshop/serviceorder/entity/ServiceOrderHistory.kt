@@ -1,7 +1,6 @@
 package com.cao.repairshop.serviceorder.entity
 
 import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
-
 import jakarta.persistence.*
 import java.time.LocalDateTime
 import java.util.UUID

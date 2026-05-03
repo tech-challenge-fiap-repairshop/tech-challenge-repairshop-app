@@ -1,10 +1,6 @@
 package com.cao.repairshop.execution.controller.interfaces
 
-import com.cao.repairshop.execution.dto.CreateExecutionBatchRequest
-import com.cao.repairshop.execution.dto.CreateExecutionRequest
-import com.cao.repairshop.execution.dto.UpdateExecutionRequest
-import com.cao.repairshop.execution.dto.ExecutionStatusUpdateRequest
-import com.cao.repairshop.execution.dto.ExecutionResponse
+import com.cao.repairshop.execution.dto.*
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema

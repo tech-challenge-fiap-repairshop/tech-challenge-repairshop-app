@@ -1,14 +1,13 @@
 package com.cao.repairshop.register.controller
 
-import com.cao.repairshop.register.service.CustomerService
-import com.cao.repairshop.register.service.VehicleService
-import com.cao.repairshop.register.dto.*
-import com.cao.repairshop.register.entity.Vehicle
-import com.cao.repairshop.register.entity.Customer
-import com.cao.repairshop.register.domain.Plate
-import com.cao.repairshop.register.domain.Document
-
 import com.cao.repairshop.core.exception.GlobalExceptionHandler
+import com.cao.repairshop.register.domain.Document
+import com.cao.repairshop.register.domain.Plate
+import com.cao.repairshop.register.dto.CreateVehicleRequest
+import com.cao.repairshop.register.dto.UpdateVehicleRequest
+import com.cao.repairshop.register.entity.Customer
+import com.cao.repairshop.register.entity.Vehicle
+import com.cao.repairshop.register.service.VehicleService
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
@@ -19,15 +18,11 @@ import org.springframework.data.web.config.SpringDataJackson3Configuration
 import org.springframework.http.MediaType
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import tools.jackson.databind.json.JsonMapper
-import java.time.LocalDateTime
 import java.util.UUID
 
 class VehicleControllerTest {
