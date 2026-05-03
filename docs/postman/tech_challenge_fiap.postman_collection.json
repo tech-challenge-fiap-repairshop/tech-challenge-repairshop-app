@@ -1,0 +1,874 @@
+{
+  "info": {
+    "_postman_id": "97f69d9b-e6ab-41fe-bf8c-2fc8ab568bd3",
+    "name": "Repair Shop (Tech Challenge FIAP)",
+    "description": "Collection passo a passo separada por domínios do projeto, facilitando a execução e testes da API de maneira fluída.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "16060735",
+    "_collection_link": "https://go.postman.co/collection/16060735-97f69d9b-e6ab-41fe-bf8c-2fc8ab568bd3?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "01 - Domínio Usuário e Autenticação",
+      "item": [
+        {
+          "name": "Passo 01 - /auth/register",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "let timestamp = Date.now();",
+                  "pm.collectionVariables.set(\"random_email\", \"carlos\" + timestamp + \"@repairshop.com\");",
+                  "pm.collectionVariables.set(\"random_plate\", \"ABC\" + Math.floor(1000 + Math.random() * 9000));",
+                  "function generateValidCpf() {",
+                  "    const randomDigit = () => Math.floor(Math.random() * 9);",
+                  "    let cpf = Array.from({length: 9}, randomDigit);",
+                  "    let d1 = 0; for (let i = 0; i < 9; i++) d1 += cpf[i] * (10 - i);",
+                  "    d1 = 11 - (d1 % 11); if (d1 >= 10) d1 = 0; cpf.push(d1);",
+                  "    let d2 = 0; for (let i = 0; i < 10; i++) d2 += cpf[i] * (11 - i);",
+                  "    d2 = 11 - (d2 % 11); if (d2 >= 10) d2 = 0; cpf.push(d2);",
+                  "    return cpf.join('');",
+                  "}",
+                  "pm.collectionVariables.set(\"random_document\", generateValidCpf());"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{$randomFullName}}\",\n  \"function\": \"ATTENDANT\",\n  \"email\": \"{{random_email}}\",\n  \"phone\": \"11999999999\",\n  \"password\": \"securePass123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Passo 02 - /auth/login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.token) {",
+                  "    pm.collectionVariables.set(\"token\", jsonData.token);",
+                  "}",
+                  "var reqBody = JSON.parse(pm.request.body.raw);",
+                  "if (reqBody.email) {",
+                  "    pm.collectionVariables.set(\"customer_email\", reqBody.email);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{random_email}}\",\n  \"password\": \"securePass123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 - Domínio Cadastro",
+      "item": [
+        {
+          "name": "Passo 01 - /auth/register",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "let timestamp = Date.now();",
+                  "pm.collectionVariables.set(\"random_email\", \"carlos\" + timestamp + \"@repairshop.com\");",
+                  "pm.collectionVariables.set(\"random_name\", pm.variables.replaceIn(\"{{$randomFullName}}\"));",
+                  "pm.collectionVariables.set(\"random_phone\", \"119\" + Math.floor(10000000 + Math.random() * 90000000));",
+                  "pm.collectionVariables.set(\"random_plate\", \"ABC\" + Math.floor(1000 + Math.random() * 9000));",
+                  "function generateValidCpf() {",
+                  "    const randomDigit = () => Math.floor(Math.random() * 9);",
+                  "    let cpf = Array.from({length: 9}, randomDigit);",
+                  "    let d1 = 0; for (let i = 0; i < 9; i++) d1 += cpf[i] * (10 - i);",
+                  "    d1 = 11 - (d1 % 11); if (d1 >= 10) d1 = 0; cpf.push(d1);",
+                  "    let d2 = 0; for (let i = 0; i < 10; i++) d2 += cpf[i] * (11 - i);",
+                  "    d2 = 11 - (d2 % 11); if (d2 >= 10) d2 = 0; cpf.push(d2);",
+                  "    return cpf.join('');",
+                  "}",
+                  "pm.collectionVariables.set(\"random_document\", generateValidCpf());"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{random_name}}\",\n  \"function\": \"CUSTOMER\",\n  \"email\": \"{{random_email}}\",\n  \"phone\": \"{{random_phone}}\",\n  \"password\": \"securePass123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Passo 02 - /customers",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "function generateValidCpf() {",
+                  "    const randomDigit = () => Math.floor(Math.random() * 9);",
+                  "    let cpf = Array.from({length: 9}, randomDigit);",
+                  "    let d1 = 0; for (let i = 0; i < 9; i++) d1 += cpf[i] * (10 - i);",
+                  "    d1 = 11 - (d1 % 11); if (d1 >= 10) d1 = 0; cpf.push(d1);",
+                  "    let d2 = 0; for (let i = 0; i < 10; i++) d2 += cpf[i] * (11 - i);",
+                  "    d2 = 11 - (d2 % 11); if (d2 >= 10) d2 = 0; cpf.push(d2);",
+                  "    return cpf.join('');",
+                  "}",
+                  "pm.collectionVariables.set(\"random_document\", generateValidCpf());"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set(\"customer_id\", jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{random_name}}\",\n  \"document\": \"{{random_document}}\",\n  \"email\": \"{{customer_email}}\",\n  \"phone\": \"{{random_phone}}\",\n  \"birthDate\": \"1985-10-15\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/customers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "customers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Passo 03 - /vehicles",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.collectionVariables.set(\"random_plate\", \"ABC\" + Math.floor(1000 + Math.random() * 9000));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set(\"vehicle_id\", jsonData.id);",
+                  "    pm.collectionVariables.set(\"vehicle_plate\", jsonData.plate);",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerEmail\": \"{{customer_email}}\",\n  \"plate\": \"{{random_plate}}\",\n  \"brand\": \"{{$randomWord}}\",\n  \"model\": \"{{$randomWord}}\",\n  \"color\": \"{{$randomColor}}\",\n  \"manufacturingDate\": \"2020-05-10\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/vehicles",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vehicles"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 - Domínio Ordem de Serviço",
+      "item": [
+        {
+          "name": "Passo 01 - /service-orders",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set(\"service_order_id\", jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerEmail\": \"{{customer_email}}\",\n  \"vehiclePlate\": \"{{vehicle_plate}}\",\n  \"services\": []\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/service-orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Passo 02 - /service-orders/{id}/status (IN_DIAGNOSIS)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"IN_DIAGNOSIS\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/service-orders/{{service_order_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders",
+                "{{service_order_id}}",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Passo 03 - /service-orders/{id}/executions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set(\"execution_id\", jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceOrderId\": \"{{service_order_id}}\",\n  \"basicDescription\": \"OIL_CHANGE\",\n  \"fullDescription\": \"Troca de óleo do motor\",\n  \"price\": 150.00,\n  \"estimatedTime\": 1.5,\n  \"insumes\": [\n    {\n      \"insumeId\": \"0b42ed55-22ea-4116-8a86-9d0e7dc03d4f\",\n      \"quantity\": 2\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/service-orders/{{service_order_id}}/executions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders",
+                "{{service_order_id}}",
+                "executions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Passo 04 - /service-orders/{id}/status (WAITING_APPROVAL)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"WAITING_APPROVAL\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/service-orders/{{service_order_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders",
+                "{{service_order_id}}",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Passo 05 - /service-orders/{id}/approve",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"approved\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/service-orders/{{service_order_id}}/approve",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders",
+                "{{service_order_id}}",
+                "approve"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 - Domínio Execução",
+      "item": [
+        {
+          "name": "Passo 01 - /service-orders/{id}/executions/{id}/status (PENDING)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"PENDING\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/service-orders/{{service_order_id}}/executions/{{execution_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders",
+                "{{service_order_id}}",
+                "executions",
+                "{{execution_id}}",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Passo 02 - /service-orders/{id}/executions/{id}/status (FINALIZED)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"FINALIZED\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/service-orders/{{service_order_id}}/executions/{{execution_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders",
+                "{{service_order_id}}",
+                "executions",
+                "{{execution_id}}",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05 - Domínio Faturamento",
+      "item": [
+        {
+          "name": "Passo 01 - /invoices",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceOrderId\": \"{{service_order_id}}\",\n  \"invoiceNumber\": \"NF-{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/invoices",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "invoices"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "06 - Serviços de conferência",
+      "item": [
+        {
+          "name": "Passo 01 - /service-orders/{id}/status Conferência final",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{base_url}}/service-orders/{{service_order_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "service-orders",
+                "{{service_order_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Passo 02 - /invoices Listar todos",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{base_url}}/invoices",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "invoices"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "07 - Domínio Estoque (Insumos)",
+      "item": [
+        {
+          "name": "Passo 01 - /insumes (Create)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.id) {",
+                  "    pm.collectionVariables.set(\"insume_id\", jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Pastilha de Freio Dianteira\",\n  \"brand\": \"Cobreq\",\n  \"quantity\": 10,\n  \"price\": 1200.00,\n  \"unityPrice\": 120.00\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/insumes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "insumes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Passo 02 - /insumes (List All)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/insumes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "insumes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Passo 03 - /insumes/{id} (Find by ID)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/insumes/{{insume_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "insumes",
+                "{{insume_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Passo 04 - /insumes/{id} (Update)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Pastilha de Freio Dianteira Cerâmica\",\n  \"quantity\": 8,\n  \"price\": 1000.00,\n  \"unityPrice\": 125.00\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/insumes/{{insume_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "insumes",
+                "{{insume_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Passo 05 - /insumes/{id} (Delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/insumes/{{insume_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "insumes",
+                "{{insume_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "customer_id",
+      "value": ""
+    },
+    {
+      "key": "customer_email",
+      "value": ""
+    },
+    {
+      "key": "vehicle_id",
+      "value": ""
+    },
+    {
+      "key": "vehicle_plate",
+      "value": ""
+    },
+    {
+      "key": "service_order_id",
+      "value": ""
+    },
+    {
+      "key": "execution_id",
+      "value": ""
+    },
+    {
+      "key": "insume_id",
+      "value": ""
+    },
+    {
+      "key": "random_email",
+      "value": ""
+    },
+    {
+      "key": "random_document",
+      "value": ""
+    },
+    {
+      "key": "random_plate",
+      "value": ""
+    },
+    {
+      "key": "random_name",
+      "value": ""
+    },
+    {
+      "key": "random_phone",
+      "value": ""
+    }
+  ]
+}
