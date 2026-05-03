@@ -86,7 +86,7 @@ Optamos pelo **PostgreSQL** pelos seguintes motivos:
 | **Ecossistema** | Integração madura com Spring Data JPA/Hibernate |
 | **Open source** | Sem custos de licenciamento, com comunidade ativa e documentação extensa |
 
-> 📊 O **Diagrama de Entidade e Relacionamento (ERD)** do banco de dados pode ser encontrado em [`docs/spec/database-er-diagram.png`](docs/spec/database-er-diagram.png).
+> 📊 O **Diagrama de Entidade e Relacionamento (ERD)** do banco de dados pode ser encontrado em [`docs/delivery/database-er-diagram.png`](docs/delivery/database-er-diagram.png).
 
 ---
 
@@ -261,7 +261,7 @@ O fluxo de atendimento da Ordem de Serviço segue um controle de status rigoroso
 
 > 🖼️ **Fluxo de Estados da OS:**
 > 
-> ![Status Chain](docs/spec/status_chain.png)
+> ![Status Chain](docs/delivery/status_chain.png)
 > 
 
 ### 🛠️ Máquina de Estados (Status da Execução de Serviço)
@@ -304,7 +304,8 @@ A documentação de Domain-Driven Design do projeto inclui:
 - **Diagramas** — Bounded Contexts, Aggregates e fluxos de domínio
 
 > 📄 O **Dicionário de Linguagem Ubíqua** está disponível em [`docs/delivery/dicionario-linguagem-ubiqua.md`](docs/delivery/dicionario-linguagem-ubiqua.md).
-> 🗺️ Os quadros do **Miro** (Event Storming e Storytelling) exportados em PDF estão na pasta [`docs/miro/`](docs/miro/).
+> 
+> 🗺️ Os quadros do **Miro** (Event Storming e Storytelling) exportados em PDF estão na pasta [`docs/delivery/miro/`](docs/delivery/miro/) ou você pode acessar também através do link [Miro](https://miro.com/app/board/uXjVGpcPYDY=/?share_link_id=818382063586).
 
 ---
 
