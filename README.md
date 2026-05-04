@@ -92,13 +92,14 @@ Optamos pelo **PostgreSQL** pelos seguintes motivos:
 
 ## Tecnologias Utilizadas
 
-| Tecnologia | Finalidade |
-|-----------|-----------|
-| **Kotlin** | Linguagem principal |
-| **Spring Boot** | Framework para construção da API REST |
-| **Spring Security** | Autenticação e autorização com JWT |
-| **Spring Data JPA** | Acesso a dados |
-| **PostgreSQL** | Banco de dados relacional |
+| Tecnologia                  | Finalidade                                 |
+|-----------------------------|--------------------------------------------|
+| **Kotlin**                  | Linguagem principal                        |
+| **Spring Boot**             | Framework para construção da API REST      |
+| **Spring Security**         | Autenticação e autorização com JWT         |
+| **Spring Data JPA**         | Acesso a dados                             |
+| **PostgreSQL**              | Banco de dados relacional                  |
+| **Flyway**                  | Gerenciamento de migrations                |
 | **Docker / Docker Compose** | Containerização e orquestração do ambiente |
 
 ---
