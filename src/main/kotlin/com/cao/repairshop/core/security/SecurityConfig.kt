@@ -42,8 +42,9 @@ class SecurityConfig(
                 authorize("/customers/**", hasRole(UserRole.ATTENDANT.name))
                 authorize("/vehicles/**", hasRole(UserRole.ATTENDANT.name))
 
-                // Service Orders: Customer can GET, Attendant can do everything
+                // Service Orders: Customer can GET and APPROVE, Attendant can do everything
                 authorize(HttpMethod.GET, "/service-orders/**", hasAnyRole(UserRole.ATTENDANT.name, UserRole.CUSTOMER.name))
+                authorize(HttpMethod.POST, "/service-orders/*/approve", hasAnyRole(UserRole.ATTENDANT.name, UserRole.CUSTOMER.name))
                 authorize("/service-orders/**", hasRole(UserRole.ATTENDANT.name))
 
                 // Inventory/Insumes: Attendant only
