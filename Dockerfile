@@ -1,15 +1,28 @@
-FROM maven:3-eclipse-temurin-24
+# ==========================================
+# Stage 1: Build (Maven + JDK)
+# ==========================================
+FROM maven:3-eclipse-temurin-24 AS builder
+WORKDIR /app
+
+# Copia arquivos e empacota a aplicação
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -B -ntp -DskipTests
+
+# ==========================================
+# Stage 2: Runtime (JRE minimal)
+# ==========================================
+FROM eclipse-temurin:24-jre
 
 WORKDIR /app
 
-# Copia o pom.xml e o código fonte
-COPY pom.xml .
-COPY src ./src
+# Copia apenas o JAR compilado do builder
+COPY --from=builder /app/target/repairshop-0.0.1-SNAPSHOT.jar app.jar
 
-# Realiza o build da aplicação pulando os testes
-RUN mvn clean package -DskipTests
+# Configuração DevSecOps: usar usuário não-root
+RUN useradd -m springuser
+USER springuser
 
 EXPOSE 8080
 
-# O ENTRYPOINT continua rodando o .jar gerado, mas agora em um container único usando a imagem do Maven
-ENTRYPOINT ["java", "-jar", "target/repairshop-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
