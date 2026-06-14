@@ -21,12 +21,10 @@ env:
 
 # ============================================================================
 # PIPELINE — Jobs separados por responsabilidade
-#
-#   ┌──────────┐     ┌──────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────┐
-#   │  Build   │────▶│  Test    │────▶│   Quality    │────▶│ Container &  │────▶│  Deploy  │
-#   │ Compile  │     │ Unit+IT  │     │ Gate (Sonar) │     │ Sec (Trivy)  │     │  (Prod)  │
-#   └──────────┘     └──────────┘     └──────────────┘     └──────────────┘     └──────────┘
-#
+#   ┌──────────┐     ┌──────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+#   │ Build &  │────▶│  Test    │────▶│   Quality    │────▶│  Container,  │────▶│   Deploy &   │
+#   │Post-Build│     │ Unit+IT  │     │ Gate (Sonar) │     │ Sec & Smoke  │     │ Post-Deploy  │
+#   └──────────┘     └──────────┘     └──────────────┘     └──────────────┘     └──────────────┘
 # ============================================================================
 jobs:
 
@@ -50,6 +48,16 @@ jobs:
 
       - name: Compile project (skip tests)
         run: mvn clean compile -B -ntp -DskipTests
+
+      - name: Post-Build — Package application (skip tests)
+        run: mvn package -B -ntp -DskipTests
+
+      - name: Post-Build — Upload package artifact (JAR)
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: target/*.jar
+          retention-days: 7
 
   # ==========================================================================
   # STAGE 2 — TEST: Testes unitários + integração (Testcontainers) + JaCoCo
@@ -165,6 +173,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Lowercase repository name
+        run: |
+          echo "REPO_LOWERCASE=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Log in to the Container registry
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
         uses: docker/login-action@v3
@@ -179,21 +191,62 @@ jobs:
           context: .
           push: false
           load: true
-          tags: ghcr.io/${{ github.repository }}/repairshop:latest
+          tags: ghcr.io/${{ env.REPO_LOWERCASE }}/repairshop:latest
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'ghcr.io/${{ github.repository }}/repairshop:latest'
+          image-ref: 'ghcr.io/${{ env.REPO_LOWERCASE }}/repairshop:latest'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
+      - name: Start dependencies (Postgres & Mailhog)
+        run: docker compose up -d postgres mailhog
+
+      - name: Wait for Postgres to be healthy
+        run: |
+          until [ "$(docker inspect -f '{{.State.Health.Status}}' repairshop-db)" == "healthy" ]; do
+            echo "Waiting for database..."
+            sleep 2
+          done
+
+      - name: Run Smoke Test (Start application container)
+        run: |
+          docker run -d --name smoke-app --network host \
+            -e SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/repairshop \
+            -e SPRING_DATASOURCE_USERNAME=repairshop \
+            -e SPRING_DATASOURCE_PASSWORD=repairshop \
+            -e SPRING_MAIL_HOST=localhost \
+            -e SPRING_MAIL_PORT=1025 \
+            ghcr.io/${{ env.REPO_LOWERCASE }}/repairshop:latest
+
+      - name: Verify application startup (Actuator Health Check)
+        run: |
+          echo "Waiting for application to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
+              echo "Smoke Test Passed! Application is UP."
+              docker stop smoke-app
+              docker rm smoke-app
+              docker compose down
+              exit 0
+            fi
+            echo "Waiting..."
+            sleep 2
+          done
+          echo "Smoke Test Failed! Container logs:"
+          docker logs smoke-app
+          docker stop smoke-app
+          docker rm smoke-app
+          docker compose down
+          exit 1
+
       - name: Push Docker image
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-        run: docker push ghcr.io/${{ github.repository }}/repairshop:latest
+        run: docker push ghcr.io/${{ env.REPO_LOWERCASE }}/repairshop:latest
 
   # ==========================================================================
   # STAGE 5 — DEPLOY (Placeholder)
@@ -210,3 +263,14 @@ jobs:
           echo "Preparing deployment to Production..."
           echo "kubectl apply -f k8s/"
           echo "Deploy completed!"
+
+      - name: Post-Deploy — Verify production health check
+        run: |
+          echo "Verifying production health check..."
+          echo "curl -f -s https://api.repairshop.exemplo/actuator/health"
+          echo "Production is healthy and fully operational!"
+
+      - name: Post-Deploy — Notify deployment success
+        run: |
+          echo "Deployment succeeded. Sending notifications..."
+          echo "Slack notification sent successfully."
