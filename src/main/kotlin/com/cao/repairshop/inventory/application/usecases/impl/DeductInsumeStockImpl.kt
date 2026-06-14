@@ -4,7 +4,7 @@ import com.cao.repairshop.core.exception.EntityNotFoundException
 import com.cao.repairshop.core.exception.ErrorMessages
 import com.cao.repairshop.inventory.application.gateways.InsumeGateway
 import com.cao.repairshop.inventory.application.usecases.DeductInsumeStock
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
