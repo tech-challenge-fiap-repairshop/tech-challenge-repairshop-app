@@ -10,7 +10,7 @@ import java.util.UUID
 interface InsumeRepository : JpaRepository<InsumeEntity, UUID> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT i FROM Insume i WHERE i.id = :id")
+    @Query("SELECT i FROM InsumeEntity i WHERE i.id = :id")
     fun findByIdForUpdate(id: UUID): InsumeEntity?
 }
 

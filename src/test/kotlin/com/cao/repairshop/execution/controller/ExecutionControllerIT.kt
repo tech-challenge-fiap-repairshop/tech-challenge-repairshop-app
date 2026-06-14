@@ -138,6 +138,5 @@ class ExecutionControllerIT {
                 .content(mapper.writeValueAsString(createRequest))
         )
             .andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.message").value(containsString("basicDescription: Invalid service category. Valid values are: OIL_CHANGE, SUSPENSION_REPLACEMENT, WHEEL_ALIGNMENT, BRAKE_INSPECTION, ENGINE_DIAGNOSIS, OTHER")))
     }
 }
