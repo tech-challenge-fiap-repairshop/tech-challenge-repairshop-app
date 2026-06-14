@@ -23,7 +23,7 @@ import com.cao.repairshop.serviceorder.dto.ApprovalRequest
 import com.cao.repairshop.serviceorder.dto.CreateServiceOrderRequest
 import com.cao.repairshop.serviceorder.entity.ServiceOrder
 import com.cao.repairshop.serviceorder.repository.ServiceOrderRepository
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service

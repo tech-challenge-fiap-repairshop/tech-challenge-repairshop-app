@@ -8,7 +8,7 @@ import com.cao.repairshop.inventory.dto.UpdateInsumeRequest
 import com.cao.repairshop.inventory.entity.Insume
 import com.cao.repairshop.inventory.mapper.toResponse
 import com.cao.repairshop.inventory.repository.InsumeRepository
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service

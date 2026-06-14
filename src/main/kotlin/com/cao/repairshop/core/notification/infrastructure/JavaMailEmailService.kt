@@ -2,7 +2,7 @@ package com.cao.repairshop.core.notification.infrastructure
 
 import com.cao.repairshop.core.notification.EmailService
 import com.cao.repairshop.core.notification.dto.EmailRequest
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.scheduling.annotation.Async
