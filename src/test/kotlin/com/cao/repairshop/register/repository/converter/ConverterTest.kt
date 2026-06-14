@@ -1,8 +1,11 @@
 package com.cao.repairshop.register.repository.converter
 
-import com.cao.repairshop.register.domain.Document
-import com.cao.repairshop.register.domain.Email
-import com.cao.repairshop.register.domain.Plate
+import com.cao.repairshop.register.domain.entities.Document
+import com.cao.repairshop.register.domain.entities.Email
+import com.cao.repairshop.register.domain.entities.Plate
+import com.cao.repairshop.register.infra.persistence.models.converter.DocumentConverter
+import com.cao.repairshop.register.infra.persistence.models.converter.EmailConverter
+import com.cao.repairshop.register.infra.persistence.models.converter.PlateConverter
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 

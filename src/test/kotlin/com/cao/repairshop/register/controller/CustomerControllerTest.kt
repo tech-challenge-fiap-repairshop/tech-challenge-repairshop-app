@@ -2,12 +2,16 @@ package com.cao.repairshop.register.controller
 
 import com.cao.repairshop.core.exception.EntityNotFoundException
 import com.cao.repairshop.core.exception.GlobalExceptionHandler
-import com.cao.repairshop.register.domain.Document
-import com.cao.repairshop.register.domain.Email
-import com.cao.repairshop.register.dto.CreateCustomerRequest
-import com.cao.repairshop.register.dto.UpdateCustomerRequest
-import com.cao.repairshop.register.entity.Customer
-import com.cao.repairshop.register.service.CustomerService
+import com.cao.repairshop.register.domain.entities.Document
+import com.cao.repairshop.register.domain.entities.Email
+import com.cao.repairshop.register.domain.entities.Customer
+import com.cao.repairshop.register.infra.controller.dtos.CreateCustomerRequest
+import com.cao.repairshop.register.infra.controller.dtos.UpdateCustomerRequest
+import com.cao.repairshop.register.infra.controller.CustomerController
+import com.cao.repairshop.register.application.usecases.customer.CreateCustomer
+import com.cao.repairshop.register.application.usecases.customer.FindCustomer
+import com.cao.repairshop.register.application.usecases.customer.UpdateCustomer
+import com.cao.repairshop.register.application.usecases.customer.DeleteCustomer
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
@@ -27,7 +31,10 @@ import java.util.UUID
 
 class CustomerControllerTest {
 
-    private val customerService: CustomerService = mockk()
+    private val createCustomer: CreateCustomer = mockk()
+    private val findCustomer: FindCustomer = mockk()
+    private val updateCustomer: UpdateCustomer = mockk()
+    private val deleteCustomer: DeleteCustomer = mockk()
     private lateinit var mockMvc: MockMvc
     private lateinit var mapper: JsonMapper
 
@@ -46,7 +53,7 @@ class CustomerControllerTest {
             .build()
 
         mockMvc = MockMvcBuilders
-            .standaloneSetup(CustomerController(customerService))
+            .standaloneSetup(CustomerController(createCustomer, findCustomer, updateCustomer, deleteCustomer))
             .setControllerAdvice(GlobalExceptionHandler())
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(JacksonJsonHttpMessageConverter(mapper))
@@ -56,7 +63,7 @@ class CustomerControllerTest {
     @Test
     fun `POST customers should return 201 with valid body`() {
         val request = CreateCustomerRequest(name = "Test", document = "52998224725", email = "t@test.com")
-        every { customerService.create(any()) } returns sampleCustomer()
+        every { createCustomer.execute(any()) } returns sampleCustomer()
 
         mockMvc.perform(
             post("/customers")
@@ -82,7 +89,7 @@ class CustomerControllerTest {
 
     @Test
     fun `GET customers should return 200 with paginated result`() {
-        every { customerService.findAll(any()) } returns PageImpl(listOf(sampleCustomer()))
+        every { findCustomer.findAll(any()) } returns PageImpl(listOf(sampleCustomer()))
 
         mockMvc.perform(get("/customers"))
             .andExpect(status().isOk)
@@ -91,7 +98,7 @@ class CustomerControllerTest {
 
     @Test
     fun `GET customers by id should return 200`() {
-        every { customerService.findById(customerId) } returns sampleCustomer()
+        every { findCustomer.findById(customerId) } returns sampleCustomer()
 
         mockMvc.perform(get("/customers/$customerId"))
             .andExpect(status().isOk)
@@ -100,7 +107,7 @@ class CustomerControllerTest {
 
     @Test
     fun `GET customers by id should return 404 when not found`() {
-        every { customerService.findById(customerId) } throws EntityNotFoundException("Customer not found")
+        every { findCustomer.findById(customerId) } throws EntityNotFoundException("Customer not found")
 
         mockMvc.perform(get("/customers/$customerId"))
             .andExpect(status().isNotFound)
@@ -110,7 +117,7 @@ class CustomerControllerTest {
     fun `PUT customers by id should return 200`() {
         val updateRequest = UpdateCustomerRequest(name = "Updated")
         val updatedCustomer = sampleCustomer().apply { name = "Updated" }
-        every { customerService.update(customerId, any()) } returns updatedCustomer
+        every { updateCustomer.execute(customerId, any()) } returns updatedCustomer
 
         mockMvc.perform(
             put("/customers/$customerId")
@@ -123,7 +130,7 @@ class CustomerControllerTest {
 
     @Test
     fun `DELETE customers by id should return 204`() {
-        every { customerService.delete(customerId) } returns Unit
+        every { deleteCustomer.execute(customerId) } returns Unit
 
         mockMvc.perform(delete("/customers/$customerId"))
             .andExpect(status().isNoContent)

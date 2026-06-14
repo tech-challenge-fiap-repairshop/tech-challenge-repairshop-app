@@ -2,16 +2,12 @@ package com.cao.repairshop.payment.controller
 
 import com.cao.repairshop.core.exception.EntityNotFoundException
 import com.cao.repairshop.core.exception.GlobalExceptionHandler
-import com.cao.repairshop.payment.dto.CreateInvoiceRequest
-import com.cao.repairshop.payment.entity.Invoice
-import com.cao.repairshop.payment.service.InvoiceService
-import com.cao.repairshop.register.domain.Document
-import com.cao.repairshop.register.domain.Email
-import com.cao.repairshop.register.domain.Plate
-import com.cao.repairshop.register.entity.Customer
-import com.cao.repairshop.register.entity.Vehicle
-import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
-import com.cao.repairshop.serviceorder.entity.ServiceOrder
+import com.cao.repairshop.payment.infra.controller.dtos.CreateInvoiceRequest
+import com.cao.repairshop.payment.infra.controller.dtos.InvoiceResponse
+import com.cao.repairshop.payment.infra.controller.InvoiceController
+import com.cao.repairshop.payment.application.usecases.CreateInvoice
+import com.cao.repairshop.payment.application.usecases.FindInvoice
+import com.cao.repairshop.payment.application.usecases.FindAllInvoices
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
@@ -29,11 +25,14 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import tools.jackson.databind.json.JsonMapper
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import java.util.UUID
 
 class InvoiceControllerTest {
 
-    private val invoiceService: InvoiceService = mockk()
+    private val createInvoice: CreateInvoice = mockk()
+    private val findInvoice: FindInvoice = mockk()
+    private val findAllInvoices: FindAllInvoices = mockk()
     private lateinit var mockMvc: MockMvc
     private lateinit var mapper: JsonMapper
 
@@ -41,31 +40,20 @@ class InvoiceControllerTest {
     private val serviceOrderId = UUID.randomUUID()
     private val customerId = UUID.randomUUID()
 
-    private fun buildInvoice(): Invoice {
-        val customer = Customer(
-            id = customerId,
-            name = "Test Customer",
-            document = Document("52998224725"),
-            email = Email("test@example.com")
-        )
-        val vehicle = Vehicle(
-            customer = customer,
-            plate = Plate("ABC-1234"),
-            brand = "Toyota",
-            model = "Corolla"
-        )
-        val serviceOrder = ServiceOrder(
-            id = serviceOrderId,
-            customer = customer,
-            vehicle = vehicle,
-            status = ServiceOrderStatus.FINALIZED
-        )
-        return Invoice(
+    private fun buildInvoiceResponse(invoiceNumber: String = "NF-2026-001"): InvoiceResponse {
+        return InvoiceResponse(
             id = invoiceId,
-            customer = customer,
-            serviceOrder = serviceOrder,
+            customerId = customerId,
+            customerName = "Test Customer",
+            serviceOrderId = serviceOrderId,
+            vehiclePlate = "ABC-1234",
+            serviceOrderStatus = "FINALIZED",
+            invoiceNumber = invoiceNumber,
             price = BigDecimal("500.00"),
-            invoiceNumber = "NF-2026-001"
+            emissionDate = LocalDateTime.now(),
+            items = emptyList(),
+            created = LocalDateTime.now(),
+            updated = LocalDateTime.now()
         )
     }
 
@@ -76,7 +64,7 @@ class InvoiceControllerTest {
             .build()
 
         mockMvc = MockMvcBuilders
-            .standaloneSetup(InvoiceController(invoiceService))
+            .standaloneSetup(InvoiceController(createInvoice, findInvoice, findAllInvoices))
             .setControllerAdvice(GlobalExceptionHandler())
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(JacksonJsonHttpMessageConverter(mapper))
@@ -89,7 +77,7 @@ class InvoiceControllerTest {
             serviceOrderId = serviceOrderId,
             invoiceNumber = "NF-2026-001"
         )
-        every { invoiceService.create(any()) } returns buildInvoice()
+        every { createInvoice.execute(any()) } returns buildInvoiceResponse()
 
         mockMvc.perform(
             post("/invoices")
@@ -104,7 +92,7 @@ class InvoiceControllerTest {
 
     @Test
     fun `GET invoices paginated should return 200`() {
-        every { invoiceService.findAll(any()) } returns PageImpl(listOf(buildInvoice()))
+        every { findAllInvoices.execute(any()) } returns PageImpl(listOf(buildInvoiceResponse()))
 
         mockMvc.perform(get("/invoices"))
             .andExpect(status().isOk)
@@ -115,7 +103,7 @@ class InvoiceControllerTest {
 
     @Test
     fun `GET invoices by id should return 200`() {
-        every { invoiceService.findById(invoiceId) } returns buildInvoice()
+        every { findInvoice.execute(invoiceId) } returns buildInvoiceResponse()
 
         mockMvc.perform(get("/invoices/$invoiceId"))
             .andExpect(status().isOk)
@@ -126,7 +114,7 @@ class InvoiceControllerTest {
 
     @Test
     fun `GET invoices by id not found should return 404`() {
-        every { invoiceService.findById(invoiceId) } throws EntityNotFoundException("Invoice not found")
+        every { findInvoice.execute(invoiceId) } throws EntityNotFoundException("Invoice not found")
 
         mockMvc.perform(get("/invoices/$invoiceId"))
             .andExpect(status().isNotFound)
@@ -138,7 +126,7 @@ class InvoiceControllerTest {
             serviceOrderId = serviceOrderId,
             invoiceNumber = "NF-2026-002"
         )
-        every { invoiceService.create(any()) } returns buildInvoice()
+        every { createInvoice.execute(any()) } returns buildInvoiceResponse("NF-2026-002")
 
         mockMvc.perform(
             post("/invoices")

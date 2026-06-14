@@ -1,16 +1,16 @@
 package com.cao.repairshop.payment.controller
 
-import com.cao.repairshop.payment.dto.CreateInvoiceRequest
-import com.cao.repairshop.register.domain.Document
-import com.cao.repairshop.register.domain.Email
-import com.cao.repairshop.register.domain.Plate
-import com.cao.repairshop.register.entity.Customer
-import com.cao.repairshop.register.entity.Vehicle
-import com.cao.repairshop.register.repository.CustomerRepository
-import com.cao.repairshop.register.repository.VehicleRepository
+import com.cao.repairshop.payment.infra.controller.dtos.CreateInvoiceRequest
+import com.cao.repairshop.register.domain.entities.Document
+import com.cao.repairshop.register.domain.entities.Email
+import com.cao.repairshop.register.domain.entities.Plate
+import com.cao.repairshop.register.infra.persistence.models.CustomerEntity
+import com.cao.repairshop.register.infra.persistence.models.VehicleEntity
+import com.cao.repairshop.register.infra.persistence.repositories.CustomerRepository
+import com.cao.repairshop.register.infra.persistence.repositories.VehicleRepository
 import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
-import com.cao.repairshop.serviceorder.entity.ServiceOrder
-import com.cao.repairshop.serviceorder.repository.ServiceOrderRepository
+import com.cao.repairshop.serviceorder.infra.persistence.models.ServiceOrderEntity
+import com.cao.repairshop.serviceorder.infra.persistence.repositories.ServiceOrderRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -52,7 +52,7 @@ class InvoiceControllerIT {
     @Autowired
     private lateinit var serviceOrderRepository: ServiceOrderRepository
 
-    private lateinit var finalizedOrder: ServiceOrder
+    private lateinit var finalizedOrder: ServiceOrderEntity
 
     @BeforeEach
     fun setUp() {
@@ -61,13 +61,13 @@ class InvoiceControllerIT {
             .build()
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build()
         val customer = customerRepository.save(
-            Customer(name = "Invoice IT Customer", document = Document("52998224725"), email = Email("invoice@it.com"))
+            CustomerEntity(name = "Invoice IT Customer", document = Document("52998224725"), email = Email("invoice@it.com"))
         )
         val vehicle = vehicleRepository.save(
-            Vehicle(customer = customer, plate = Plate("INV1234"), brand = "Inv", model = "Integration")
+            VehicleEntity(customer = customer, plate = Plate("INV1234"), brand = "Inv", model = "Integration")
         )
         finalizedOrder = serviceOrderRepository.save(
-            ServiceOrder(
+            ServiceOrderEntity(
                 customer = customer, 
                 vehicle = vehicle, 
                 status = ServiceOrderStatus.FINALIZED,

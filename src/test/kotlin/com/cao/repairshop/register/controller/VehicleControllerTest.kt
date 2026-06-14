@@ -1,13 +1,17 @@
 package com.cao.repairshop.register.controller
 
 import com.cao.repairshop.core.exception.GlobalExceptionHandler
-import com.cao.repairshop.register.domain.Document
-import com.cao.repairshop.register.domain.Plate
-import com.cao.repairshop.register.dto.CreateVehicleRequest
-import com.cao.repairshop.register.dto.UpdateVehicleRequest
-import com.cao.repairshop.register.entity.Customer
-import com.cao.repairshop.register.entity.Vehicle
-import com.cao.repairshop.register.service.VehicleService
+import com.cao.repairshop.register.domain.entities.Document
+import com.cao.repairshop.register.domain.entities.Plate
+import com.cao.repairshop.register.domain.entities.Customer
+import com.cao.repairshop.register.domain.entities.Vehicle
+import com.cao.repairshop.register.infra.controller.dtos.CreateVehicleRequest
+import com.cao.repairshop.register.infra.controller.dtos.UpdateVehicleRequest
+import com.cao.repairshop.register.infra.controller.VehicleController
+import com.cao.repairshop.register.application.usecases.vehicle.CreateVehicle
+import com.cao.repairshop.register.application.usecases.vehicle.FindVehicle
+import com.cao.repairshop.register.application.usecases.vehicle.UpdateVehicle
+import com.cao.repairshop.register.application.usecases.vehicle.DeleteVehicle
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
@@ -27,7 +31,10 @@ import java.util.UUID
 
 class VehicleControllerTest {
 
-    private val vehicleService: VehicleService = mockk()
+    private val createVehicle: CreateVehicle = mockk()
+    private val findVehicle: FindVehicle = mockk()
+    private val updateVehicle: UpdateVehicle = mockk()
+    private val deleteVehicle: DeleteVehicle = mockk()
     private lateinit var mockMvc: MockMvc
     private lateinit var mapper: JsonMapper
 
@@ -35,10 +42,9 @@ class VehicleControllerTest {
     private val customerId = UUID.randomUUID()
 
     private fun sampleVehicle(): Vehicle {
-        val customer = Customer(id = customerId, name = "Owner", document = Document("52998224725"))
         return Vehicle(
             id = vehicleId,
-            customer = customer,
+            customerId = customerId,
             plate = Plate("ABC1234"),
             brand = "Toyota",
             model = "Corolla"
@@ -52,7 +58,7 @@ class VehicleControllerTest {
             .build()
 
         mockMvc = MockMvcBuilders
-            .standaloneSetup(VehicleController(vehicleService))
+            .standaloneSetup(VehicleController(createVehicle, findVehicle, updateVehicle, deleteVehicle))
             .setControllerAdvice(GlobalExceptionHandler())
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(JacksonJsonHttpMessageConverter(mapper))
@@ -67,7 +73,7 @@ class VehicleControllerTest {
             brand = "Toyota",
             model = "Corolla"
         )
-        every { vehicleService.create(any()) } returns sampleVehicle()
+        every { createVehicle.execute(any()) } returns sampleVehicle()
 
         mockMvc.perform(
             post("/vehicles")
@@ -81,7 +87,7 @@ class VehicleControllerTest {
 
     @Test
     fun `GET vehicles should return 200 paginated`() {
-        every { vehicleService.findAll(any()) } returns PageImpl(listOf(sampleVehicle()))
+        every { findVehicle.findAll(any()) } returns PageImpl(listOf(sampleVehicle()))
 
         mockMvc.perform(get("/vehicles"))
             .andExpect(status().isOk)
@@ -90,7 +96,7 @@ class VehicleControllerTest {
 
     @Test
     fun `GET vehicles by id should return 200`() {
-        every { vehicleService.findById(vehicleId) } returns sampleVehicle()
+        every { findVehicle.findById(vehicleId) } returns sampleVehicle()
 
         mockMvc.perform(get("/vehicles/$vehicleId"))
             .andExpect(status().isOk)
@@ -105,7 +111,7 @@ class VehicleControllerTest {
             brand = "Honda"
             model = "Civic"
         }
-        every { vehicleService.update(vehicleId, any()) } returns updatedVehicle
+        every { updateVehicle.execute(vehicleId, any()) } returns updatedVehicle
 
         mockMvc.perform(
             put("/vehicles/$vehicleId")
@@ -118,7 +124,7 @@ class VehicleControllerTest {
 
     @Test
     fun `DELETE vehicles by id should return 204`() {
-        every { vehicleService.delete(vehicleId) } returns Unit
+        every { deleteVehicle.execute(vehicleId) } returns Unit
 
         mockMvc.perform(delete("/vehicles/$vehicleId"))
             .andExpect(status().isNoContent)

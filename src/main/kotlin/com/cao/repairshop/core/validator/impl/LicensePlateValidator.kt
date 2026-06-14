@@ -1,7 +1,7 @@
 package com.cao.repairshop.core.validator.impl
 
 import com.cao.repairshop.core.validator.annotation.LicensePlate
-import com.cao.repairshop.register.domain.Plate
+import com.cao.repairshop.register.domain.entities.Plate
 import jakarta.validation.ConstraintValidator
 import jakarta.validation.ConstraintValidatorContext
 

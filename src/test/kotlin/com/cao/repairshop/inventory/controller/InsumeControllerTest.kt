@@ -1,10 +1,15 @@
 package com.cao.repairshop.inventory.controller
 
 import com.cao.repairshop.core.exception.GlobalExceptionHandler
-import com.cao.repairshop.inventory.dto.CreateInsumeRequest
-import com.cao.repairshop.inventory.dto.InsumeResponse
-import com.cao.repairshop.inventory.dto.UpdateInsumeRequest
-import com.cao.repairshop.inventory.service.InsumeService
+import com.cao.repairshop.inventory.infra.controller.dtos.CreateInsumeRequest
+import com.cao.repairshop.inventory.infra.controller.dtos.InsumeResponse
+import com.cao.repairshop.inventory.infra.controller.dtos.UpdateInsumeRequest
+import com.cao.repairshop.inventory.infra.controller.InsumeController
+import com.cao.repairshop.inventory.application.usecases.CreateInsume
+import com.cao.repairshop.inventory.application.usecases.FindInsume
+import com.cao.repairshop.inventory.application.usecases.FindAllInsumes
+import com.cao.repairshop.inventory.application.usecases.UpdateInsume
+import com.cao.repairshop.inventory.application.usecases.DeleteInsume
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
@@ -25,7 +30,11 @@ import java.util.UUID
 
 class InsumeControllerTest {
 
-    private val insumeService: InsumeService = mockk()
+    private val createInsume: CreateInsume = mockk()
+    private val findInsume: FindInsume = mockk()
+    private val findAllInsumes: FindAllInsumes = mockk()
+    private val updateInsume: UpdateInsume = mockk()
+    private val deleteInsume: DeleteInsume = mockk()
     private lateinit var mockMvc: MockMvc
     private lateinit var mapper: JsonMapper
 
@@ -47,7 +56,7 @@ class InsumeControllerTest {
             .build()
 
         mockMvc = MockMvcBuilders
-            .standaloneSetup(InsumeController(insumeService))
+            .standaloneSetup(InsumeController(createInsume, findInsume, findAllInsumes, updateInsume, deleteInsume))
             .setControllerAdvice(GlobalExceptionHandler())
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(JacksonJsonHttpMessageConverter(mapper))
@@ -63,7 +72,7 @@ class InsumeControllerTest {
             price = BigDecimal("50.00"),
             unityPrice = BigDecimal("5.00")
         )
-        every { insumeService.create(any()) } returns sampleResponse
+        every { createInsume.execute(any()) } returns sampleResponse
 
         mockMvc.perform(
             post("/insumes")
@@ -77,7 +86,7 @@ class InsumeControllerTest {
 
     @Test
     fun `GET insumes should return 200 paginated`() {
-        every { insumeService.findAll(any()) } returns PageImpl(listOf(sampleResponse))
+        every { findAllInsumes.execute(any()) } returns PageImpl(listOf(sampleResponse))
 
         mockMvc.perform(get("/insumes"))
             .andExpect(status().isOk)
@@ -86,7 +95,7 @@ class InsumeControllerTest {
 
     @Test
     fun `GET insumes by id should return 200`() {
-        every { insumeService.findById(insumeId) } returns sampleResponse
+        every { findInsume.execute(insumeId) } returns sampleResponse
 
         mockMvc.perform(get("/insumes/$insumeId"))
             .andExpect(status().isOk)
@@ -101,7 +110,7 @@ class InsumeControllerTest {
             price = BigDecimal("30.00"),
             unityPrice = BigDecimal("6.00")
         )
-        every { insumeService.update(insumeId, any()) } returns sampleResponse.copy(name = "Air Filter")
+        every { updateInsume.execute(insumeId, any()) } returns sampleResponse.copy(name = "Air Filter")
 
         mockMvc.perform(
             put("/insumes/$insumeId")
@@ -114,7 +123,7 @@ class InsumeControllerTest {
 
     @Test
     fun `DELETE insumes by id should return 204`() {
-        every { insumeService.delete(insumeId) } returns Unit
+        every { deleteInsume.execute(insumeId) } returns Unit
 
         mockMvc.perform(delete("/insumes/$insumeId"))
             .andExpect(status().isNoContent)

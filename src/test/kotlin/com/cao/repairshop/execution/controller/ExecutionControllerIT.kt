@@ -1,16 +1,16 @@
 package com.cao.repairshop.execution.controller
 
-import com.cao.repairshop.execution.dto.CreateExecutionRequest
-import com.cao.repairshop.register.domain.Document
-import com.cao.repairshop.register.domain.Email
-import com.cao.repairshop.register.domain.Plate
-import com.cao.repairshop.register.entity.Customer
-import com.cao.repairshop.register.entity.Vehicle
-import com.cao.repairshop.register.repository.CustomerRepository
-import com.cao.repairshop.register.repository.VehicleRepository
+import com.cao.repairshop.execution.infra.controller.dtos.CreateExecutionRequest
+import com.cao.repairshop.register.domain.entities.Document
+import com.cao.repairshop.register.domain.entities.Email
+import com.cao.repairshop.register.domain.entities.Plate
+import com.cao.repairshop.register.infra.persistence.models.CustomerEntity
+import com.cao.repairshop.register.infra.persistence.models.VehicleEntity
+import com.cao.repairshop.register.infra.persistence.repositories.CustomerRepository
+import com.cao.repairshop.register.infra.persistence.repositories.VehicleRepository
 import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
-import com.cao.repairshop.serviceorder.entity.ServiceOrder
-import com.cao.repairshop.serviceorder.repository.ServiceOrderRepository
+import com.cao.repairshop.serviceorder.infra.persistence.models.ServiceOrderEntity
+import com.cao.repairshop.serviceorder.infra.persistence.repositories.ServiceOrderRepository
 import org.hamcrest.Matchers.containsString
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -52,7 +52,7 @@ class ExecutionControllerIT {
     @Autowired
     private lateinit var serviceOrderRepository: ServiceOrderRepository
 
-    private lateinit var serviceOrder: ServiceOrder
+    private lateinit var serviceOrder: ServiceOrderEntity
 
     @BeforeEach
     fun setUp() {
@@ -61,13 +61,13 @@ class ExecutionControllerIT {
             .build()
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build()
         val customer = customerRepository.save(
-            Customer(name = "Integration Test Customer", document = Document("52998224725"), email = Email("it@example.com"))
+            CustomerEntity(name = "Integration Test Customer", document = Document("52998224725"), email = Email("it@example.com"))
         )
         val vehicle = vehicleRepository.save(
-            Vehicle(customer = customer, plate = Plate("ABC1234"), brand = "Test", model = "Integration")
+            VehicleEntity(customer = customer, plate = Plate("ABC1234"), brand = "Test", model = "Integration")
         )
         serviceOrder = serviceOrderRepository.save(
-            ServiceOrder(customer = customer, vehicle = vehicle, status = ServiceOrderStatus.IN_EXECUTION)
+            ServiceOrderEntity(customer = customer, vehicle = vehicle, status = ServiceOrderStatus.IN_EXECUTION)
         )
     }
 

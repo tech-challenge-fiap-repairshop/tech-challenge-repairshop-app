@@ -1,16 +1,11 @@
 package com.cao.repairshop.serviceorder.controller
 
 import com.cao.repairshop.core.exception.GlobalExceptionHandler
-import com.cao.repairshop.register.domain.Document
-import com.cao.repairshop.register.domain.Plate
-import com.cao.repairshop.register.entity.Customer
-import com.cao.repairshop.register.entity.Vehicle
 import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
-import com.cao.repairshop.serviceorder.dto.*
-import com.cao.repairshop.serviceorder.entity.ServiceOrder
-import com.cao.repairshop.serviceorder.service.ServiceOrderMetricsService
-import com.cao.repairshop.serviceorder.service.ServiceOrderService
-import com.cao.repairshop.execution.dto.ExecutionMetricsResponse
+import com.cao.repairshop.serviceorder.infra.controller.dtos.*
+import com.cao.repairshop.serviceorder.infra.controller.ServiceOrderController
+import com.cao.repairshop.serviceorder.application.usecases.*
+import com.cao.repairshop.execution.infra.controller.dtos.ExecutionMetricsResponse
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
@@ -27,12 +22,19 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import tools.jackson.databind.json.JsonMapper
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import java.util.UUID
 
 class ServiceOrderControllerTest {
 
-    private val serviceOrderService: ServiceOrderService = mockk()
-    private val serviceOrderMetricsService: ServiceOrderMetricsService = mockk()
+    private val createServiceOrder: CreateServiceOrder = mockk()
+    private val findAllServiceOrders: FindAllServiceOrders = mockk()
+    private val findServiceOrder: FindServiceOrder = mockk()
+    private val advanceServiceOrderStatus: AdvanceServiceOrderStatus = mockk()
+    private val approveServiceOrder: ApproveServiceOrder = mockk()
+    private val getServiceOrderMetrics: GetServiceOrderMetrics = mockk()
+    private val getExecutionMetrics: GetExecutionMetrics = mockk()
+
     private lateinit var mockMvc: MockMvc
     private lateinit var mapper: JsonMapper
 
@@ -42,15 +44,19 @@ class ServiceOrderControllerTest {
     private val defaultEmail = "customer@example.com"
     private val defaultPlate = "ABC-1234"
 
-    private fun sampleOrder(): ServiceOrder {
-        val customer = Customer(id = customerId, name = "Owner", document = Document("52998224725"))
-        val vehicle = Vehicle(id = vehicleId, customer = customer, plate = Plate(defaultPlate), brand = "T", model = "C")
-        return ServiceOrder(
+    private fun sampleResponse(status: ServiceOrderStatus = ServiceOrderStatus.RECEIVED): ServiceOrderResponse {
+        return ServiceOrderResponse(
             id = orderId,
-            customer = customer,
-            vehicle = vehicle,
-            status = ServiceOrderStatus.RECEIVED,
-            totalPrice = BigDecimal("400.00")
+            customerId = customerId,
+            vehicleId = vehicleId,
+            status = status,
+            totalPrice = BigDecimal("400.00"),
+            enterTime = LocalDateTime.now(),
+            endTime = null,
+            created = LocalDateTime.now(),
+            updated = LocalDateTime.now(),
+            services = emptyList(),
+            history = emptyList()
         )
     }
 
@@ -61,7 +67,17 @@ class ServiceOrderControllerTest {
             .build()
 
         mockMvc = MockMvcBuilders
-            .standaloneSetup(ServiceOrderController(serviceOrderService, serviceOrderMetricsService))
+            .standaloneSetup(
+                ServiceOrderController(
+                    createServiceOrder,
+                    findAllServiceOrders,
+                    findServiceOrder,
+                    advanceServiceOrderStatus,
+                    approveServiceOrder,
+                    getServiceOrderMetrics,
+                    getExecutionMetrics
+                )
+            )
             .setControllerAdvice(GlobalExceptionHandler())
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(JacksonJsonHttpMessageConverter(mapper))
@@ -75,7 +91,7 @@ class ServiceOrderControllerTest {
             vehiclePlate = defaultPlate,
             services = listOf(ExecutionDefinitionRequest(basicDescription = "OIL_CHANGE", price = BigDecimal("100.00")))
         )
-        every { serviceOrderService.createServiceOrder(any()) } returns sampleOrder()
+        every { createServiceOrder.execute(any()) } returns sampleResponse()
 
         mockMvc.perform(
             post("/service-orders")
@@ -89,7 +105,7 @@ class ServiceOrderControllerTest {
 
     @Test
     fun `GET service-orders should return 200`() {
-        every { serviceOrderService.findAll(any()) } returns PageImpl(listOf(sampleOrder()))
+        every { findAllServiceOrders.execute(any()) } returns PageImpl(listOf(sampleResponse()))
 
         mockMvc.perform(get("/service-orders"))
             .andExpect(status().isOk)
@@ -98,7 +114,7 @@ class ServiceOrderControllerTest {
 
     @Test
     fun `GET service-orders by id should return 200`() {
-        every { serviceOrderService.findServiceOrder(orderId) } returns sampleOrder()
+        every { findServiceOrder.execute(orderId) } returns sampleResponse()
 
         mockMvc.perform(get("/service-orders/$orderId"))
             .andExpect(status().isOk)
@@ -108,8 +124,7 @@ class ServiceOrderControllerTest {
     @Test
     fun `PATCH service-orders status should return 200`() {
         val statusRequest = ServiceOrderStatusUpdateRequest(status = ServiceOrderStatus.IN_DIAGNOSIS)
-        val updatedOrder = sampleOrder().apply { status = ServiceOrderStatus.IN_DIAGNOSIS }
-        every { serviceOrderService.advanceStatus(orderId, ServiceOrderStatus.IN_DIAGNOSIS) } returns updatedOrder
+        every { advanceServiceOrderStatus.execute(orderId, ServiceOrderStatus.IN_DIAGNOSIS) } returns sampleResponse(ServiceOrderStatus.IN_DIAGNOSIS)
 
         mockMvc.perform(
             patch("/service-orders/$orderId/status")
@@ -123,8 +138,7 @@ class ServiceOrderControllerTest {
     @Test
     fun `POST service-orders approve should return 200`() {
         val approvalRequest = ApprovalRequest(approved = true)
-        val approvedOrder = sampleOrder().apply { status = ServiceOrderStatus.APPROVED }
-        every { serviceOrderService.approve(orderId, any()) } returns approvedOrder
+        every { approveServiceOrder.execute(orderId, any()) } returns sampleResponse(ServiceOrderStatus.APPROVED)
 
         mockMvc.perform(
             post("/service-orders/$orderId/approve")
@@ -138,7 +152,7 @@ class ServiceOrderControllerTest {
     @Test
     fun `GET service-orders metrics should return 200`() {
         val metrics = ServiceOrderMetricsResponse(averageExecutionTimeMinutes = 120.0)
-        every { serviceOrderMetricsService.getMetrics() } returns metrics
+        every { getServiceOrderMetrics.execute() } returns metrics
 
         mockMvc.perform(get("/service-orders/metrics"))
             .andExpect(status().isOk)
@@ -148,7 +162,7 @@ class ServiceOrderControllerTest {
     @Test
     fun `GET execution metrics should return 200`() {
         val metrics = ExecutionMetricsResponse(averageExecutionTimeMinutes = 45.0)
-        every { serviceOrderMetricsService.getExecutionMetrics() } returns metrics
+        every { getExecutionMetrics.execute() } returns metrics
 
         mockMvc.perform(get("/service-orders/executions/metrics"))
             .andExpect(status().isOk)

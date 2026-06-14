@@ -3,11 +3,14 @@ package com.cao.repairshop.execution.controller
 import com.cao.repairshop.core.exception.GlobalExceptionHandler
 import com.cao.repairshop.execution.domain.BasicExecution
 import com.cao.repairshop.execution.domain.ExecutionStatus
-import com.cao.repairshop.execution.dto.*
-import com.cao.repairshop.serviceorder.dto.ExecutionDefinitionRequest
-import com.cao.repairshop.serviceorder.service.ServiceOrderService
+import com.cao.repairshop.execution.infra.controller.dtos.*
+import com.cao.repairshop.execution.infra.controller.ExecutionController
+import com.cao.repairshop.execution.application.usecases.*
+import com.cao.repairshop.serviceorder.infra.controller.dtos.ExecutionDefinitionRequest
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.just
+import io.mockk.runs
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver
@@ -26,7 +29,13 @@ import java.util.UUID
 
 class ExecutionControllerTest {
 
-    private val serviceOrderService: ServiceOrderService = mockk()
+    private val addExecution: AddExecution = mockk()
+    private val addExecutionBatch: AddExecutionBatch = mockk()
+    private val findExecution: FindExecution = mockk()
+    private val updateExecution: UpdateExecution = mockk()
+    private val removeExecution: RemoveExecution = mockk()
+    private val advanceExecutionStatus: AdvanceExecutionStatus = mockk()
+
     private lateinit var mockMvc: MockMvc
     private lateinit var mapper: JsonMapper
 
@@ -54,7 +63,16 @@ class ExecutionControllerTest {
             .build()
 
         mockMvc = MockMvcBuilders
-            .standaloneSetup(ExecutionController(serviceOrderService))
+            .standaloneSetup(
+                ExecutionController(
+                    addExecution,
+                    addExecutionBatch,
+                    findExecution,
+                    updateExecution,
+                    removeExecution,
+                    advanceExecutionStatus
+                )
+            )
             .setControllerAdvice(GlobalExceptionHandler())
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(JacksonJsonHttpMessageConverter(mapper))
@@ -69,7 +87,7 @@ class ExecutionControllerTest {
             fullDescription = "Oil change",
             price = BigDecimal("150.00")
         )
-        every { serviceOrderService.addExecution(serviceOrderId, any()) } returns sampleResponse
+        every { addExecution.execute(serviceOrderId, any()) } returns sampleResponse
 
         mockMvc.perform(
             post(basePath)
@@ -83,7 +101,7 @@ class ExecutionControllerTest {
 
     @Test
     fun `GET execution by id should return 200`() {
-        every { serviceOrderService.findExecution(serviceOrderId, executionId) } returns sampleResponse
+        every { findExecution.execute(serviceOrderId, executionId) } returns sampleResponse
 
         mockMvc.perform(get("$basePath/$executionId"))
             .andExpect(status().isOk)
@@ -97,7 +115,7 @@ class ExecutionControllerTest {
             fullDescription = "Full service",
             price = BigDecimal("300.00")
         )
-        every { serviceOrderService.updateExecution(serviceOrderId, executionId, any()) } returns sampleResponse.copy(
+        every { updateExecution.execute(serviceOrderId, executionId, any()) } returns sampleResponse.copy(
             basicDescription = BasicExecution.SUSPENSION_REPLACEMENT,
             fullDescription = "Full service"
         )
@@ -113,7 +131,7 @@ class ExecutionControllerTest {
 
     @Test
     fun `DELETE execution should return 204`() {
-        every { serviceOrderService.removeExecution(serviceOrderId, executionId) } returns Unit
+        every { removeExecution.execute(serviceOrderId, executionId) } just runs
 
         mockMvc.perform(delete("$basePath/$executionId"))
             .andExpect(status().isNoContent)
@@ -122,7 +140,7 @@ class ExecutionControllerTest {
     @Test
     fun `PATCH execution status should return 200`() {
         val statusRequest = ExecutionStatusUpdateRequest(status = ExecutionStatus.PENDING)
-        every { serviceOrderService.advanceExecutionStatus(serviceOrderId, executionId, ExecutionStatus.PENDING) } returns
+        every { advanceExecutionStatus.execute(serviceOrderId, executionId, ExecutionStatus.PENDING) } returns
             sampleResponse.copy(status = ExecutionStatus.PENDING)
 
         mockMvc.perform(
@@ -153,7 +171,7 @@ class ExecutionControllerTest {
             sampleResponse,
             sampleResponse.copy(id = UUID.randomUUID(), basicDescription = BasicExecution.BRAKE_INSPECTION)
         )
-        every { serviceOrderService.addExecutionBatch(serviceOrderId, any()) } returns batchResponse
+        every { addExecutionBatch.execute(serviceOrderId, any()) } returns batchResponse
 
         mockMvc.perform(
             post("$basePath/batch")

@@ -1,12 +1,14 @@
 package com.cao.repairshop.user.controller
 
 import com.cao.repairshop.core.exception.GlobalExceptionHandler
-import com.cao.repairshop.user.domain.UserRole
-import com.cao.repairshop.user.dto.CreateUserRequest
-import com.cao.repairshop.user.dto.LoginRequest
-import com.cao.repairshop.user.dto.TokenResponse
-import com.cao.repairshop.user.dto.UserResponse
-import com.cao.repairshop.user.service.UserService
+import com.cao.repairshop.user.domain.entities.UserRole
+import com.cao.repairshop.user.infra.controller.dtos.CreateUserRequest
+import com.cao.repairshop.user.infra.controller.dtos.LoginRequest
+import com.cao.repairshop.user.infra.controller.dtos.TokenResponse
+import com.cao.repairshop.user.infra.controller.dtos.UserResponse
+import com.cao.repairshop.user.infra.controller.AuthController
+import com.cao.repairshop.user.application.usecases.AuthenticateUser
+import com.cao.repairshop.user.application.usecases.CreateUser
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
@@ -23,7 +25,8 @@ import java.util.UUID
 
 class AuthControllerTest {
 
-    private val userService: UserService = mockk()
+    private val authenticateUser: AuthenticateUser = mockk()
+    private val createUser: CreateUser = mockk()
     private lateinit var mockMvc: MockMvc
     private lateinit var mapper: JsonMapper
 
@@ -32,7 +35,7 @@ class AuthControllerTest {
         mapper = JsonMapper.builder().build()
 
         mockMvc = MockMvcBuilders
-            .standaloneSetup(AuthController(userService))
+            .standaloneSetup(AuthController(authenticateUser, createUser))
             .setControllerAdvice(GlobalExceptionHandler())
             .setMessageConverters(JacksonJsonHttpMessageConverter(mapper))
             .build()
@@ -41,7 +44,7 @@ class AuthControllerTest {
     @Test
     fun `POST auth login should return 200 with valid credentials`() {
         val request = LoginRequest(email = "user@test.com", password = "secret123")
-        every { userService.authenticate(any()) } returns TokenResponse(token = "jwt-token-here")
+        every { authenticateUser.execute(any()) } returns TokenResponse(token = "jwt-token-here")
 
         mockMvc.perform(
             post("/auth/login")
@@ -80,7 +83,7 @@ class AuthControllerTest {
             email = "john@test.com",
             phone = "+55 11 98888-7777"
         )
-        every { userService.createUser(any()) } returns userResponse
+        every { createUser.execute(any()) } returns userResponse
 
         mockMvc.perform(
             post("/auth/register")

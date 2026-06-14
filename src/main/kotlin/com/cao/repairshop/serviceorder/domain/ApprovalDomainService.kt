@@ -1,6 +1,6 @@
 package com.cao.repairshop.serviceorder.domain
 
-import com.cao.repairshop.serviceorder.entity.ServiceOrder
+import com.cao.repairshop.serviceorder.domain.entities.ServiceOrder
 import org.springframework.stereotype.Component
 import java.util.UUID
 
@@ -20,3 +20,4 @@ class ApprovalDomainService {
         order.refuse()
     }
 }
+

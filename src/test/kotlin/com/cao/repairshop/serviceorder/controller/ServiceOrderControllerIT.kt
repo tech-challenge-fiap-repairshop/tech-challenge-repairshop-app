@@ -1,14 +1,14 @@
 package com.cao.repairshop.serviceorder.controller
 
-import com.cao.repairshop.register.domain.Document
-import com.cao.repairshop.register.domain.Email
-import com.cao.repairshop.register.domain.Plate
-import com.cao.repairshop.register.entity.Customer
-import com.cao.repairshop.register.entity.Vehicle
-import com.cao.repairshop.register.repository.CustomerRepository
-import com.cao.repairshop.register.repository.VehicleRepository
-import com.cao.repairshop.serviceorder.dto.CreateServiceOrderRequest
-import com.cao.repairshop.serviceorder.dto.ExecutionDefinitionRequest
+import com.cao.repairshop.register.domain.entities.Document
+import com.cao.repairshop.register.domain.entities.Email
+import com.cao.repairshop.register.domain.entities.Plate
+import com.cao.repairshop.register.infra.persistence.models.CustomerEntity
+import com.cao.repairshop.register.infra.persistence.models.VehicleEntity
+import com.cao.repairshop.register.infra.persistence.repositories.CustomerRepository
+import com.cao.repairshop.register.infra.persistence.repositories.VehicleRepository
+import com.cao.repairshop.serviceorder.infra.controller.dtos.CreateServiceOrderRequest
+import com.cao.repairshop.serviceorder.infra.controller.dtos.ExecutionDefinitionRequest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -56,10 +56,10 @@ class ServiceOrderControllerIT {
             .build()
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build()
         val customer = customerRepository.save(
-            Customer(name = "SO IT Customer", document = Document("52998224725"), email = Email(customerEmail))
+            CustomerEntity(name = "SO IT Customer", document = Document("52998224725"), email = Email(customerEmail))
         )
         vehicleRepository.save(
-            Vehicle(customer = customer, plate = Plate(vehiclePlate), brand = "SO", model = "Integration")
+            VehicleEntity(customer = customer, plate = Plate(vehiclePlate), brand = "SO", model = "Integration")
         )
     }
 
