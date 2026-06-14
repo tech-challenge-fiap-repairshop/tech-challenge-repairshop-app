@@ -7,7 +7,6 @@ import com.cao.repairshop.inventory.infra.controller.dtos.UpdateInsumeRequest
 import com.cao.repairshop.inventory.infra.controller.InsumeController
 import com.cao.repairshop.inventory.application.usecases.CreateInsume
 import com.cao.repairshop.inventory.application.usecases.FindInsume
-import com.cao.repairshop.inventory.application.usecases.FindAllInsumes
 import com.cao.repairshop.inventory.application.usecases.UpdateInsume
 import com.cao.repairshop.inventory.application.usecases.DeleteInsume
 import io.mockk.every
@@ -15,6 +14,7 @@ import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver
 import org.springframework.data.web.config.SpringDataJackson3Configuration
 import org.springframework.http.MediaType
@@ -32,7 +32,6 @@ class InsumeControllerTest {
 
     private val createInsume: CreateInsume = mockk()
     private val findInsume: FindInsume = mockk()
-    private val findAllInsumes: FindAllInsumes = mockk()
     private val updateInsume: UpdateInsume = mockk()
     private val deleteInsume: DeleteInsume = mockk()
     private lateinit var mockMvc: MockMvc
@@ -56,7 +55,7 @@ class InsumeControllerTest {
             .build()
 
         mockMvc = MockMvcBuilders
-            .standaloneSetup(InsumeController(createInsume, findInsume, findAllInsumes, updateInsume, deleteInsume))
+            .standaloneSetup(InsumeController(createInsume, findInsume, updateInsume, deleteInsume))
             .setControllerAdvice(GlobalExceptionHandler())
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(JacksonJsonHttpMessageConverter(mapper))
@@ -86,7 +85,7 @@ class InsumeControllerTest {
 
     @Test
     fun `GET insumes should return 200 paginated`() {
-        every { findAllInsumes.execute(any()) } returns PageImpl(listOf(sampleResponse))
+        every { findInsume.findAll(any<Pageable>()) } returns PageImpl(listOf(sampleResponse))
 
         mockMvc.perform(get("/insumes"))
             .andExpect(status().isOk)
@@ -95,7 +94,7 @@ class InsumeControllerTest {
 
     @Test
     fun `GET insumes by id should return 200`() {
-        every { findInsume.execute(insumeId) } returns sampleResponse
+        every { findInsume.findById(insumeId) } returns sampleResponse
 
         mockMvc.perform(get("/insumes/$insumeId"))
             .andExpect(status().isOk)

@@ -20,37 +20,37 @@ import java.util.UUID
 @RestController
 @RequestMapping("/vehicles")
 class VehicleController(
-    private val CreateVehicle: CreateVehicle,
-    private val FindVehicle: FindVehicle,
-    private val UpdateVehicle: UpdateVehicle,
-    private val DeleteVehicle: DeleteVehicle
+    private val createVehicle: CreateVehicle,
+    private val findVehicle: FindVehicle,
+    private val updateVehicle: UpdateVehicle,
+    private val deleteVehicle: DeleteVehicle
 ) : VehicleApi {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     override fun create(@Valid @RequestBody request: CreateVehicleRequest): ResponseEntity<VehicleResponse> {
-        return ResponseEntity.status(HttpStatus.CREATED).body(CreateVehicle.execute(request).toResponse())
+        return ResponseEntity.status(HttpStatus.CREATED).body(createVehicle.execute(request).toResponse())
     }
 
     @GetMapping
     override fun findAll(pageable: Pageable): ResponseEntity<Page<VehicleResponse>> {
-        return ResponseEntity.ok(FindVehicle.findAll(pageable).map { it.toResponse() })
+        return ResponseEntity.ok(findVehicle.findAll(pageable).map { it.toResponse() })
     }
 
     @GetMapping("/{id}")
     override fun findById(@PathVariable id: UUID): ResponseEntity<VehicleResponse> {
-        return ResponseEntity.ok(FindVehicle.findById(id).toResponse())
+        return ResponseEntity.ok(findVehicle.findById(id).toResponse())
     }
 
     @PutMapping("/{id}")
     override fun update(@PathVariable id: UUID, @Valid @RequestBody request: UpdateVehicleRequest): ResponseEntity<VehicleResponse> {
-        return ResponseEntity.ok(UpdateVehicle.execute(id, request).toResponse())
+        return ResponseEntity.ok(updateVehicle.execute(id, request).toResponse())
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     override fun delete(@PathVariable id: UUID): ResponseEntity<Void> {
-        DeleteVehicle.execute(id)
+        deleteVehicle.execute(id)
         return ResponseEntity.noContent().build()
     }
 }

@@ -351,16 +351,135 @@ Itens resolvidos marcados com ~~tachado~~ e data de resolucao.
 
 ---
 
+## ALTA — Fase 2: Requisitos do Tech Challenge
+
+> Itens identificados na análise do PDF `14SOAT - Fase 2 - Tech challenge.pdf` utilizando os especialistas de `docs/sdd/`.
+> Estes itens são **requisitos obrigatórios** para entrega da Fase 2.
+
+### BKL-050: Listagem de OS com ordenação por prioridade de status
+
+- **Arquivo:** `ServiceOrderRepository.kt`, `ServiceOrderGateway.kt`, `FindAllServiceOrdersImpl.kt`
+- **Problema:** `findAll(pageable)` retorna as OS sem ordenação por prioridade de status. O PDF exige ordenação: Em Execução > Aguardando Aprovação > Diagnóstico > Recebida.
+- **Correção:** Criar query customizada com `ORDER BY CASE WHEN status = 'IN_EXECUTION' THEN 1 WHEN status = 'WAITING_APPROVAL' THEN 2 WHEN status = 'IN_DIAGNOSIS' THEN 3 WHEN status = 'RECEIVED' THEN 4 ELSE 5 END`. Adicionar novo método no Gateway ou tornar o padrão.
+- **Origem:** PDF Fase 2, slide sobre Listagem de OS
+
+### BKL-051: Listagem de OS com ordenação temporal (mais antigas primeiro)
+
+- **Arquivo:** `FindAllServiceOrdersImpl.kt`, `ServiceOrderGatewayImplJPA.kt`
+- **Problema:** Sem ordenação padrão por `enterTime ASC`. O Pageable do Spring aceita `?sort=enterTime,asc` via query param, mas não há default.
+- **Correção:** Definir `Sort.by(Sort.Direction.ASC, "enterTime")` como default no use case ou adicionar como secondary sort à query de prioridade de status.
+- **Origem:** PDF Fase 2, slide sobre Listagem de OS
+
+### BKL-052: Listagem de OS com filtro de exclusão de finalizadas/entregues
+
+- **Arquivo:** `ServiceOrderRepository.kt`, `ServiceOrderGateway.kt`, `FindAllServiceOrdersImpl.kt`
+- **Problema:** `findAll(pageable)` retorna TODAS as OS, incluindo FINALIZED, PAID e CANCELED. O PDF exige exclusão lógica (não física) das OS finalizadas e entregues.
+- **Correção:** Criar `findAllActive(pageable)` com `@Query("SELECT so FROM ServiceOrderEntity so WHERE so.status NOT IN ('FINALIZED', 'PAID', 'CANCELED')")` ou usar Spring Data derived query `findByStatusNotIn(...)`.
+- **Origem:** PDF Fase 2, slide sobre Listagem de OS
+
+### BKL-053: Criar manifestos Kubernetes (Deployments, Services, ConfigMaps, Secrets, HPA)
+
+- **Diretório:** `/k8s/` (a ser criado)
+- **Problema:** Não existem manifestos Kubernetes no projeto. O PDF exige orquestração com K8s.
+- **Correção:** Criar pasta `/k8s/` com:
+  - `deployment.yaml` — Deployment da aplicação com liveness/readiness probes via Actuator
+  - `service.yaml` — ClusterIP ou LoadBalancer para expor a app
+  - `configmap.yaml` — Variáveis de configuração (URLs, profiles)
+  - `secret.yaml` — Credenciais de banco, JWT secret
+  - `hpa.yaml` — HPA baseado em CPU/memória (80% threshold)
+  - `postgres-deployment.yaml` — Deployment do PostgreSQL (ou referência a managed DB)
+- **Origem:** PDF Fase 2, seção Orquestração com K8s
+
+### BKL-054: Criar scripts Terraform para infraestrutura
+
+- **Diretório:** `/infra/` (a ser criado)
+- **Problema:** Não existem scripts de IaC no projeto. O PDF exige provisionamento com Terraform.
+- **Correção:** Criar pasta `/infra/` com:
+  - `main.tf` — Provider e recursos principais
+  - `variables.tf` — Variáveis de entrada
+  - `outputs.tf` — Saídas do provisionamento
+  - `kubernetes.tf` — Cluster K8s (EKS/GKE/AKS ou Kind/Minikube para local)
+  - `database.tf` — PostgreSQL (RDS/Cloud SQL ou container)
+  - `README.md` — Documentação de como aplicar os scripts
+- **Origem:** PDF Fase 2, seção Infraestrutura como Código
+
+### BKL-055: Expandir pipeline CI/CD com Docker build e K8s deploy
+
+- **Arquivo:** `.github/workflows/ci.yml`
+- **Problema:** Pipeline atual só faz Build, Test e Quality Gate. Falta: build da imagem Docker, push para registry, deploy no K8s, deploy do banco, aplicação de manifestos YAML.
+- **Correção:** Adicionar stages ao pipeline:
+  - Stage 4: `docker build` + `docker push` para Docker Hub ou GHCR
+  - Stage 5: `kubectl apply` dos manifestos K8s ou Terraform apply
+  - Stage 6: Verificação de deploy (healthcheck)
+- **Origem:** PDF Fase 2, seção CI/CD
+
+### BKL-056: Atualizar README.md para Fase 2
+
+- **Arquivo:** `README.md`
+- **Problema:** README referencia "Fase 1" (`POSTECH 15SOAT — Tech Challenge Fase 1`). Faltam seções sobre K8s, Terraform e link do vídeo.
+- **Correção:**
+  - Atualizar referência para "Fase 2"
+  - Adicionar seção "Deploy no Kubernetes" com instruções
+  - Adicionar seção "Provisionamento com Terraform" com instruções
+  - Adicionar link do vídeo demonstrativo
+- **Origem:** PDF Fase 2, seção Entregáveis
+
+### BKL-057: Pipeline de CI para feature branches (build + test sem SonarCloud)
+
+- **Arquivo:** `.github/workflows/` (novo arquivo `ci-branch.yml` ou condição no `ci.yml`)
+- **Problema:** O pipeline atual só roda em `main` e `develop`. Branches de feature não têm validação automática de build e testes antes do PR, aumentando o risco de regressões serem descobertas tarde. O SonarCloud não deve ser executado em branches de feature para evitar consumo desnecessário de análises.
+- **Correção:** Criar workflow dedicado `.github/workflows/ci-branch.yml` acionado em `push` para qualquer branch que **não** seja `main` ou `develop`, com:
+  - Stage 1 — **Build**: `mvn clean compile -B -ntp -DskipTests`
+  - Stage 2 — **Test**: `mvn clean verify -B -ntp` com Testcontainers + upload de relatórios JaCoCo/Surefire
+  - **Sem** Quality Gate (SonarCloud) — economia de análises e tokens
+  - PR comment com status de testes (via `actions/upload-artifact` + `github-script`)
+- **Benefício (DevSecOps):** Feedback rápido ao desenvolvedor no próprio push da branch; erros capturados antes do PR para `develop`.
+- **Origem:** Melhoria de processo — Shift-Left CI
+
+### BKL-058: Smoke Tests após build e após deploy
+
+- **Arquivo:** `.github/workflows/ci.yml`, nova pasta `src/test/kotlin/.../smoke/` ou script shell
+- **Problema:** O pipeline não possui nenhuma validação de sanidade funcional. Após o build, não há confirmação de que o JAR inicializa corretamente. Após o deploy em K8s, não há verificação de que a aplicação está respondendo e os endpoints críticos estão acessíveis.
+- **Correção (duas etapas):**
+  - **Smoke após Build** — Stage intermediário entre `test` e `quality`: subir o JAR via `java -jar` (com PostgreSQL via Testcontainers ou H2) e verificar:
+    - `/actuator/health` retorna `{"status": "UP"}`
+    - `/actuator/info` retorna HTTP 200
+    - Timeout de 30s para startup; falha o pipeline se não subir
+  - **Smoke após Deploy** — Stage final do pipeline (após `kubectl apply`): usando `curl` ou script de health-check contra a URL do serviço K8s:
+    - `GET /actuator/health` → `200 UP`
+    - `GET /actuator/health/readiness` → `200 ACCEPTING_TRAFFIC`
+    - `POST /auth/login` com credencial de smoke → `200` (valida stack JWT + banco)
+    - Retry com backoff exponencial (3 tentativas, 10s de intervalo)
+- **Benefício (QA + DevSecOps):** Detecta falhas de startup, configuração de banco, variáveis de ambiente e roteamento K8s antes de promover o artefato.
+- **Origem:** Melhoria de qualidade — Shift-Left Testing + pós-deploy validation
+
+---
+
 ## Resumo de status
 
 | Status | Qtd |
 |---|---|
 | Resolvido | 38 |
 | Excluído / Epic | 2 |
-| Pendente | 10 |
-| **Total** | **50** |
+| Pendente (Backlog original) | 10 |
+| **Pendente (Fase 2 — NOVOS)** | **9** |
+| **Total** | **59** |
 
-### Tabela de Tarefas Pendentes (Análise de Sentido)
+### Tabela de Tarefas Pendentes — Fase 2 (Requisitos do PDF)
+
+| Tarefa | Prioridade | Categoria | Descrição Curta |
+|---|:---:|---|---|
+| BKL-050 | 🔴 Alta | API | Ordenação de listagem por prioridade de status |
+| BKL-051 | 🔴 Alta | API | Ordenação temporal (mais antigas primeiro) |
+| BKL-052 | 🔴 Alta | API | Filtro de exclusão de OS finalizadas/entregues |
+| BKL-053 | 🔴 Alta | Infra | Manifestos Kubernetes (Deployment, Service, HPA, etc.) |
+| BKL-054 | 🔴 Alta | Infra | Scripts Terraform para cluster K8s e banco |
+| BKL-055 | 🔴 Alta | CI/CD | Docker build + K8s deploy no pipeline |
+| BKL-056 | 🟡 Média | Docs | Atualização do README para Fase 2 |
+| BKL-057 | 🟡 Média | CI/CD | Pipeline leve para feature branches (build + test, sem SonarCloud) |
+| BKL-058 | 🟡 Média | CI/CD | Smoke tests após build e após deploy em K8s |
+
+### Tabela de Tarefas Pendentes (Análise de Sentido — Backlog Original)
 
 | Tarefa | Faz sentido? | Motivo | Link |
 |---|:---:|---|---|
@@ -423,5 +542,3 @@ Itens resolvidos marcados com ~~tachado~~ e data de resolucao.
 |---|---|---|
 | [BKL-006](#bkl-006-registro-aberto-permite-criar-attendant-sem-restricao) | Transformado em Épico de Autenticação Externa (Keycloak) | 2026-04-28 |
 | [BKL-032](#bkl-032-os-pode-ser-criada-sem-nenhum-servico-lista-vazia) | Regra de Negócio: OS pode nascer vazia para diagnóstico posterior | 2026-04-28 |
-
-

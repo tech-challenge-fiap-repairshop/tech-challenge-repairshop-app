@@ -16,7 +16,7 @@ class FindExecutionImpl(
 ) : FindExecution {
 
     @Transactional(readOnly = true)
-    override fun execute(serviceOrderId: UUID, executionId: UUID): ExecutionResponse {
+    override fun findById(serviceOrderId: UUID, executionId: UUID): ExecutionResponse {
         val order = serviceOrderGateway.findDetailedById(serviceOrderId)
             ?: throw EntityNotFoundException(ErrorMessages.ServiceOrder.NOT_FOUND)
 

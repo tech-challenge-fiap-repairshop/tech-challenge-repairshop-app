@@ -15,7 +15,6 @@ import java.util.UUID
 class InsumeController(
     private val createInsume: CreateInsume,
     private val findInsume: FindInsume,
-    private val findAllInsumes: FindAllInsumes,
     private val updateInsume: UpdateInsume,
     private val deleteInsume: DeleteInsume
 ) : InsumeApi {
@@ -27,11 +26,11 @@ class InsumeController(
 
     @GetMapping
     override fun findAll(pageable: Pageable): Page<InsumeResponse> =
-        findAllInsumes.execute(pageable)
+        findInsume.findAll(pageable)
 
     @GetMapping("/{id}")
     override fun findById(@PathVariable id: UUID): InsumeResponse =
-        findInsume.execute(id)
+        findInsume.findById(id)
 
     @PutMapping("/{id}")
     override fun update(@PathVariable id: UUID, @Valid @RequestBody request: UpdateInsumeRequest): InsumeResponse =

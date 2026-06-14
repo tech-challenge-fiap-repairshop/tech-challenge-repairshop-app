@@ -11,6 +11,7 @@ import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver
 import org.springframework.data.web.config.SpringDataJackson3Configuration
 import org.springframework.http.MediaType
@@ -28,7 +29,6 @@ import java.util.UUID
 class ServiceOrderControllerTest {
 
     private val createServiceOrder: CreateServiceOrder = mockk()
-    private val findAllServiceOrders: FindAllServiceOrders = mockk()
     private val findServiceOrder: FindServiceOrder = mockk()
     private val advanceServiceOrderStatus: AdvanceServiceOrderStatus = mockk()
     private val approveServiceOrder: ApproveServiceOrder = mockk()
@@ -70,7 +70,6 @@ class ServiceOrderControllerTest {
             .standaloneSetup(
                 ServiceOrderController(
                     createServiceOrder,
-                    findAllServiceOrders,
                     findServiceOrder,
                     advanceServiceOrderStatus,
                     approveServiceOrder,
@@ -105,7 +104,7 @@ class ServiceOrderControllerTest {
 
     @Test
     fun `GET service-orders should return 200`() {
-        every { findAllServiceOrders.execute(any()) } returns PageImpl(listOf(sampleResponse()))
+        every { findServiceOrder.findAll(any<Pageable>()) } returns PageImpl(listOf(sampleResponse()))
 
         mockMvc.perform(get("/service-orders"))
             .andExpect(status().isOk)
@@ -114,7 +113,7 @@ class ServiceOrderControllerTest {
 
     @Test
     fun `GET service-orders by id should return 200`() {
-        every { findServiceOrder.execute(orderId) } returns sampleResponse()
+        every { findServiceOrder.findById(orderId) } returns sampleResponse()
 
         mockMvc.perform(get("/service-orders/$orderId"))
             .andExpect(status().isOk)

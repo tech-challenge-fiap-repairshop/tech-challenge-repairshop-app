@@ -15,7 +15,6 @@ import java.util.UUID
 @RequestMapping("/service-orders")
 class ServiceOrderController(
     private val createServiceOrder: CreateServiceOrder,
-    private val findAllServiceOrders: FindAllServiceOrders,
     private val findServiceOrder: FindServiceOrder,
     private val advanceServiceOrderStatus: AdvanceServiceOrderStatus,
     private val approveServiceOrder: ApproveServiceOrder,
@@ -30,11 +29,11 @@ class ServiceOrderController(
 
     @GetMapping
     override fun findAll(pageable: Pageable): Page<ServiceOrderResponse> =
-        findAllServiceOrders.execute(pageable)
+        findServiceOrder.findAll(pageable)
 
     @GetMapping("/{id}")
     override fun findById(@PathVariable id: UUID): ServiceOrderResponse =
-        findServiceOrder.execute(id)
+        findServiceOrder.findById(id)
 
     @PatchMapping("/{id}/status")
     override fun advanceStatus(

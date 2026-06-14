@@ -101,7 +101,7 @@ class ExecutionControllerTest {
 
     @Test
     fun `GET execution by id should return 200`() {
-        every { findExecution.execute(serviceOrderId, executionId) } returns sampleResponse
+        every { findExecution.findById(serviceOrderId, executionId) } returns sampleResponse
 
         mockMvc.perform(get("$basePath/$executionId"))
             .andExpect(status().isOk)

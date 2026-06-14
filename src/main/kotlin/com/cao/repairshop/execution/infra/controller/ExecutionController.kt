@@ -37,7 +37,7 @@ class ExecutionController(
     override fun findById(
         @PathVariable serviceOrderId: UUID,
         @PathVariable executionId: UUID
-    ): ExecutionResponse = findExecution.execute(serviceOrderId, executionId)
+    ): ExecutionResponse = findExecution.findById(serviceOrderId, executionId)
 
     @PutMapping("/{executionId}")
     override fun update(

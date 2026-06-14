@@ -4,6 +4,6 @@ import com.cao.repairshop.register.infra.controller.dtos.UpdateVehicleRequest
 import com.cao.repairshop.register.domain.entities.Vehicle
 import java.util.UUID
 
-interface UpdateVehicle {
+fun interface UpdateVehicle {
     fun execute(id: UUID, request: UpdateVehicleRequest): Vehicle
 }

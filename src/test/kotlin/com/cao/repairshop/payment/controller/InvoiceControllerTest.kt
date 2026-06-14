@@ -7,12 +7,12 @@ import com.cao.repairshop.payment.infra.controller.dtos.InvoiceResponse
 import com.cao.repairshop.payment.infra.controller.InvoiceController
 import com.cao.repairshop.payment.application.usecases.CreateInvoice
 import com.cao.repairshop.payment.application.usecases.FindInvoice
-import com.cao.repairshop.payment.application.usecases.FindAllInvoices
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver
 import org.springframework.data.web.config.SpringDataJackson3Configuration
 import org.springframework.http.MediaType
@@ -32,7 +32,6 @@ class InvoiceControllerTest {
 
     private val createInvoice: CreateInvoice = mockk()
     private val findInvoice: FindInvoice = mockk()
-    private val findAllInvoices: FindAllInvoices = mockk()
     private lateinit var mockMvc: MockMvc
     private lateinit var mapper: JsonMapper
 
@@ -64,7 +63,7 @@ class InvoiceControllerTest {
             .build()
 
         mockMvc = MockMvcBuilders
-            .standaloneSetup(InvoiceController(createInvoice, findInvoice, findAllInvoices))
+            .standaloneSetup(InvoiceController(createInvoice, findInvoice))
             .setControllerAdvice(GlobalExceptionHandler())
             .setCustomArgumentResolvers(PageableHandlerMethodArgumentResolver())
             .setMessageConverters(JacksonJsonHttpMessageConverter(mapper))
@@ -92,7 +91,7 @@ class InvoiceControllerTest {
 
     @Test
     fun `GET invoices paginated should return 200`() {
-        every { findAllInvoices.execute(any()) } returns PageImpl(listOf(buildInvoiceResponse()))
+        every { findInvoice.findAll(any<Pageable>()) } returns PageImpl(listOf(buildInvoiceResponse()))
 
         mockMvc.perform(get("/invoices"))
             .andExpect(status().isOk)
@@ -103,7 +102,7 @@ class InvoiceControllerTest {
 
     @Test
     fun `GET invoices by id should return 200`() {
-        every { findInvoice.execute(invoiceId) } returns buildInvoiceResponse()
+        every { findInvoice.findById(invoiceId) } returns buildInvoiceResponse()
 
         mockMvc.perform(get("/invoices/$invoiceId"))
             .andExpect(status().isOk)
@@ -114,7 +113,7 @@ class InvoiceControllerTest {
 
     @Test
     fun `GET invoices by id not found should return 404`() {
-        every { findInvoice.execute(invoiceId) } throws EntityNotFoundException("Invoice not found")
+        every { findInvoice.findById(invoiceId) } throws EntityNotFoundException("Invoice not found")
 
         mockMvc.perform(get("/invoices/$invoiceId"))
             .andExpect(status().isNotFound)

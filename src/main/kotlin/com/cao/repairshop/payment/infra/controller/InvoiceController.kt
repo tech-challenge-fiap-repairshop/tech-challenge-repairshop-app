@@ -14,8 +14,7 @@ import java.util.UUID
 @RequestMapping("/invoices")
 class InvoiceController(
     private val createInvoice: CreateInvoice,
-    private val findInvoice: FindInvoice,
-    private val findAllInvoices: FindAllInvoices
+    private val findInvoice: FindInvoice
 ) : InvoiceApi {
 
     @PostMapping
@@ -25,10 +24,10 @@ class InvoiceController(
 
     @GetMapping("/{id}")
     override fun findById(@PathVariable id: UUID): InvoiceResponse =
-        findInvoice.execute(id)
+        findInvoice.findById(id)
 
     @GetMapping
     override fun findAll(pageable: Pageable): Page<InvoiceResponse> =
-        findAllInvoices.execute(pageable)
+        findInvoice.findAll(pageable)
 }
 

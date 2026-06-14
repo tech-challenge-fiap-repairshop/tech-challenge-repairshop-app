@@ -4,6 +4,6 @@ import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
 import com.cao.repairshop.serviceorder.infra.controller.dtos.ServiceOrderResponse
 import java.util.UUID
 
-interface AdvanceServiceOrderStatus {
+fun interface AdvanceServiceOrderStatus {
     fun execute(id: UUID, newStatus: ServiceOrderStatus): ServiceOrderResponse
 }

@@ -104,6 +104,8 @@ jobs:
     name: "\U0001F50D Quality Gate (SonarCloud)"
     needs: test
     runs-on: ubuntu-latest
+    # Só roda se NÃO for um PR de um fork
+    if: github.event.pull_request.head.repo.full_name == github.repository
 
     steps:
       - name: Checkout repository
@@ -145,7 +147,6 @@ jobs:
           -Dsonar.projectKey=repairshop
           -Dsonar.organization=alexandre-agamin
           -Dsonar.host.url=https://sonarcloud.io
-          -Dsonar.token=${{ secrets.SONAR_TOKEN }}
           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
           -Dsonar.java.binaries=target/classes
           -Dsonar.kotlin.binaries=target/classes

@@ -4,6 +4,6 @@ import com.cao.repairshop.register.infra.controller.dtos.UpdateCustomerRequest
 import com.cao.repairshop.register.domain.entities.Customer
 import java.util.UUID
 
-interface UpdateCustomer {
+fun interface UpdateCustomer {
     fun execute(id: UUID, request: UpdateCustomerRequest): Customer
 }
