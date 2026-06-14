@@ -1,7 +1,7 @@
 package com.cao.repairshop.core.exception
 
 import jakarta.servlet.http.HttpServletRequest
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException

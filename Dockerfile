@@ -1,33 +1,27 @@
 # ==========================================
-# ESTÁGIO 1: BUILD (Compilação)
+# Stage 1: Build (Maven + JDK)
 # ==========================================
 FROM maven:3-eclipse-temurin-24 AS builder
+WORKDIR /app
 
-WORKDIR /build
+# Copia arquivos e empacota a aplicação
 COPY pom.xml .
 COPY src ./src
-
-RUN mvn clean package -DskipTests
+RUN mvn clean package -B -ntp -DskipTests
 
 # ==========================================
-# ESTÁGIO 2: RUN (Execução)
+# Stage 2: Runtime (JRE minimal)
 # ==========================================
-# Usamos apenas o JRE (Java Runtime Environment), muito mais leve!
 FROM eclipse-temurin:24-jre
 
 WORKDIR /app
 
-# Criamos o usuário não-root
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+# Copia apenas o JAR compilado do builder
+COPY --from=builder /app/target/repairshop-0.0.1-SNAPSHOT.jar app.jar
 
-# Copiamos APENAS o .jar gerado no estágio "builder" e já renomeamos
-COPY --from=builder /build/target/repairshop-0.0.1-SNAPSHOT.jar app.jar
-
-# Damos a propriedade do arquivo para o appuser
-RUN chown appuser:appuser app.jar
-
-# Trocamos para o usuário seguro
-USER appuser
+# Configuração DevSecOps: usar usuário não-root
+RUN useradd -m springuser
+USER springuser
 
 EXPOSE 8080
 
