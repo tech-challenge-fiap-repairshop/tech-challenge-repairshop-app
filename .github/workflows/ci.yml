@@ -21,18 +21,18 @@ env:
 
 # ============================================================================
 # PIPELINE — Jobs separados por responsabilidade
-#   ┌──────────┐     ┌──────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-#   │ Build &  │────▶│  Test    │────▶│   Quality    │────▶│  Container,  │────▶│   Deploy &   │
-#   │Post-Build│     │ Unit+IT  │     │ Gate (Sonar) │     │ Sec & Smoke  │     │ Post-Deploy  │
-#   └──────────┘     └──────────┘     └──────────────┘     └──────────────┘     └──────────────┘
+#   ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────┐     ┌──────────────┐
+#   │  Build   │────▶│Post-Build│────▶│  Test    │────▶│   Quality    │────▶│  Container,  │────▶│  Deploy  │────▶│ Post-Deploy  │
+#   │ Compile  │     │Smoke Test│     │ Unit+IT  │     │ Gate (Sonar) │     │ Sec & Smoke  │     │  (Prod)  │     │  Smoke Test  │
+#   └──────────┘     └──────────┘     └──────────┘     └──────────────┘     └──────────────┘     └──────────┘     └──────────────┘
 # ============================================================================
 jobs:
 
   # ==========================================================================
-  # STAGE 1 — BUILD: Compila o projeto e valida dependências
+  # STAGE 1 — BUILD: Compila o projeto e empacota o artefato (JAR)
   # ==========================================================================
   build:
-    name: "\U0001F3D7\uFE0F Build"
+    name: "🏗️ Build"
     runs-on: ubuntu-latest
 
     steps:
@@ -49,10 +49,10 @@ jobs:
       - name: Compile project (skip tests)
         run: mvn clean compile -B -ntp -DskipTests
 
-      - name: Post-Build — Package application (skip tests)
+      - name: Package application (skip tests)
         run: mvn package -B -ntp -DskipTests
 
-      - name: Post-Build — Upload package artifact (JAR)
+      - name: Upload package artifact (JAR)
         uses: actions/upload-artifact@v4
         with:
           name: app-jar
@@ -60,15 +60,73 @@ jobs:
           retention-days: 7
 
   # ==========================================================================
+  # STAGE 1.5 — POST-BUILD SMOKE TEST: Teste de fumaça executando o JAR
+  # ==========================================================================
+  post-build-smoke-test:
+    name: "🧪 Post-Build Smoke Test"
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: maven
+
+      - name: Download package artifact (JAR)
+        uses: actions/download-artifact@v4
+        with:
+          name: app-jar
+          path: target/
+
+      - name: Start dependencies (Postgres & Mailhog)
+        run: docker compose up -d postgres mailhog
+
+      - name: Wait for Postgres to be healthy
+        run: |
+          until [ "$(docker inspect -f '{{.State.Health.Status}}' repairshop-db)" == "healthy" ]; do
+            echo "Waiting for database..."
+            sleep 2
+          done
+
+      - name: Run Application JAR
+        run: |
+          java -jar target/repairshop-0.0.1-SNAPSHOT.jar \
+            --spring.datasource.url=jdbc:postgresql://localhost:5432/repairshop \
+            --spring.datasource.username=repairshop \
+            --spring.datasource.password=repairshop \
+            --spring.mail.host=localhost \
+            --spring.mail.port=1025 > app.log 2>&1 &
+          echo "APP_PID=$!" >> $GITHUB_ENV
+
+      - name: Verify application startup (Actuator Health Check)
+        run: |
+          echo "Waiting for application to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
+              echo "Post-Build Smoke Test Passed! Application is UP."
+              docker compose down
+              exit 0
+            fi
+            echo "Waiting..."
+            sleep 2
+          done
+          echo "Post-Build Smoke Test Failed! Application log output:"
+          cat app.log
+          docker compose down
+          exit 1
+
+  # ==========================================================================
   # STAGE 2 — TEST: Testes unitários + integração (Testcontainers) + JaCoCo
-  #
-  # Nota: NÃO precisa de service container — o Testcontainers JDBC driver
-  #       (jdbc:tc:postgresql:17:///) cria o container automaticamente via
-  #       Docker, que já vem instalado no runner ubuntu-latest.
   # ==========================================================================
   test:
-    name: "\U0001F9EA Test"
-    needs: build
+    name: "🧪 Test"
+    needs: post-build-smoke-test
     runs-on: ubuntu-latest
 
     steps:
@@ -120,9 +178,6 @@ jobs:
         with:
           fetch-depth: 0  # Full history for SonarCloud blame data
 
-      # JDK 17 é usado aqui porque o sonar-maven-plugin tem problemas de
-      # compatibilidade com JDK 24. O Sonar Scanner usa Spring DI internamente
-      # e ainda não suporta JDK 24. Build e Test rodam no JDK 24 do projeto.
       - name: Set up JDK 17 (required by SonarCloud Scanner)
         uses: actions/setup-java@v4
         with:
@@ -264,6 +319,16 @@ jobs:
           echo "kubectl apply -f k8s/"
           echo "Deploy completed!"
 
+  # ==========================================================================
+  # STAGE 5.5 — POST-DEPLOY SMOKE TEST: Validação em Produção & Notificações
+  # ==========================================================================
+  post-deploy-smoke-test:
+    name: "🚀 Post-Deploy Smoke Test"
+    needs: deploy
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Post-Deploy — Verify production health check
         run: |
           echo "Verifying production health check..."
