@@ -1,7 +1,7 @@
 package com.cao.repairshop.core.validator.impl
 
 import com.cao.repairshop.core.validator.annotation.VerifyDocument
-import com.cao.repairshop.register.domain.Document
+import com.cao.repairshop.register.domain.entities.Document
 import jakarta.validation.ConstraintValidator
 import jakarta.validation.ConstraintValidatorContext
 

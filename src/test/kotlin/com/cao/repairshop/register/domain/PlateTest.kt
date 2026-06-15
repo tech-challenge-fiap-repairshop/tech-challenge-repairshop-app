@@ -1,5 +1,6 @@
 package com.cao.repairshop.register.domain
 
+import com.cao.repairshop.register.domain.entities.Plate
 import com.cao.repairshop.core.exception.InvalidPlateException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test

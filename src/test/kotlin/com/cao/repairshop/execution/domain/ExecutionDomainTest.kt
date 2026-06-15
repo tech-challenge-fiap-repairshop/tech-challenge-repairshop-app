@@ -1,28 +1,29 @@
 package com.cao.repairshop.execution.domain
 
 import com.cao.repairshop.core.exception.InvalidStateTransitionException
-import com.cao.repairshop.execution.entity.Execution
-import com.cao.repairshop.inventory.entity.Insume
-import com.cao.repairshop.register.domain.Document
-import com.cao.repairshop.register.domain.Plate
-import com.cao.repairshop.register.entity.Customer
-import com.cao.repairshop.register.entity.Vehicle
-import com.cao.repairshop.serviceorder.entity.ServiceOrder
+import com.cao.repairshop.execution.domain.entities.Execution
+import com.cao.repairshop.inventory.domain.entities.Insume
+import com.cao.repairshop.register.domain.entities.Customer
+import com.cao.repairshop.register.domain.entities.Vehicle
+import com.cao.repairshop.register.domain.entities.Document
+import com.cao.repairshop.register.domain.entities.Plate
+import com.cao.repairshop.serviceorder.domain.entities.ServiceOrder
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
+import java.util.UUID
 
 class ExecutionDomainTest {
 
     private fun buildExecution(status: ExecutionStatus = ExecutionStatus.INITIATED): Execution {
-        val customer = Customer(name = "Test", document = Document("52998224725"))
-        val vehicle = Vehicle(customer = customer, plate = Plate("ABC1234"), brand = "T", model = "C")
-        val order = ServiceOrder(customer = customer, vehicle = vehicle)
-        return Execution(serviceOrder = order, basicDescription = BasicExecution.OIL_CHANGE, price = BigDecimal("100"), status = status)
+        val customer = Customer(id = UUID.randomUUID(), name = "Test", document = Document("52998224725"))
+        val vehicle = Vehicle(id = UUID.randomUUID(), brand = "T", model = "C", plate = Plate("ABC1234"), customerId = customer.id)
+        val order = ServiceOrder(customerId = customer.id, vehicleId = vehicle.id)
+        return Execution(serviceOrderId = order.id, basicDescription = BasicExecution.OIL_CHANGE, price = BigDecimal("100"), status = status)
     }
 
-    private fun buildInsume(price: String = "25") = Insume(name = "Oil Filter", price = BigDecimal(price), unityPrice = BigDecimal(price), quantity = 10)
+    private fun buildInsume(price: String = "25") = Insume(id = UUID.randomUUID(), name = "Oil Filter", price = BigDecimal(price), unityPrice = BigDecimal(price), quantity = 10)
 
     @Test
     fun `advanceStatus valid transition INITIATED to PENDING records history`() {
@@ -77,6 +78,7 @@ class ExecutionDomainTest {
         val sorted = exec.histories.sortedBy { it.registerTime }
         assertThat(sorted.last().intervalTime).isNotNull
     }
+    
     @Test
     fun `getTotalPrice calculates sum of base price and all insumes`() {
         val exec = buildExecution()

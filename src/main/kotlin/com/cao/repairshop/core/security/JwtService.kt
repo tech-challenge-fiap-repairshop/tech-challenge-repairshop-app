@@ -1,6 +1,6 @@
 package com.cao.repairshop.core.security
 
-import com.cao.repairshop.user.domain.UserRole
+import com.cao.repairshop.user.domain.entities.UserRole
 import io.jsonwebtoken.*
 import io.jsonwebtoken.security.Keys
 import io.jsonwebtoken.security.SignatureException
