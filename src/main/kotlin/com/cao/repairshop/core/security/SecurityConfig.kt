@@ -1,6 +1,6 @@
 package com.cao.repairshop.core.security
 
-import com.cao.repairshop.user.domain.UserRole
+import com.cao.repairshop.user.domain.entities.UserRole
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

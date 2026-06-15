@@ -34,6 +34,8 @@ jobs:
   build:
     name: "🏗️ Build & Smoke Test"
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -70,13 +72,14 @@ jobs:
           done
 
       - name: Run Application JAR
+        env:
+          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+          SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST }}
+          SPRING_MAIL_PORT: ${{ secrets.SPRING_MAIL_PORT }}
         run: |
-          java -jar target/repairshop-0.0.1-SNAPSHOT.jar \
-            --spring.datasource.url=jdbc:postgresql://localhost:5432/repairshop \
-            --spring.datasource.username=repairshop \
-            --spring.datasource.password=repairshop \
-            --spring.mail.host=localhost \
-            --spring.mail.port=1025 > app.log 2>&1 &
+          java -jar target/repairshop-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
           echo "APP_PID=$!" >> $GITHUB_ENV
 
       - name: Verify application startup (Actuator Health Check)
@@ -103,6 +106,8 @@ jobs:
     name: "🧪 Test"
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -144,8 +149,10 @@ jobs:
   quality:
     name: "🔍 Quality Gate (SonarCloud)"
     needs: test
-    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -153,10 +160,10 @@ jobs:
         with:
           fetch-depth: 0  # Full history for SonarCloud blame data
 
-      - name: Set up JDK 17 (required by SonarCloud Scanner)
+      - name: Set up JDK ${{ env.JAVA_VERSION }} (matching compile version)
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: ${{ env.JAVA_VERSION }}
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           cache: maven
 
@@ -184,6 +191,7 @@ jobs:
           -Dsonar.projectKey=repairshop
           -Dsonar.organization=alexandre-agamin
           -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.token="$SONAR_TOKEN"
           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
           -Dsonar.java.binaries=target/classes
           -Dsonar.kotlin.binaries=target/classes
@@ -209,14 +217,14 @@ jobs:
 
       - name: Log in to the Container registry
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-        uses: docker/login-action@v3
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf
         with:
           context: .
           push: false
@@ -224,7 +232,7 @@ jobs:
           tags: ghcr.io/${{ env.REPO_LOWERCASE }}/repairshop:latest
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
         with:
           image-ref: 'ghcr.io/${{ env.REPO_LOWERCASE }}/repairshop:latest'
           format: 'table'
@@ -244,13 +252,19 @@ jobs:
           done
 
       - name: Run Smoke Test (Start application container)
+        env:
+          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+          SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST }}
+          SPRING_MAIL_PORT: ${{ secrets.SPRING_MAIL_PORT }}
         run: |
           docker run -d --name smoke-app --network host \
-            -e SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/repairshop \
-            -e SPRING_DATASOURCE_USERNAME=repairshop \
-            -e SPRING_DATASOURCE_PASSWORD=repairshop \
-            -e SPRING_MAIL_HOST=localhost \
-            -e SPRING_MAIL_PORT=1025 \
+            -e SPRING_DATASOURCE_URL="$SPRING_DATASOURCE_URL" \
+            -e SPRING_DATASOURCE_USERNAME="$SPRING_DATASOURCE_USERNAME" \
+            -e SPRING_DATASOURCE_PASSWORD="$SPRING_DATASOURCE_PASSWORD" \
+            -e SPRING_MAIL_HOST="$SPRING_MAIL_HOST" \
+            -e SPRING_MAIL_PORT="$SPRING_MAIL_PORT" \
             ghcr.io/${{ env.REPO_LOWERCASE }}/repairshop:latest
 
       - name: Verify application startup (Actuator Health Check)
@@ -286,6 +300,8 @@ jobs:
     needs: docker-build-push
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Deploy to Kubernetes
@@ -302,6 +318,8 @@ jobs:
     needs: deploy
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Post-Deploy — Verify production health check

@@ -14,6 +14,9 @@ RUN mvn clean package -B -ntp -DskipTests
 # ==========================================
 FROM eclipse-temurin:24-jre
 
+# Atualiza pacotes do SO para mitigar vulnerabilidades do Ubuntu (Trivy)
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Copia apenas o JAR compilado do builder

@@ -124,3 +124,6 @@ $RECYCLE.BIN/
 /.postman/
 /postman/
 /.claude/
+
+# --- 10. CUSTOM AND TEMP SCRIPTS ---
+/scripts/
