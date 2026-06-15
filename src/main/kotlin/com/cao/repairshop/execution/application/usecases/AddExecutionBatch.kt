@@ -4,6 +4,6 @@ import com.cao.repairshop.execution.infra.controller.dtos.CreateExecutionBatchRe
 import com.cao.repairshop.execution.infra.controller.dtos.ExecutionResponse
 import java.util.UUID
 
-interface AddExecutionBatch {
+fun interface AddExecutionBatch {
     fun execute(serviceOrderId: UUID, request: CreateExecutionBatchRequest): List<ExecutionResponse>
 }

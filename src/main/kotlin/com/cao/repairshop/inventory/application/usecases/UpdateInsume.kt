@@ -4,7 +4,7 @@ import com.cao.repairshop.inventory.infra.controller.dtos.InsumeResponse
 import com.cao.repairshop.inventory.infra.controller.dtos.UpdateInsumeRequest
 import java.util.UUID
 
-interface UpdateInsume {
+fun interface UpdateInsume {
     fun execute(id: UUID, request: UpdateInsumeRequest): InsumeResponse
 }
 

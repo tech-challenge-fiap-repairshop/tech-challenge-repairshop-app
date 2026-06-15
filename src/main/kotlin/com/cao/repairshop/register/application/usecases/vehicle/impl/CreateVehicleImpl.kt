@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class CreateVehicleImpl(
     private val vehicleGateway: VehicleGateway,
-    private val FindCustomer: FindCustomer
+    private val findCustomer: FindCustomer
 ) : CreateVehicle {
 
     @Transactional
@@ -28,7 +28,7 @@ class CreateVehicleImpl(
             throw DuplicateEntityException(ErrorMessages.Vehicle.DUPLICATE_PLATE)
         }
 
-        val customer = FindCustomer.findByEmailOrThrow(email)
+        val customer = findCustomer.findByEmailOrThrow(email)
 
         val vehicle = Vehicle(
             customerId = customer.id,
