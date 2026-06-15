@@ -217,14 +217,14 @@ jobs:
 
       - name: Log in to the Container registry
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Docker image
-        uses: docker/build-push-action@f6a172d30ed88449549078f1cf2a10c5516d9f6a
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf
         with:
           context: .
           push: false
@@ -232,7 +232,7 @@ jobs:
           tags: ghcr.io/${{ env.REPO_LOWERCASE }}/repairshop:latest
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
         with:
           image-ref: 'ghcr.io/${{ env.REPO_LOWERCASE }}/repairshop:latest'
           format: 'table'
