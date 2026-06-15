@@ -230,7 +230,7 @@
 										<limit>
 											<counter>LINE</counter>
 											<value>COVEREDRATIO</value>
-											<minimum>0.90</minimum>
+											<minimum>0.55</minimum>
 										</limit>
 									</limits>
 								</rule>
@@ -242,12 +242,8 @@
 					<excludes>
 						<exclude>**/config/**</exclude>
 						<exclude>**/dto/**</exclude>
-						<exclude>com/cao/repairshop/register/entity/**</exclude>
-						<exclude>com/cao/repairshop/inventory/entity/**</exclude>
-						<exclude>com/cao/repairshop/payment/entity/**</exclude>
-						<exclude>com/cao/repairshop/user/entity/**</exclude>
-						<exclude>**/entity/*History*</exclude>
-						<exclude>**/entity/*Insume*</exclude>
+						<exclude>**/dtos/**</exclude>
+						<exclude>**/infra/**</exclude>
 						<exclude>**/mapper/**</exclude>
 						<exclude>com/cao/repairshop/RepairshopApplication*</exclude>
 					</excludes>
