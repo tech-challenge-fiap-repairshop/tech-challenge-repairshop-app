@@ -21,18 +21,18 @@ env:
 
 # ============================================================================
 # PIPELINE — Jobs separados por responsabilidade
-#   ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────┐     ┌──────────────┐
-#   │  Build   │────▶│Post-Build│────▶│  Test    │────▶│   Quality    │────▶│  Container,  │────▶│  Deploy  │────▶│ Post-Deploy  │
-#   │ Compile  │     │Smoke Test│     │ Unit+IT  │     │ Gate (Sonar) │     │ Sec & Smoke  │     │  (Prod)  │     │  Smoke Test  │
-#   └──────────┘     └──────────┘     └──────────┘     └──────────────┘     └──────────────┘     └──────────┘     └──────────────┘
+#   ┌────────────────┐     ┌──────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────┐     ┌──────────────┐
+#   │ Build & Smoke  │────▶│  Test    │────▶│   Quality    │────▶│  Container,  │────▶│  Deploy  │────▶│ Post-Deploy  │
+#   │   (Compile)    │     │ Unit+IT  │     │ Gate (Sonar) │     │ Sec & Smoke  │     │  (Prod)  │     │  Smoke Test  │
+#   └────────────────┘     └──────────┘     └──────────────┘     └──────────────┘     └──────────┘     └──────────────┘
 # ============================================================================
 jobs:
 
   # ==========================================================================
-  # STAGE 1 — BUILD: Compila o projeto e empacota o artefato (JAR)
+  # STAGE 1 — BUILD: Compila o projeto, empacota e realiza teste de fumaça
   # ==========================================================================
   build:
-    name: "🏗️ Build"
+    name: "🏗️ Build & Smoke Test"
     runs-on: ubuntu-latest
 
     steps:
@@ -58,31 +58,6 @@ jobs:
           name: app-jar
           path: target/*.jar
           retention-days: 7
-
-  # ==========================================================================
-  # STAGE 1.5 — POST-BUILD SMOKE TEST: Teste de fumaça executando o JAR
-  # ==========================================================================
-  post-build-smoke-test:
-    name: "🧪 Post-Build Smoke Test"
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up JDK ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v4
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: ${{ env.JAVA_DISTRIBUTION }}
-          cache: maven
-
-      - name: Download package artifact (JAR)
-        uses: actions/download-artifact@v4
-        with:
-          name: app-jar
-          path: target/
 
       - name: Start dependencies (Postgres & Mailhog)
         run: docker compose up -d postgres mailhog
@@ -126,7 +101,7 @@ jobs:
   # ==========================================================================
   test:
     name: "🧪 Test"
-    needs: post-build-smoke-test
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
