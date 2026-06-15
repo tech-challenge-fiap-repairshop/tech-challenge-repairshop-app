@@ -3,7 +3,7 @@
 -- ============================================================
 
 -- Customer
-CREATE TABLE tb_customer (
+CREATE TABLE IF NOT EXISTS tb_customer (
     id_tb_customer UUID PRIMARY KEY,
     name           VARCHAR(150) NOT NULL,
     document       VARCHAR(14)  NOT NULL UNIQUE,
@@ -15,7 +15,7 @@ CREATE TABLE tb_customer (
 );
 
 -- Vehicle
-CREATE TABLE tb_vehicle (
+CREATE TABLE IF NOT EXISTS tb_vehicle (
     id_tb_vehicle      UUID PRIMARY KEY,
     customer_id        UUID         NOT NULL REFERENCES tb_customer(id_tb_customer),
     plate              VARCHAR(7)   NOT NULL UNIQUE,
@@ -29,7 +29,7 @@ CREATE TABLE tb_vehicle (
 );
 
 -- Insume (inventory)
-CREATE TABLE tb_insume (
+CREATE TABLE IF NOT EXISTS tb_insume (
     id_tb_insume UUID PRIMARY KEY,
     name         VARCHAR(150)   NOT NULL,
     brand        VARCHAR(100),
@@ -40,7 +40,7 @@ CREATE TABLE tb_insume (
 );
 
 -- User
-CREATE TABLE tb_user (
+CREATE TABLE IF NOT EXISTS tb_user (
     id_tb_user UUID PRIMARY KEY,
     name       VARCHAR(150) NOT NULL,
     function   VARCHAR(50)  NOT NULL,
@@ -50,7 +50,7 @@ CREATE TABLE tb_user (
 );
 
 -- Service Order
-CREATE TABLE tb_service_order (
+CREATE TABLE IF NOT EXISTS tb_service_order (
     id_tb_service_order UUID PRIMARY KEY,
     customer_id         UUID           NOT NULL REFERENCES tb_customer(id_tb_customer),
     vehicle_id          UUID           NOT NULL REFERENCES tb_vehicle(id_tb_vehicle),
@@ -64,7 +64,7 @@ CREATE TABLE tb_service_order (
 );
 
 -- Service Order History
-CREATE TABLE tb_service_order_history (
+CREATE TABLE IF NOT EXISTS tb_service_order_history (
     id_tb_service_order_history UUID PRIMARY KEY,
     service_order_id            UUID        NOT NULL REFERENCES tb_service_order(id_tb_service_order),
     status                      VARCHAR(30) NOT NULL,
@@ -73,7 +73,7 @@ CREATE TABLE tb_service_order_history (
 );
 
 -- Execution
-CREATE TABLE tb_execution (
+CREATE TABLE IF NOT EXISTS tb_execution (
     id_tb_execution UUID PRIMARY KEY,
     service_order   UUID          NOT NULL REFERENCES tb_service_order(id_tb_service_order),
     basic_description VARCHAR(50) NOT NULL,
@@ -86,7 +86,7 @@ CREATE TABLE tb_execution (
 );
 
 -- Execution-Insume junction
-CREATE TABLE tb_execution_insume (
+CREATE TABLE IF NOT EXISTS tb_execution_insume (
     id_tb_execution UUID NOT NULL REFERENCES tb_execution(id_tb_execution),
     id_tb_insume    UUID NOT NULL REFERENCES tb_insume(id_tb_insume),
     quantity_used   INTEGER NOT NULL DEFAULT 1,
@@ -94,7 +94,7 @@ CREATE TABLE tb_execution_insume (
 );
 
 -- Execution History
-CREATE TABLE tb_execution_history (
+CREATE TABLE IF NOT EXISTS tb_execution_history (
     id_tb_execution_history UUID PRIMARY KEY,
     execution_id            UUID        NOT NULL REFERENCES tb_execution(id_tb_execution),
     status                  VARCHAR(20) NOT NULL,
@@ -103,20 +103,20 @@ CREATE TABLE tb_execution_history (
 );
 
 -- Indexes
-CREATE INDEX idx_vehicle_customer_id ON tb_vehicle(customer_id);
-CREATE INDEX idx_service_order_customer_id ON tb_service_order(customer_id);
-CREATE INDEX idx_service_order_vehicle_id ON tb_service_order(vehicle_id);
-CREATE INDEX idx_service_order_status ON tb_service_order(status);
-CREATE INDEX idx_so_history_service_order_id ON tb_service_order_history(service_order_id);
-CREATE INDEX idx_execution_service_order ON tb_execution(service_order);
-CREATE INDEX idx_execution_status ON tb_execution(status);
-CREATE INDEX idx_execution_insume_insume_id ON tb_execution_insume(id_tb_insume);
-CREATE INDEX idx_execution_history_execution_id ON tb_execution_history(execution_id);
-CREATE INDEX idx_customer_document ON tb_customer(document);
-CREATE INDEX idx_user_email ON tb_user(email);
+CREATE INDEX IF NOT EXISTS idx_vehicle_customer_id ON tb_vehicle(customer_id);
+CREATE INDEX IF NOT EXISTS idx_service_order_customer_id ON tb_service_order(customer_id);
+CREATE INDEX IF NOT EXISTS idx_service_order_vehicle_id ON tb_service_order(vehicle_id);
+CREATE INDEX IF NOT EXISTS idx_service_order_status ON tb_service_order(status);
+CREATE INDEX IF NOT EXISTS idx_so_history_service_order_id ON tb_service_order_history(service_order_id);
+CREATE INDEX IF NOT EXISTS idx_execution_service_order ON tb_execution(service_order);
+CREATE INDEX IF NOT EXISTS idx_execution_status ON tb_execution(status);
+CREATE INDEX IF NOT EXISTS idx_execution_insume_insume_id ON tb_execution_insume(id_tb_insume);
+CREATE INDEX IF NOT EXISTS idx_execution_history_execution_id ON tb_execution_history(execution_id);
+CREATE INDEX IF NOT EXISTS idx_customer_document ON tb_customer(document);
+CREATE INDEX IF NOT EXISTS idx_user_email ON tb_user(email);
 
 -- Invoice
-CREATE TABLE tb_invoice (
+CREATE TABLE IF NOT EXISTS tb_invoice (
     id_tb_invoice    UUID PRIMARY KEY,
     customer_id      UUID           NOT NULL REFERENCES tb_customer(id_tb_customer),
     service_order_id UUID           NOT NULL UNIQUE REFERENCES tb_service_order(id_tb_service_order),
@@ -127,8 +127,8 @@ CREATE TABLE tb_invoice (
     updated          TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_invoice_customer_id ON tb_invoice(customer_id);
-CREATE INDEX idx_invoice_service_order_id ON tb_invoice(service_order_id);
+CREATE INDEX IF NOT EXISTS idx_invoice_customer_id ON tb_invoice(customer_id);
+CREATE INDEX IF NOT EXISTS idx_invoice_service_order_id ON tb_invoice(service_order_id);
 
 
 --Initial INSERTS
