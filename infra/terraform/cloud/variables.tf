@@ -43,7 +43,7 @@ variable "db_instance_class" {
 variable "eks_node_instance_type" {
   description = "Tipo de instância EC2 para os worker nodes do EKS"
   type        = string
-  default     = "t3.nano"
+  default     = "t3.micro"
 }
 
 variable "lab_role_arn" {

@@ -11,7 +11,7 @@ resource "aws_db_subnet_group" "db_subnets" {
 # Grupo de Segurança para o RDS PostgreSQL
 resource "aws_security_group" "rds_sg" {
   name        = "${var.cluster_name}-rds-sg"
-  description = "Permite conexões vindas do cluster EKS na porta 5432"
+  description = "Permite conexoes vindas do cluster EKS na porta 5432"
   vpc_id      = aws_vpc.main.id
 
   # Entrada: Apenas tráfego na porta 5432 vindo da VPC (onde reside o EKS)
