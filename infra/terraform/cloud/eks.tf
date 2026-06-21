@@ -2,7 +2,7 @@
 resource "aws_eks_cluster" "eks" {
   name     = var.cluster_name
   role_arn = var.lab_role_arn
-  version  = "1.30"
+  version  = "1.36"
 
   access_config {
     authentication_mode                         = "API"
