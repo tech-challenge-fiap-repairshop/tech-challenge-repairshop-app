@@ -162,4 +162,35 @@ class ServiceOrderDomainTest {
         order.checkCompletion()
         assertThat(order.status).isEqualTo(ServiceOrderStatus.IN_EXECUTION)
     }
+
+    @Test
+    fun `addExecution on terminal states throws InvalidStateTransitionException`() {
+        val finalizedOrder = buildOrder(ServiceOrderStatus.FINALIZED)
+        val paidOrder = buildOrder(ServiceOrderStatus.PAID)
+        val canceledOrder = buildOrder(ServiceOrderStatus.CANCELED)
+
+        assertThatThrownBy {
+            finalizedOrder.addExecution(BasicExecution.OIL_CHANGE, null, BigDecimal("100"), null, emptyList())
+        }.isInstanceOf(InvalidStateTransitionException::class.java)
+            .hasMessageContaining("Cannot add execution: Service Order is in terminal state")
+
+        assertThatThrownBy {
+            paidOrder.addExecution(BasicExecution.OIL_CHANGE, null, BigDecimal("100"), null, emptyList())
+        }.isInstanceOf(InvalidStateTransitionException::class.java)
+            .hasMessageContaining("Cannot add execution: Service Order is in terminal state")
+
+        assertThatThrownBy {
+            canceledOrder.addExecution(BasicExecution.OIL_CHANGE, null, BigDecimal("100"), null, emptyList())
+        }.isInstanceOf(InvalidStateTransitionException::class.java)
+            .hasMessageContaining("Cannot add execution: Service Order is in terminal state")
+    }
+
+    @Test
+    fun `ensureNotTerminalState throws exception when in terminal state`() {
+        val order = buildOrder(ServiceOrderStatus.FINALIZED)
+        assertThatThrownBy { order.ensureNotTerminalState("do something") }
+            .isInstanceOf(InvalidStateTransitionException::class.java)
+            .hasMessageContaining("Cannot do something: Service Order is in terminal state")
+    }
 }
+

@@ -127,3 +127,11 @@ $RECYCLE.BIN/
 
 # --- 10. CUSTOM AND TEMP SCRIPTS ---
 /scripts/
+
+# --- 11. TERRAFORM ---
+.terraform/
+*.tfstate
+*.tfstate.backup
+crash.log
+*.tfvars
+*.tfvars.json

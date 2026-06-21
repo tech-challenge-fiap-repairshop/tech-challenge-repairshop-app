@@ -40,8 +40,7 @@ class Execution(
 
     fun addInsume(insume: Insume, quantity: Int) {
         val alreadyLinked = insumes.any { it.insume.id == insume.id }
-        if (alreadyLinked)
-            throw IllegalArgumentException("Insume ${insume.id} is already linked to this execution.")
+        require(!alreadyLinked) { "Insume ${insume.id} is already linked to this execution." }
 
         insumes.add(
             ExecutionInsume(

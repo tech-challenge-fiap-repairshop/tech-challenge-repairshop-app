@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: repairshop-service
+  namespace: repairshop
+  labels:
+    app: repairshop
+spec:
+  selector:
+    app: repairshop
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30080
+  type: NodePort

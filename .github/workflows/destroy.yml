@@ -1,0 +1,67 @@
+name: Destroy Cloud Infrastructure (Manual)
+
+# ============================================================================
+# Trigger: Gatilho manual com botão e input de segurança
+# ============================================================================
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_destroy:
+        description: 'Digite "DESTRUIR" em letras maiúsculas para confirmar a exclusão da infraestrutura AWS'
+        required: true
+        default: 'NAO'
+
+permissions:
+  contents: read
+
+jobs:
+  destroy:
+    name: "💥 Destroy Infrastructure & EKS"
+    # Só executa se a confirmação digitada for exatamente "DESTRUIR"
+    if: ${{ github.event.inputs.confirm_destroy == 'DESTRUIR' }}
+    runs-on: ubuntu-latest
+    
+    env:
+      # Passa a senha do banco para que o Terraform consiga fazer o planejamento do destroy
+      TF_VAR_db_password: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }} # Necessário para AWS Academy / LabRole
+          aws-region: us-east-1
+
+      # 1. Limpa os recursos do Kubernetes primeiro (especialmente Load Balancers/ELB)
+      - name: Set up Kubeconfig from EKS
+        run: |
+          echo "Configuring Kubernetes CLI credentials..."
+          aws eks update-kubeconfig --region us-east-1 --name repairshop-eks || echo "Cluster EKS não encontrado ou já deletado."
+
+      - name: Clean up Kubernetes Services (Load Balancers)
+        run: |
+          echo "Limpando recursos do Kubernetes no Namespace para liberar ENIs..."
+          kubectl delete -f k8s/ --ignore-not-found=true || echo "Nenhum manifesto ativo encontrado para deletar."
+          echo "Aguardando 60 segundos para desassociação das interfaces de rede (ELB/ENI)..."
+          sleep 60
+
+      # 2. Executa o terraform destroy
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e
+        with:
+          terraform_version: "1.7.0"
+
+      - name: Terraform Init
+        run: |
+          echo "Executing terraform init..."
+          cd infra/terraform/cloud && terraform init
+
+      - name: Terraform Destroy
+        run: |
+          echo "Executing terraform destroy..."
+          cd infra/terraform/cloud && terraform destroy -auto-approve

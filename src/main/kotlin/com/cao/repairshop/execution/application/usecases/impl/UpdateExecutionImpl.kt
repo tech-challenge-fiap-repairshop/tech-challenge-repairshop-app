@@ -23,6 +23,8 @@ class UpdateExecutionImpl(
         val order = serviceOrderGateway.findDetailedById(serviceOrderId)
             ?: throw EntityNotFoundException(ErrorMessages.ServiceOrder.NOT_FOUND)
 
+        order.ensureNotTerminalState("update execution")
+
         val execution = order.executions.find { it.id == executionId }
             ?: throw EntityNotFoundException(ErrorMessages.Execution.NOT_FOUND)
 

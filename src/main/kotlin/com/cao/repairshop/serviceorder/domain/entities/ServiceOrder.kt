@@ -55,6 +55,12 @@ class ServiceOrder(
         advanceStatus(ServiceOrderStatus.REFUSED)
     }
 
+    fun ensureNotTerminalState(action: String) {
+        if (status == ServiceOrderStatus.FINALIZED || status == ServiceOrderStatus.PAID || status == ServiceOrderStatus.CANCELED) {
+            throw InvalidStateTransitionException("Cannot $action: Service Order is in terminal state ($status).")
+        }
+    }
+
     fun addExecution(
         basicDescription: BasicExecution,
         fullDescription: String?,
@@ -62,6 +68,7 @@ class ServiceOrder(
         estimatedTime: BigDecimal?,
         insumes: List<Pair<Insume, Int>>
     ): Execution {
+        ensureNotTerminalState("add execution")
         val execution = Execution(
             serviceOrderId = this.id,
             basicDescription = basicDescription,

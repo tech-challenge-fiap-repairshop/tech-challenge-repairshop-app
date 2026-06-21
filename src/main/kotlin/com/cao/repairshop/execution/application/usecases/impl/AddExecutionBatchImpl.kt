@@ -25,6 +25,8 @@ class AddExecutionBatchImpl(
         val order = serviceOrderGateway.findDetailedById(serviceOrderId)
             ?: throw EntityNotFoundException(ErrorMessages.ServiceOrder.NOT_FOUND)
 
+        order.ensureNotTerminalState("add executions in batch")
+
         val executions = request.executions.map { execDef ->
             val resolvedInsumes = execDef.insumes.map {
                 val insume = insumeGateway.findById(it.insumeId)
