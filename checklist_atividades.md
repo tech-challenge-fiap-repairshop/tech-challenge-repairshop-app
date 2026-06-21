@@ -63,23 +63,23 @@
 
 ### Orquestração (Kubernetes - K8s)
 
-- [ ] Criar manifestos YAML para Deployments
-  > ❌ Pasta `/k8s` **não existe** no projeto
-- [ ] Criar manifestos YAML para Services
-  > ❌ Pendente
-- [ ] Criar manifestos YAML para ConfigMaps e Secrets (para variáveis sensíveis)
-  > ❌ Pendente
-- [ ] Configurar Horizontal Pod Autoscaler (HPA) baseado em CPU/memória
-  > ❌ Pendente
+- [x] Criar manifestos YAML para Deployments
+  > ✅ Criados manifestos `02-database.yaml` e `03-application.yaml` na pasta `/k8s`
+- [x] Criar manifestos YAML para Services
+  > ✅ Criados em conjunto com as aplicações e banco de dados
+- [x] Criar manifestos YAML para ConfigMaps e Secrets (para variáveis sensíveis)
+  > ✅ Arquivo `01-config.yaml` provisionado
+- [x] Configurar Horizontal Pod Autoscaler (HPA) baseado em CPU/memória
+  > ✅ HPA configurado para escalar a aplicação de 2 até 5 réplicas (CPU 70%, Memória 80%)
 
 ### Infraestrutura como Código (IaC - Terraform)
 
-- [ ] Criar scripts Terraform para provisionar o cluster Kubernetes
-  > ❌ Pasta `/infra` **não existe** no projeto
-- [ ] Criar scripts Terraform para provisionar o Banco de Dados
-  > ❌ Pendente
-- [ ] Documentar quais recursos estão sendo criados e como aplicar os scripts
-  > ❌ Pendente
+- [x] Criar scripts Terraform para provisionar o cluster Kubernetes
+  > ✅ Scripts em `infra/terraform/local/` usando provider local (Minikube/Docker Desktop)
+- [x] Criar scripts Terraform para provisionar o Banco de Dados
+  > ✅ `database.tf` criado (PostgreSQL 17 com PersistentVolumeClaim)
+- [x] Documentar quais recursos estão sendo criados e como aplicar os scripts
+  > ✅ Detalhado no arquivo `creation_infrastructure.md`
 
 ### CI/CD
 
@@ -89,14 +89,14 @@
   > ✅ Stage "Build" — `mvn clean compile -B -ntp -DskipTests`
 - [x] Pipeline deve executar os testes automatizados
   > ✅ Stage "Test" — `mvn clean verify -B -ntp` com Testcontainers + upload de artefatos JaCoCo
-- [ ] Pipeline deve fazer o Build da imagem Docker
-  > ❌ Não há step de `docker build` no pipeline
+- [x] Pipeline deve fazer o Build da imagem Docker
+  > ✅ Job `docker-build-push` adicionado no `.github/workflows/ci.yml`
 - [ ] Pipeline deve realizar o Deploy no cluster K8s
-  > ❌ Depende da criação do cluster K8s (Terraform)
+  > ❌ Pendente
 - [ ] Pipeline deve realizar o Deploy do banco de dados
   > ❌ Pendente
 - [ ] Pipeline deve aplicar os manifestos YAML no cluster
-  > ❌ Depende da criação dos manifestos K8s
+  > ❌ Pendente
 
 ---
 
@@ -108,10 +108,10 @@
   > ✅ Clean Architecture aplicada em todos os bounded contexts
 - [x] Arquivos `Dockerfile` e `docker-compose` na raiz ou local apropriado
   > ✅ Ambos na raiz do projeto
-- [ ] Pasta `/k8s` contendo os manifestos do Kubernetes
-  > ❌ Pasta não existe
-- [ ] Pasta `/infra` contendo os scripts Terraform
-  > ❌ Pasta não existe
+- [x] Pasta `/k8s` contendo os manifestos do Kubernetes
+  > ✅ Manifestos gerados e disponíveis
+- [x] Pasta `/infra` contendo os scripts Terraform
+  > ✅ Scripts organizados em `infra/terraform/local/`
 - [x] Arquivos de configuração da pipeline CI/CD
   > ✅ `.github/workflows/ci.yml`
 

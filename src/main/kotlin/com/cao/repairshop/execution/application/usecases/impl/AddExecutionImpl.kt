@@ -24,6 +24,8 @@ class AddExecutionImpl(
         val order = serviceOrderGateway.findDetailedById(serviceOrderId)
             ?: throw EntityNotFoundException(ErrorMessages.ServiceOrder.NOT_FOUND)
 
+        order.ensureNotTerminalState("add execution")
+
         val resolvedInsumes = request.insumes.map {
             val insume = insumeGateway.findById(it.insumeId)
                 ?: throw EntityNotFoundException(ErrorMessages.Insume.notFoundById(it.insumeId))

@@ -1,3 +1,4 @@
+
 # 🔧 Oficina API
 
 **Sistema Integrado de Atendimento e Execução de Serviços para Oficina Mecânica**
@@ -7,6 +8,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![Coverage](https://img.shields.io/badge/Coverage-80%25+-brightgreen)](.)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=repairshop&metric=alert_status&token=607ce2711213e7f43617f23c2b284b461dae2f37)](https://sonarcloud.io/summary/new_code?id=repairshop)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 *MVP do back-end para gestão de ordens de serviço, clientes, veículos e peças de uma oficina mecânica.*

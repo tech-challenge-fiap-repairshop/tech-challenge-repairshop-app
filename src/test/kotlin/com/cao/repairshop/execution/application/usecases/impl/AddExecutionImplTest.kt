@@ -102,4 +102,29 @@ class AddExecutionImplTest {
             addExecutionImpl.execute(serviceOrderId, request)
         }
     }
+
+    @Test
+    fun `should throw error when order is in terminal state`() {
+        val serviceOrderId = UUID.randomUUID()
+        val request = CreateExecutionRequest(
+            serviceOrderId = serviceOrderId,
+            basicDescription = "OIL_CHANGE",
+            price = BigDecimal("100.00"),
+            insumes = emptyList()
+        )
+
+        val serviceOrder = ServiceOrder(
+            id = serviceOrderId,
+            customerId = UUID.randomUUID(),
+            vehicleId = UUID.randomUUID(),
+            status = com.cao.repairshop.serviceorder.domain.ServiceOrderStatus.FINALIZED
+        )
+
+        every { serviceOrderGateway.findDetailedById(serviceOrderId) } returns serviceOrder
+
+        assertThrows(com.cao.repairshop.core.exception.InvalidStateTransitionException::class.java) {
+            addExecutionImpl.execute(serviceOrderId, request)
+        }
+    }
 }
+

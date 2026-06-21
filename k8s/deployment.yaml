@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: repairshop-app
+  namespace: repairshop
+  labels:
+    app: repairshop
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: repairshop
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: repairshop
+    spec:
+      containers:
+        - name: repairshop
+          image: ghcr.io/repairshop-fiap/tech-challenge-fiap/repairshop:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: repairshop-config
+            - secretRef:
+                name: repairshop-db-credentials
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            failureThreshold: 5
