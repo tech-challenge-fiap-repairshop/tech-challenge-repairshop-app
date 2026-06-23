@@ -16,6 +16,7 @@ on:
       - 'pom.xml'
       - 'Dockerfile'
       - 'k8s/**'
+      - '.github/workflows/ci.yml'
   pull_request:
     branches: [ '**' ]
     paths:
@@ -23,6 +24,7 @@ on:
       - 'pom.xml'
       - 'Dockerfile'
       - 'k8s/**'
+      - '.github/workflows/ci.yml'
   workflow_run:
     workflows: ["🛠️ Infrastructure Pipeline (Terraform)"]
     types:
