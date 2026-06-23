@@ -13,10 +13,6 @@ on:
     branches: [ 'main', 'develop' ]
     paths:
       - 'infra/**'
-  pull_request:
-    branches: [ 'main', 'develop' ]
-    paths:
-      - 'infra/**'
   workflow_dispatch:
 
 permissions:
@@ -26,6 +22,7 @@ jobs:
   terraform:
     name: "🛠️ Provision Infrastructure (Terraform)"
     runs-on: ubuntu-latest
+    environment: production
 
     env:
       TF_VAR_db_password: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
