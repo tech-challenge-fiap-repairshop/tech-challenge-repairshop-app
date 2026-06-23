@@ -1,21 +1,22 @@
 name: 🚀 Application CI/CD Pipeline
 
-# ==================================================================================================================================
+# =================================================================================================================================
 # PIPELINE — Ciclo de Vida da Aplicação e Deploy no EKS (Nativo)
 #   ┌────────────────┐     ┌──────────┐     ┌──────────────┐     ┌──────────────┐     ┌───────────┐     ┌──────────┐
 #   │ Build & Smoke  │────▶│  Test    │────▶│   Quality    │────▶│  Container,  │────▶│  Approve  │────▶│  Deploy  │
 #   │   (Compile)    │     │ Unit+IT  │     │ Gate (Sonar) │     │ Sec & Smoke  │     │ (Manual)  │     │  (Prod)  │
 #   └────────────────┘     └──────────┘     └──────────────┘     └──────────────┘     └───────────┘     └──────────┘
-# ==================================================================================================================================
+# =================================================================================================================================
 
 on:
   push:
-    branches: [ '**' ]
+    branches: [ 'main', 'develop' ]
     paths:
       - 'src/**'
       - 'pom.xml'
       - 'Dockerfile'
       - 'k8s/**'
+      - '.github/workflows/ci.yml'
   pull_request:
     branches: [ '**' ]
     paths:
@@ -23,11 +24,16 @@ on:
       - 'pom.xml'
       - 'Dockerfile'
       - 'k8s/**'
+      - '.github/workflows/ci.yml'
   workflow_run:
     workflows: ["🛠️ Infrastructure Pipeline (Terraform)"]
     types:
       - completed
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -182,7 +188,7 @@ jobs:
           cache: maven
 
       - name: Cache SonarCloud packages
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
@@ -247,7 +253,7 @@ jobs:
           tags: ghcr.io/${{ env.REPO_LOWERCASE }}/repairshop:latest
 
       - name: Cache Trivy Vulnerability Database
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: ~/.cache/trivy
           key: ${{ runner.os }}-trivy-${{ github.run_id }}
