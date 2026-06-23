@@ -10,7 +10,7 @@ name: 🚀 Application CI/CD Pipeline
 
 on:
   push:
-    branches: [ '**' ]
+    branches: [ 'main', 'develop' ]
     paths:
       - 'src/**'
       - 'pom.xml'
@@ -30,6 +30,10 @@ on:
     types:
       - completed
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
