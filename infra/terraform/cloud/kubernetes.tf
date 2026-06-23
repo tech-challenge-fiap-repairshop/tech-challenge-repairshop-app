@@ -11,7 +11,7 @@ resource "kubernetes_namespace" "repairshop" {
 # Criação do Secret com as credenciais do banco RDS para injeção na aplicação
 resource "kubernetes_secret" "db_credentials" {
   metadata {
-    name      = "db-credentials"
+    name      = "repairshop-db-credentials"
     namespace = kubernetes_namespace.repairshop.metadata[0].name
   }
 
@@ -23,3 +23,5 @@ resource "kubernetes_secret" "db_credentials" {
 
   type = "Opaque"
 }
+
+

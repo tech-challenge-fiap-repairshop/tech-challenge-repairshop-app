@@ -1,0 +1,61 @@
+name: 🛠️ Infrastructure Pipeline (Terraform)
+
+# ==================================================================================================================================
+# PIPELINE — Provisionamento de Infraestrutura AWS via Terraform (Nativo)
+#   ┌────────────────┐     ┌──────────────┐     ┌──────────────┐
+#   │ Configure AWS  │────▶│  TF Plan     │────▶│  TF Apply    │
+#   │ Credentials    │     │  (Dry-run)   │     │ (Main/Devel) │
+#   └────────────────┘     └──────────────┘     └──────────────┘
+# ==================================================================================================================================
+
+on:
+  push:
+    branches: [ 'main', 'develop' ]
+    paths:
+      - 'infra/**'
+  pull_request:
+    branches: [ 'main', 'develop' ]
+    paths:
+      - 'infra/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    name: "🛠️ Provision Infrastructure (Terraform)"
+    runs-on: ubuntu-latest
+
+    env:
+      TF_VAR_db_password: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e
+        with:
+          terraform_version: "1.7.0"
+
+      - name: Terraform Init
+        run: |
+          cd infra/terraform/cloud && terraform init
+
+      - name: Terraform Plan
+        run: |
+          cd infra/terraform/cloud && terraform plan
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        run: |
+          cd infra/terraform/cloud && terraform apply -auto-approve

@@ -1,38 +1,37 @@
-name: CI/CD Pipeline
+name: 🚀 Application CI/CD Pipeline
 
 # ==================================================================================================================================
-# PIPELINE — Fluxo Dinâmico Baseado em Alterações (Paths-Filter)
-#
-#                       ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-#              ┌───────▶│  Build & Smoke  │────▶│   Unit & IT     │────▶│   SonarCloud    │────▶│ Docker: Build,  │────┐
-#              │        │   (App Code)    │     │     Tests       │     │  Quality Gate   │     │ Scan & Push     │    │
-#   ┌──────────┴───┐    └─────────────────┘     └─────────────────┘     └─────────────────┘     └─────────────────┘    │
-#   │              │                                                                                                   │   ┌──────────┐     ┌──────────────┐
-#   │Detect Changes│───────────────────────────────────────(Se apenas manifestos K8s mudaram)─────────────────────────┼──▶│  Deploy  │────▶│ Post-Deploy  │
-#   │ (Path Filter)│                                                                                                   │   │  (EKS)   │     │  Smoke Test  │
-#   │              │────┐                                                                                              │   └──────────┘     └──────────────┘
-#   └──────────┬───┘    │                                                                                              │        ▲
-#              │        │                                                                                              │        │
-#              │        ▼                                                                                              │        │
-#              │    ┌─────────────────┐                                                                                │        │
-#              └───▶│ Terraform Apply │────────────────────────────────────────────────────────────────────────────────────────┘
-#                   │  (Infra/Cloud)  │
-#                   └─────────────────┘
+# PIPELINE — Ciclo de Vida da Aplicação e Deploy no EKS (Nativo)
+#   ┌────────────────┐     ┌──────────┐     ┌──────────────┐     ┌──────────────┐     ┌───────────┐     ┌──────────┐
+#   │ Build & Smoke  │────▶│  Test    │────▶│   Quality    │────▶│  Container,  │────▶│  Approve  │────▶│  Deploy  │
+#   │   (Compile)    │     │ Unit+IT  │     │ Gate (Sonar) │     │ Sec & Smoke  │     │ (Manual)  │     │  (Prod)  │
+#   └────────────────┘     └──────────┘     └──────────────┘     └──────────────┘     └───────────┘     └──────────┘
 # ==================================================================================================================================
-# Trigger: push e PR para todas as branches
-# ===============================================================================================================================
+
 on:
   push:
     branches: [ '**' ]
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+      - 'Dockerfile'
+      - 'k8s/**'
   pull_request:
     branches: [ '**' ]
+    paths:
+      - 'src/**'
+      - 'pom.xml'
+      - 'Dockerfile'
+      - 'k8s/**'
+  workflow_run:
+    workflows: ["🛠️ Infrastructure Pipeline (Terraform)"]
+    types:
+      - completed
+  workflow_dispatch:
 
 permissions:
   contents: read
 
-# ============================================================================
-# Variáveis reutilizáveis em todos os jobs
-# ============================================================================
 env:
   JAVA_VERSION: '24'
   JAVA_DISTRIBUTION: 'temurin'
@@ -40,50 +39,21 @@ env:
 jobs:
 
   # ==========================================================================
-  # STAGE 0 — DETECT CHANGES: Filtra dinamicamente as alterações de arquivos
-  # ==========================================================================
-  detect-changes:
-    name: "🔍 Detect Changes"
-    runs-on: ubuntu-latest
-    outputs:
-      app-code: ${{ steps.filter.outputs.app-code }}
-      k8s: ${{ steps.filter.outputs.k8s }}
-      infra: ${{ steps.filter.outputs.infra }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Filter Paths
-        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d
-        id: filter
-        with:
-          filters: |
-            app-code:
-              - 'src/**'
-              - 'pom.xml'
-              - 'Dockerfile'
-            k8s:
-              - 'k8s/**'
-            infra:
-              - 'infra/**'
-
-  # ==========================================================================
   # STAGE 1 — BUILD: Compila o projeto, empacota e realiza teste de fumaça
   # ==========================================================================
   build:
     name: "🏗️ Build & Smoke Test"
-    needs: detect-changes
-    if: needs.detect-changes.outputs.app-code == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     permissions:
       contents: read
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set up JDK ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.0.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: ${{ env.JAVA_DISTRIBUTION }}
@@ -96,7 +66,7 @@ jobs:
         run: mvn package -B -ntp -DskipTests
 
       - name: Upload package artifact (JAR)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: app-jar
           path: target/*.jar
@@ -145,19 +115,17 @@ jobs:
   # ==========================================================================
   test:
     name: "🧪 Test"
-    needs: [detect-changes, build]
-    # Roda apenas se houve alteração no código e o build passou
-    if: needs.detect-changes.outputs.app-code == 'true' && needs.build.result == 'success'
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: read
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set up JDK ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.0.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: ${{ env.JAVA_DISTRIBUTION }}
@@ -170,7 +138,7 @@ jobs:
 
       - name: Upload JaCoCo coverage report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: coverage-report
           path: |
@@ -180,7 +148,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           name: test-results
           path: target/surefire-reports/
@@ -191,9 +159,8 @@ jobs:
   # ==========================================================================
   quality:
     name: "🔍 Quality Gate (SonarCloud)"
-    needs: [detect-changes, test]
+    needs: test
     if: |
-      needs.detect-changes.outputs.app-code == 'true' &&
       needs.test.result == 'success' &&
       ((github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') || 
        (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
@@ -203,26 +170,26 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
 
       - name: Set up JDK ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.0.0
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           cache: maven
 
       - name: Cache SonarCloud packages
-        uses: actions/cache@v4
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
           path: ~/.sonar/cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
       - name: Download coverage report
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: coverage-report
           path: target/
@@ -248,8 +215,8 @@ jobs:
   # ==========================================================================
   docker-build-push:
     name: "🐳 Docker Build & Trivy Scan"
-    needs: [detect-changes, test]
-    if: needs.detect-changes.outputs.app-code == 'true' && needs.test.result == 'success'
+    needs: test
+    if: needs.test.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -257,7 +224,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Lowercase repository name
         run: |
@@ -278,6 +245,14 @@ jobs:
           push: false
           load: true
           tags: ghcr.io/${{ env.REPO_LOWERCASE }}/repairshop:latest
+
+      - name: Cache Trivy Vulnerability Database
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        with:
+          path: ~/.cache/trivy
+          key: ${{ runner.os }}-trivy-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-trivy-
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
@@ -341,71 +316,44 @@ jobs:
         run: docker push ghcr.io/${{ env.REPO_LOWERCASE }}/repairshop:latest
 
   # ==========================================================================
-  # STAGE 5 — TERRAFORM: Provisiona EKS e RDS (Se houver alterações na infra)
+  # STAGE 5 — APPROVAL: Aprovação Manual para Deploy em Produção
   # ==========================================================================
-  terraform:
-    name: "🛠️ Provision Infrastructure (Terraform)"
-    needs: detect-changes
-    if: needs.detect-changes.outputs.infra == 'true'
+  approve-deploy:
+    name: "⏳ Approve Deployment"
+    needs: docker-build-push
+    if: needs.docker-build-push.result == 'success' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
     runs-on: ubuntu-latest
     permissions:
+      issues: write
       contents: read
-
-    env:
-      TF_VAR_db_password: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b
+      - name: Manual Approval
+        uses: trstringer/manual-approval@74d99dff7380e3e4b122d4ededcbca2b6ce59367
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: us-east-1
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e
-        with:
-          terraform_version: "1.7.0"
-
-      - name: Terraform Init
-        run: |
-          cd infra/terraform/cloud && terraform init
-
-      - name: Terraform Plan
-        run: |
-          cd infra/terraform/cloud && terraform plan
-
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-        run: |
-          cd infra/terraform/cloud && terraform apply -auto-approve
+          secret: ${{ secrets.GITHUB_TOKEN }}
+          approvers: ${{ github.actor }}
+          minimum-approvals: 1
+          issue-title: "Deploying to Production (EKS)"
+          issue-body: "Please approve or deny the deployment of version ${{ github.sha }} to AWS EKS."
 
   # ==========================================================================
   # STAGE 6 — DEPLOY: Deploy final no Kubernetes EKS (Sincronizado)
   # ==========================================================================
   deploy:
     name: "🚀 Continuous Deployment to EKS"
-    needs: [detect-changes, docker-build-push, terraform]
-    # Executa se:
-    # 1. Qualquer alteração relevante aconteceu (código, K8s ou Infra)
-    # 2. As etapas das quais depende concluíram com sucesso ou foram puladas
-    if: |
-      always() &&
-      (needs.detect-changes.outputs.app-code == 'true' || needs.detect-changes.outputs.k8s == 'true' || needs.detect-changes.outputs.infra == 'true') &&
-      ((needs.detect-changes.outputs.app-code == 'true' && needs.docker-build-push.result == 'success') || (needs.detect-changes.outputs.app-code != 'true' && needs.docker-build-push.result == 'skipped')) &&
-      ((needs.detect-changes.outputs.infra == 'true' && needs.terraform.result == 'success') || (needs.detect-changes.outputs.infra != 'true' && needs.terraform.result == 'skipped')) &&
-      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    needs: approve-deploy
+    if: needs.approve-deploy.result == 'success'
     runs-on: ubuntu-latest
+    environment: production
     permissions:
       contents: read
+    env:
+      SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST }}
+      SPRING_MAIL_PORT: ${{ secrets.SPRING_MAIL_PORT }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b
@@ -419,76 +367,24 @@ jobs:
         run: |
           echo "Setting up Kubernetes credentials using AWS EKS CLI..."
           aws eks update-kubeconfig --region us-east-1 --name repairshop-eks
+
+      - name: Create or Update ConfigMap from GitHub Secrets
+        run: |
+          echo "Creating/Updating application ConfigMap..."
+          kubectl create configmap repairshop-config \
+            --namespace=repairshop \
+            --from-literal=SPRING_MAIL_HOST="$SPRING_MAIL_HOST" \
+            --from-literal=SPRING_MAIL_PORT="$SPRING_MAIL_PORT" \
+            --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Apply Manifests
         run: |
           echo "Applying Kubernetes manifests..."
           kubectl apply -f k8s/
 
-  # ==========================================================================
-  # STAGE 7 — POST-DEPLOY: Testes de Fumaça em Produção/Homologação
-  # ==========================================================================
-  post-deploy-smoke-test:
-    name: "🚀 Post-Deploy Smoke Test"
-    needs: deploy
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: us-east-1
-
-      - name: Set up Kubeconfig from EKS
+      - name: Wait for Deployment Rollout
         run: |
-          echo "Setting up Kubernetes credentials using AWS EKS CLI..."
-          aws eks update-kubeconfig --region us-east-1 --name repairshop-eks
+          echo "Aguardando a inicialização e prontidão dos novos pods..."
+          kubectl rollout status deployment/repairshop-app -n repairshop --timeout=5m
 
-      - name: Post-Deploy — Verify production health check
-        run: |
-          echo "Verifying production health check via LoadBalancer..."
-          LB_HOST=""
-          # Wait up to 5 minutes (30 * 10 seconds) for the LoadBalancer hostname to be assigned
-          for i in {1..30}; do
-            LB_HOST=$(kubectl get svc repairshop-service -n repairshop -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo "")
-            if [ -n "$LB_HOST" ]; then
-              echo "LoadBalancer hostname acquired: $LB_HOST"
-              break
-            fi
-            echo "Waiting for LoadBalancer hostname..."
-            sleep 10
-          done
 
-          if [ -z "$LB_HOST" ]; then
-            echo "Error: LoadBalancer hostname was not assigned in time."
-            exit 1
-          fi
-
-          echo "Waiting for LoadBalancer to become active and DNS to propagate..."
-          # Wait up to 5 minutes (30 * 10 seconds) for the endpoint to return status UP
-          for i in {1..30}; do
-            HEALTH_STATUS=$(curl -s --connect-timeout 5 "http://$LB_HOST/actuator/health" | grep -o '"status":"[^"]*"' | cut -d'"' -f4 || echo "DOWN")
-            if [ "$HEALTH_STATUS" = "UP" ]; then
-              echo "Post-Deploy Smoke Test Passed! Service is healthy and operational at http://$LB_HOST/actuator/health"
-              exit 0
-            fi
-            echo "Service not ready yet. Status: $HEALTH_STATUS. Retrying in 10s..."
-            sleep 10
-          done
-
-          echo "Error: Smoke test failed. LoadBalancer is not responding with 'UP' at http://$LB_HOST/actuator/health"
-          exit 1
-
-      - name: Post-Deploy — Notify deployment success
-        run: |
-          echo "Deployment succeeded. Sending notifications..."
-          echo "Slack notification sent successfully."
