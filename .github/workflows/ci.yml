@@ -236,13 +236,17 @@ jobs:
         run: |
           echo "REPO_LOWERCASE=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
-      - name: Log in to the Container registry
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v4
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: us-east-1
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@062b18b96a7aff079d4be91ef38c48d2d1377b8c # v2.0.1
 
       - name: Build Docker image
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf
@@ -250,7 +254,7 @@ jobs:
           context: .
           push: false
           load: true
-          tags: ghcr.io/${{ env.REPO_LOWERCASE }}/repairshop:latest
+          tags: ${{ steps.login-ecr.outputs.registry }}/repairshop:latest
 
       - name: Cache Trivy Vulnerability Database
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
@@ -263,7 +267,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
         with:
-          image-ref: 'ghcr.io/${{ env.REPO_LOWERCASE }}/repairshop:latest'
+          image-ref: '${{ steps.login-ecr.outputs.registry }}/repairshop:latest'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
@@ -294,7 +298,7 @@ jobs:
             -e SPRING_DATASOURCE_PASSWORD="$SPRING_DATASOURCE_PASSWORD" \
             -e SPRING_MAIL_HOST="$SPRING_MAIL_HOST" \
             -e SPRING_MAIL_PORT="$SPRING_MAIL_PORT" \
-            ghcr.io/${{ env.REPO_LOWERCASE }}/repairshop:latest
+            ${{ steps.login-ecr.outputs.registry }}/repairshop:latest
 
       - name: Verify application startup (Actuator Health Check)
         run: |
@@ -317,9 +321,23 @@ jobs:
           docker compose down
           exit 1
 
-      - name: Push Docker image
+      - name: Log in to the Container registry (GHCR)
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-        run: docker push ghcr.io/${{ env.REPO_LOWERCASE }}/repairshop:latest
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Docker image to ECR and GHCR
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        run: |
+          # Push para o Amazon ECR (Nativo AWS)
+          docker push ${{ steps.login-ecr.outputs.registry }}/repairshop:latest
+          
+          # Tag e Push para o GHCR (Nativo GitHub)
+          docker tag ${{ steps.login-ecr.outputs.registry }}/repairshop:latest ghcr.io/${{ env.REPO_LOWERCASE }}/repairshop:latest
+          docker push ghcr.io/${{ env.REPO_LOWERCASE }}/repairshop:latest
 
   # ==========================================================================
   # STAGE 5 — APPROVAL: Aprovação Manual para Deploy em Produção
@@ -382,6 +400,13 @@ jobs:
             --from-literal=SPRING_MAIL_HOST="$SPRING_MAIL_HOST" \
             --from-literal=SPRING_MAIL_PORT="$SPRING_MAIL_PORT" \
             --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Prepare Deployment Manifests
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com"
+          echo "Using ECR Registry: $ECR_REGISTRY"
+          sed -i "s|ECR_REGISTRY|${ECR_REGISTRY}|g" k8s/deployment.yaml
 
       - name: Apply Manifests
         run: |

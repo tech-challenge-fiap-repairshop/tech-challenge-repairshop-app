@@ -6,7 +6,7 @@ metadata:
   labels:
     app: repairshop
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: repairshop
@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: repairshop
-          image: ghcr.io/repairshop-fiap/tech-challenge-fiap/repairshop:latest
+          image: ECR_REGISTRY/repairshop:latest
           ports:
             - containerPort: 8080
           envFrom:
@@ -32,11 +32,11 @@ spec:
                 name: repairshop-db-credentials
           resources:
             requests:
-              cpu: 250m
-              memory: 512Mi
+              cpu: 100m
+              memory: 256Mi
             limits:
-              cpu: 1000m
-              memory: 1Gi
+              cpu: 500m
+              memory: 512Mi
           readinessProbe:
             httpGet:
               path: /actuator/health
