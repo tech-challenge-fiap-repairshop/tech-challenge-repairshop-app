@@ -7,4 +7,4 @@ metadata:
     app: repairshop
 data:
   SPRING_MAIL_HOST: mailhog
-  SPRING_MAIL_PORT: "1025"
+  SPRING_MAIL_PORT: 1025

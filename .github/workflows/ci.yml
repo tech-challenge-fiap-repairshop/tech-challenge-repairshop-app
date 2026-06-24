@@ -134,10 +134,17 @@ jobs:
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
           SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST }}
           SPRING_MAIL_PORT: ${{ secrets.SPRING_MAIL_PORT }}
-          MANAGEMENT_HEALTH_MAIL_ENABLED: "false"
         run: |
-          java -jar target/repairshop-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
-          echo "APP_PID=$!" >> $GITHUB_ENV
+          docker run -d --name smoke-jar --network repairshop-net --add-host localhost:host-gateway \
+            -v ${{ github.workspace }}:/app \
+            -w /app \
+            -p 8080:8080 \
+            -e SPRING_DATASOURCE_URL="$SPRING_DATASOURCE_URL" \
+            -e SPRING_DATASOURCE_USERNAME="$SPRING_DATASOURCE_USERNAME" \
+            -e SPRING_DATASOURCE_PASSWORD="$SPRING_DATASOURCE_PASSWORD" \
+            -e SPRING_MAIL_HOST="$SPRING_MAIL_HOST" \
+            -e SPRING_MAIL_PORT="$SPRING_MAIL_PORT" \
+            eclipse-temurin:24-jre java -jar target/repairshop-0.0.1-SNAPSHOT.jar
 
       - name: Verify application startup (Actuator Health Check)
         run: |
@@ -145,6 +152,8 @@ jobs:
           for i in {1..30}; do
             if curl -s http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
               echo "Post-Build Smoke Test Passed! Application is UP."
+              docker stop smoke-jar
+              docker rm smoke-jar
               docker compose down
               exit 0
             fi
@@ -152,7 +161,9 @@ jobs:
             sleep 2
           done
           echo "Post-Build Smoke Test Failed! Application log output:"
-          cat app.log
+          docker logs smoke-jar
+          docker stop smoke-jar
+          docker rm smoke-jar
           docker compose down
           exit 1
 
@@ -324,7 +335,7 @@ jobs:
             sleep 2
           done
 
-      - name: Run Smoke Test (Start application container)
+      - name: Debug Environment Variables
         env:
           SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
           SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
@@ -332,13 +343,40 @@ jobs:
           SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST }}
           SPRING_MAIL_PORT: ${{ secrets.SPRING_MAIL_PORT }}
         run: |
-          docker run -d --name smoke-app --network host\
+          echo "=== Debugging Environment Variables ==="
+          echo "SPRING_DATASOURCE_URL length: ${#SPRING_DATASOURCE_URL}"
+          echo "SPRING_DATASOURCE_USERNAME length: ${#SPRING_DATASOURCE_USERNAME}"
+          echo "SPRING_DATASOURCE_PASSWORD length: ${#SPRING_DATASOURCE_PASSWORD}"
+          echo "SPRING_MAIL_HOST length: ${#SPRING_MAIL_HOST}"
+          echo "SPRING_MAIL_PORT length: ${#SPRING_MAIL_PORT}"
+          
+          echo "SPRING_MAIL_HOST (base64): $(echo -n "$SPRING_MAIL_HOST" | base64)"
+          echo "SPRING_MAIL_PORT (base64): $(echo -n "$SPRING_MAIL_PORT" | base64)"
+          
+          if [ -n "$SPRING_DATASOURCE_URL" ]; then
+            echo -n "SPRING_DATASOURCE_URL (spaced): "
+            echo "$SPRING_DATASOURCE_URL" | sed 's/./& /g'
+          else
+            echo "SPRING_DATASOURCE_URL is empty!"
+          fi
+
+      - name: Run Smoke Test (Start application container)
+        env:
+          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+          SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST }}
+          SPRING_MAIL_PORT: ${{ secrets.SPRING_MAIL_PORT }}
+          JAVA_TOOL_OPTIONS: "-Djava.net.preferIPv4Stack=true"
+        run: |
+          docker run -d --name smoke-app --network repairshop-net --add-host localhost:host-gateway \
+            -p 8080:8080 \
             -e SPRING_DATASOURCE_URL="$SPRING_DATASOURCE_URL" \
             -e SPRING_DATASOURCE_USERNAME="$SPRING_DATASOURCE_USERNAME" \
             -e SPRING_DATASOURCE_PASSWORD="$SPRING_DATASOURCE_PASSWORD" \
             -e SPRING_MAIL_HOST="$SPRING_MAIL_HOST" \
             -e SPRING_MAIL_PORT="$SPRING_MAIL_PORT" \
-            -e MANAGEMENT_HEALTH_MAIL_ENABLED="false" \
+            -e JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS" \
             ${{ steps.login-ecr.outputs.registry }}/repairshop:latest
 
       - name: Verify application startup (Actuator Health Check)
