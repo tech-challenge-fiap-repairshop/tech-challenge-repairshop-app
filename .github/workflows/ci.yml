@@ -134,7 +134,6 @@ jobs:
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
           SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST }}
           SPRING_MAIL_PORT: ${{ secrets.SPRING_MAIL_PORT }}
-          MANAGEMENT_HEALTH_MAIL_ENABLED: "false"
         run: |
           java -jar target/repairshop-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
           echo "APP_PID=$!" >> $GITHUB_ENV
@@ -331,14 +330,15 @@ jobs:
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
           SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST }}
           SPRING_MAIL_PORT: ${{ secrets.SPRING_MAIL_PORT }}
+          JAVA_TOOL_OPTIONS: "-Djava.net.preferIPv4Stack=true"
         run: |
-          docker run -d --name smoke-app --network host\
+          docker run -d --name smoke-app --network host \
             -e SPRING_DATASOURCE_URL="$SPRING_DATASOURCE_URL" \
             -e SPRING_DATASOURCE_USERNAME="$SPRING_DATASOURCE_USERNAME" \
             -e SPRING_DATASOURCE_PASSWORD="$SPRING_DATASOURCE_PASSWORD" \
             -e SPRING_MAIL_HOST="$SPRING_MAIL_HOST" \
             -e SPRING_MAIL_PORT="$SPRING_MAIL_PORT" \
-            -e MANAGEMENT_HEALTH_MAIL_ENABLED="false" \
+            -e JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS" \
             ${{ steps.login-ecr.outputs.registry }}/repairshop:latest
 
       - name: Verify application startup (Actuator Health Check)
