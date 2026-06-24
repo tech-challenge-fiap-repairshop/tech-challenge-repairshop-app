@@ -36,13 +36,4 @@ resource "aws_eks_node_group" "nodes" {
   instance_types = [var.eks_node_instance_type]
 }
 
-# Add-on EBS CSI Driver para gerenciar Persistent Volumes baseados em EBS na AWS
-resource "aws_eks_addon" "ebs_csi" {
-  cluster_name                = aws_eks_cluster.eks.name
-  addon_name                  = "aws-ebs-csi-driver"
-  service_account_role_arn    = var.lab_role_arn
-  resolve_conflicts_on_create = "OVERWRITE"
-  resolve_conflicts_on_update = "OVERWRITE"
 
-  depends_on = [aws_eks_node_group.nodes]
-}
