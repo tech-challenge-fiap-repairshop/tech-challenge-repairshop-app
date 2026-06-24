@@ -18,12 +18,4 @@ output "eks_cluster_certificate_authority" {
   value       = aws_eks_cluster.eks.certificate_authority[0].data
 }
 
-output "rds_endpoint" {
-  description = "Endpoint da Instância RDS PostgreSQL"
-  value       = aws_db_instance.postgres.endpoint
-}
 
-output "rds_database_name" {
-  description = "Nome do banco de dados RDS"
-  value       = aws_db_instance.postgres.db_name
-}

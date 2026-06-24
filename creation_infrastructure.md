@@ -114,4 +114,4 @@ Siga os passos abaixo para provisionar e validar a infraestrutura:
 
 ## 🔄 Integração com Pipelines de CI/CD
 
-Esta infraestrutura do Terraform é sincronizada e ativada a partir da pipeline do GitHub Actions configurada em `.github/workflows/infra.yml`. Ela escuta modificações no diretório `infra/**` ou `k8s/**` nas branches principais (`main`, `develop`), garantindo práticas modernas de **GitOps** e Infraestrutura como Código (IaC).
+Esta infraestrutura do Terraform é sincronizada e ativada a partir da pipeline unificada do GitHub Actions configurada em `.github/workflows/ci.yml`. Ela escuta modificações no diretório `infra/**` ou `k8s/**` nas branches principais (`main`, `develop`), garantindo práticas modernas de **GitOps** e Infraestrutura como Código (IaC).

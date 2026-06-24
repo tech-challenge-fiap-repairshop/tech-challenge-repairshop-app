@@ -34,11 +34,7 @@ variable "db_password" {
   sensitive   = true
 }
 
-variable "db_instance_class" {
-  description = "Classe da instância do RDS"
-  type        = string
-  default     = "db.t4g.micro"
-}
+
 
 variable "eks_node_instance_type" {
   description = "Tipo de instância EC2 para os worker nodes do EKS"
@@ -51,3 +47,5 @@ variable "lab_role_arn" {
   type        = string
   default     = "arn:aws:iam::154448561009:role/LabRole"
 }
+
+

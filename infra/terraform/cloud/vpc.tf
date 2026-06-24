@@ -9,7 +9,7 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
 
   tags = {
-    Name                                      = "${var.cluster_name}-vpc"
+    Name                                        = "${var.cluster_name}-vpc"
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
   }
 }
@@ -32,9 +32,9 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name                                      = "${var.cluster_name}-public-${data.aws_availability_zones.available.names[count.index]}"
+    Name                                        = "${var.cluster_name}-public-${data.aws_availability_zones.available.names[count.index]}"
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
-    "kubernetes.io/role/elb"                  = "1"
+    "kubernetes.io/role/elb"                    = "1"
   }
 }
 
@@ -46,23 +46,13 @@ resource "aws_subnet" "private" {
   availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = {
-    Name                                      = "${var.cluster_name}-private-${data.aws_availability_zones.available.names[count.index]}"
+    Name                                        = "${var.cluster_name}-private-${data.aws_availability_zones.available.names[count.index]}"
     "kubernetes.io/cluster/${var.cluster_name}" = "shared"
-    "kubernetes.io/role/internal-elb"         = "1"
+    "kubernetes.io/role/internal-elb"           = "1"
   }
 }
 
-# Sub-redes Privadas para o RDS Banco de Dados
-resource "aws_subnet" "database" {
-  count             = 2
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = cidrsubnet(var.vpc_cidr, 8, count.index + 4)
-  availability_zone = data.aws_availability_zones.available.names[count.index]
 
-  tags = {
-    Name = "${var.cluster_name}-database-${data.aws_availability_zones.available.names[count.index]}"
-  }
-}
 
 # NAT Gateway e Elastic IP correspondente (na primeira sub-rede pública)
 resource "aws_eip" "nat" {
@@ -111,13 +101,7 @@ resource "aws_route_table" "private" {
   }
 }
 
-resource "aws_route_table" "database" {
-  vpc_id = aws_vpc.main.id
 
-  tags = {
-    Name = "${var.cluster_name}-database-rt"
-  }
-}
 
 # Associações de Tabelas de Roteamento
 resource "aws_route_table_association" "public" {
@@ -132,8 +116,4 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private.id
 }
 
-resource "aws_route_table_association" "database" {
-  count          = 2
-  subnet_id      = aws_subnet.database[count.index].id
-  route_table_id = aws_route_table.database.id
-}
+
