@@ -24,8 +24,8 @@ resource "aws_eks_node_group" "nodes" {
   subnet_ids      = aws_subnet.private[*].id
 
   scaling_config {
-    desired_size = 3
-    max_size     = 10
+    desired_size = 2
+    max_size     = 3
     min_size     = 1
   }
 
@@ -34,4 +34,12 @@ resource "aws_eks_node_group" "nodes" {
   }
 
   instance_types = [var.eks_node_instance_type]
+}
+
+# Add-on EBS CSI Driver para gerenciar Persistent Volumes baseados em EBS na AWS
+resource "aws_eks_addon" "ebs_csi" {
+  cluster_name = aws_eks_cluster.eks.name
+  addon_name   = "aws-ebs-csi-driver"
+
+  depends_on = [aws_eks_node_group.nodes]
 }

@@ -8,7 +8,7 @@ resource "kubernetes_namespace" "repairshop" {
   depends_on = [aws_eks_node_group.nodes]
 }
 
-# Criação do Secret com as credenciais do banco RDS para injeção na aplicação
+# Criação do Secret com as credenciais do banco para injeção na aplicação e no container do Postgres
 resource "kubernetes_secret" "db_credentials" {
   metadata {
     name      = "repairshop-db-credentials"
@@ -16,12 +16,17 @@ resource "kubernetes_secret" "db_credentials" {
   }
 
   data = {
-    SPRING_DATASOURCE_URL      = "jdbc:postgresql://${aws_db_instance.postgres.endpoint}/${var.db_name}"
+    SPRING_DATASOURCE_URL      = "jdbc:postgresql://postgres-service:5432/${var.db_name}"
     SPRING_DATASOURCE_USERNAME = var.db_username
     SPRING_DATASOURCE_PASSWORD = var.db_password
+    POSTGRES_USER              = var.db_username
+    POSTGRES_PASSWORD          = var.db_password
+    POSTGRES_DB                = var.db_name
   }
 
   type = "Opaque"
 }
+
+
 
 
