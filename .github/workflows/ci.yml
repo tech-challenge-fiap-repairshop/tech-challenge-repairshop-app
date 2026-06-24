@@ -377,7 +377,7 @@ jobs:
             -e SPRING_MAIL_HOST="$SPRING_MAIL_HOST" \
             -e SPRING_MAIL_PORT="$SPRING_MAIL_PORT" \
             -e JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS" \
-            ghcr.io/${{ env.REPO_LOWERCASE }}/repairshop:latest
+            ${{ steps.login-ecr.outputs.registry }}/repairshop:latest
 
       - name: Verify application startup (Actuator Health Check)
         run: |
