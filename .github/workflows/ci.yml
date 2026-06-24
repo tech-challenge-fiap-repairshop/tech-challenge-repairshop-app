@@ -135,16 +135,8 @@ jobs:
           SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST }}
           SPRING_MAIL_PORT: ${{ secrets.SPRING_MAIL_PORT }}
         run: |
-          docker run -d --name smoke-jar --network repairshop-net --add-host localhost:host-gateway \
-            -v ${{ github.workspace }}:/app \
-            -w /app \
-            -p 8080:8080 \
-            -e SPRING_DATASOURCE_URL="$SPRING_DATASOURCE_URL" \
-            -e SPRING_DATASOURCE_USERNAME="$SPRING_DATASOURCE_USERNAME" \
-            -e SPRING_DATASOURCE_PASSWORD="$SPRING_DATASOURCE_PASSWORD" \
-            -e SPRING_MAIL_HOST="$SPRING_MAIL_HOST" \
-            -e SPRING_MAIL_PORT="$SPRING_MAIL_PORT" \
-            eclipse-temurin:24-jre java -jar target/repairshop-0.0.1-SNAPSHOT.jar
+          java -jar target/repairshop-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
+          echo "APP_PID=$!" >> $GITHUB_ENV
 
       - name: Verify application startup (Actuator Health Check)
         run: |
@@ -152,8 +144,6 @@ jobs:
           for i in {1..30}; do
             if curl -s http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
               echo "Post-Build Smoke Test Passed! Application is UP."
-              docker stop smoke-jar
-              docker rm smoke-jar
               docker compose down
               exit 0
             fi
@@ -161,9 +151,7 @@ jobs:
             sleep 2
           done
           echo "Post-Build Smoke Test Failed! Application log output:"
-          docker logs smoke-jar
-          docker stop smoke-jar
-          docker rm smoke-jar
+          cat app.log
           docker compose down
           exit 1
 
@@ -326,7 +314,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
 
       - name: Start dependencies (Postgres & Mailhog)
-        run: docker compose up -d postgres mailhog
+        run: docker compose -p repairshop up -d postgres mailhog
 
       - name: Wait for Postgres to be healthy
         run: |
@@ -367,17 +355,14 @@ jobs:
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
           SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST }}
           SPRING_MAIL_PORT: ${{ secrets.SPRING_MAIL_PORT }}
-          JAVA_TOOL_OPTIONS: "-Djava.net.preferIPv4Stack=true"
         run: |
-          docker run -d --name smoke-app --network repairshop-net --add-host localhost:host-gateway \
-            -p 8080:8080 \
+          docker run -d --name smoke-app --network host \
             -e SPRING_DATASOURCE_URL="$SPRING_DATASOURCE_URL" \
             -e SPRING_DATASOURCE_USERNAME="$SPRING_DATASOURCE_USERNAME" \
             -e SPRING_DATASOURCE_PASSWORD="$SPRING_DATASOURCE_PASSWORD" \
             -e SPRING_MAIL_HOST="$SPRING_MAIL_HOST" \
             -e SPRING_MAIL_PORT="$SPRING_MAIL_PORT" \
-            -e JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS" \
-            ${{ steps.login-ecr.outputs.registry }}/repairshop:latest
+            ghcr.io/${{ env.REPO_LOWERCASE }}/repairshop:latest
 
       - name: Verify application startup (Actuator Health Check)
         run: |
