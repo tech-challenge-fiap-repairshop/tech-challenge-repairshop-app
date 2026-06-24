@@ -135,7 +135,7 @@ jobs:
           SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST }}
           SPRING_MAIL_PORT: ${{ secrets.SPRING_MAIL_PORT }}
         run: |
-          java -jar target/repairshop-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
+          java -Dspring.mail.host="$SPRING_MAIL_HOST" -Dspring.mail.port="$SPRING_MAIL_PORT" -jar target/repairshop-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
           echo "APP_PID=$!" >> $GITHUB_ENV
 
       - name: Verify application startup (Actuator Health Check)
