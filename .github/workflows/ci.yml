@@ -368,7 +368,6 @@ jobs:
     needs: approve-deploy
     if: needs.approve-deploy.result == 'success'
     runs-on: ubuntu-latest
-    environment: production
     permissions:
       contents: read
     env:
