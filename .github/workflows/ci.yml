@@ -33,21 +33,20 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-permissions:
-  contents: read
 
 env:
   JAVA_VERSION: '24'
   JAVA_DISTRIBUTION: 'temurin'
 
 jobs:
-
   # =====================================================================================================================
   # STAGE 0 — INFRASTRUCTURE: Provisionamento de Infraestrutura AWS via Terraform (Nativo)
   # =====================================================================================================================
   terraform:
     name: "🛠️ Provision Infrastructure (Terraform)"
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     env:
       TF_VAR_db_username: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
