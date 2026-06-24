@@ -56,7 +56,3 @@ volumes:
   sonarqube_data:
   sonarqube_extensions:
   sonarqube_logs:
-
-networks:
-  default:
-    name: repairshop-net
