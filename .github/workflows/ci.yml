@@ -332,7 +332,7 @@ jobs:
           SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST }}
           SPRING_MAIL_PORT: ${{ secrets.SPRING_MAIL_PORT }}
         run: |
-          docker run -d --name smoke-app \
+          docker run -d --name smoke-app --network host\
             -e SPRING_DATASOURCE_URL="$SPRING_DATASOURCE_URL" \
             -e SPRING_DATASOURCE_USERNAME="$SPRING_DATASOURCE_USERNAME" \
             -e SPRING_DATASOURCE_PASSWORD="$SPRING_DATASOURCE_PASSWORD" \
