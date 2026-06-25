@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:17
+    image: postgres:16
     container_name: repairshop-db
     environment:
       POSTGRES_USER: repairshop
@@ -16,7 +16,7 @@ services:
       timeout: 3s
       retries: 5
   mailhog:
-    image: mailhog/mailhog:v1.0.1
+    image: mailhog/mailhog:latest
     container_name: mailhog
     environment:
       MH_STORAGE: maildir

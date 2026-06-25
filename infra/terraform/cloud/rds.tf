@@ -50,8 +50,10 @@ resource "aws_db_instance" "postgres" {
   db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
 
-  skip_final_snapshot = true
-  publicly_accessible = false
+  storage_encrypted   = true
+  skip_final_snapshot     = true
+  publicly_accessible     = false
+  backup_retention_period = 7
 
   tags = {
     Name = "${var.cluster_name}-postgres"
