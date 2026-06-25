@@ -459,6 +459,8 @@ jobs:
           ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com"
           echo "Using ECR Registry: $ECR_REGISTRY"
           sed -i "s|ECR_REGISTRY|${ECR_REGISTRY}|g" k8s/deployment.yaml
+          sed -i "s|DB_USERNAME|${{ secrets.SPRING_DATASOURCE_USERNAME }}|g" k8s/secret.yaml
+          sed -i "s|DB_PASSWORD|${{ secrets.SPRING_DATASOURCE_PASSWORD }}|g" k8s/secret.yaml
 
       - name: Apply Manifests
         run: |

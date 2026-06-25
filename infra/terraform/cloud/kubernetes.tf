@@ -21,22 +21,7 @@ resource "kubernetes_config_map" "db_config" {
   }
 }
 
-# Criação do Secret apenas com as credenciais sensíveis
-resource "kubernetes_secret" "db_credentials" {
-  metadata {
-    name      = "repairshop-db-credentials"
-    namespace = kubernetes_namespace.repairshop.metadata[0].name
-  }
 
-  data = {
-    SPRING_DATASOURCE_USERNAME = var.db_username
-    SPRING_DATASOURCE_PASSWORD = var.db_password
-    POSTGRES_USER              = var.db_username
-    POSTGRES_PASSWORD          = var.db_password
-  }
-
-  type = "Opaque"
-}
 # Serviço do MailHog do tipo LoadBalancer para exposição externa
 resource "kubernetes_service" "mailhog" {
   metadata {
