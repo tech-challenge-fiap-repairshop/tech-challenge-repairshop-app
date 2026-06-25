@@ -120,7 +120,6 @@ jobs:
         run: docker compose up -d postgres mailhog
 
 
-
       - name: Run Application JAR
         env:
           SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
