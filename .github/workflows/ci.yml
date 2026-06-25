@@ -108,12 +108,12 @@ jobs:
       - name: Package application (skip tests)
         run: mvn package -B -ntp -DskipTests
 
-      - name: Upload package artifact (JAR)
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
-        with:
-          name: app-jar
-          path: target/*.jar
-          retention-days: 7
+#      - name: Upload package artifact (JAR)
+#        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+#        with:
+#          name: app-jar
+#          path: target/*.jar
+#          retention-days: 1
 
       - name: Start dependencies (Postgres & Mailhog)
         run: docker compose up -d postgres mailhog
@@ -186,23 +186,23 @@ jobs:
         env:
           SPRING_PROFILES_ACTIVE: test
 
-      - name: Upload JaCoCo coverage report
-        if: always()
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
-        with:
-          name: coverage-report
-          path: |
-            target/site/jacoco/
-            target/jacoco.exec
-          retention-days: 14
+#      - name: Upload JaCoCo coverage report
+#        if: always()
+#        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+#        with:
+#          name: coverage-report
+#          path: |
+#            target/site/jacoco/
+#            target/jacoco.exec
+#          retention-days: 1
 
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
-        with:
-          name: test-results
-          path: target/surefire-reports/
-          retention-days: 14
+#      - name: Upload test results
+#        if: always()
+#        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+#        with:
+#          name: test-results
+#          path: target/surefire-reports/
+#          retention-days: 14
 
   # ==========================================================================
   # STAGE 3 — QUALITY GATE: SonarCloud analysis + coverage report
@@ -210,10 +210,12 @@ jobs:
   quality:
     name: "🔍 Quality Gate (SonarCloud)"
     needs: test
-    if: |
-      needs.test.result == 'success' &&
-      ((github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') || 
-       (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
+    # Temporariamente desativado devido ao limite de cota de artefatos do GitHub
+    if: false
+#    if: |
+#      needs.test.result == 'success' &&
+#      ((github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') ||
+#       (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
     runs-on: ubuntu-latest
     permissions:
       contents: read
