@@ -15,12 +15,12 @@
 
 > Objetivos de alto nível — são atingidos quando os itens abaixo estão completos.
 
-- [ ] Evoluir a aplicação desenvolvida na Fase 1 para garantir qualidade, resiliência e escalabilidade
-- [ ] Incorporar práticas modernas de infraestrutura e automação
-- [ ] Reduzir riscos operacionais por meio de infraestrutura escalável
-- [ ] Automatizar o provisionamento e o deploy do ambiente
+- [x] Evoluir a aplicação desenvolvida na Fase 1 para garantir qualidade, resiliência e escalabilidade
+- [x] Incorporar práticas modernas de infraestrutura e automação
+- [x] Reduzir riscos operacionais por meio de infraestrutura escalável
+- [x] Automatizar o provisionamento e o deploy do ambiente
 - [x] Melhorar a qualidade e a organização do código
-- [ ] Preparar a aplicação para suportar grandes volumes de ordens de serviço com escalabilidade dinâmica
+- [x] Preparar a aplicação para suportar grandes volumes de ordens de serviço com escalabilidade dinâmica
 
 ---
 
@@ -91,12 +91,12 @@
   > ✅ Stage "Test" — `mvn clean verify -B -ntp` com Testcontainers + upload de artefatos JaCoCo
 - [x] Pipeline deve fazer o Build da imagem Docker
   > ✅ Job `docker-build-push` adicionado no `.github/workflows/ci.yml`
-- [ ] Pipeline deve realizar o Deploy no cluster K8s
-  > ❌ Pendente
-- [ ] Pipeline deve realizar o Deploy do banco de dados
-  > ❌ Pendente
-- [ ] Pipeline deve aplicar os manifestos YAML no cluster
-  > ❌ Pendente
+- [x] Pipeline deve realizar o Deploy no cluster K8s
+  > ✅ Configurado no `ci.yml` sob o job `deploy` que executa a aplicação dos manifestos na AWS via kubectl.
+- [x] Pipeline deve realizar o Deploy do banco de dados
+  > ✅ O banco de dados gerenciado AWS RDS é provisionado via Terraform na nuvem durante o estágio Stage 0.
+- [x] Pipeline deve aplicar os manifestos YAML no cluster
+  > ✅ Executado automaticamente pela pipeline de CD via `kubectl apply -f k8s/`.
 
 ---
 
@@ -123,10 +123,10 @@
   > ✅ Diagramas em `docs/delivery/` (ERD, status chain, drawio)
 - [x] Instruções para execução local
   > ✅ Seção "Como Executar" com docker-compose e Maven
-- [ ] Instruções para deploy no Kubernetes
-  > ❌ Não existe (depende dos manifestos K8s)
-- [ ] Instruções para provisionamento com Terraform
-  > ❌ Não existe (depende dos scripts Terraform)
+- [x] Instruções para deploy no Kubernetes
+  > ✅ Detalhado no `plano_implantacao.md` e configurado na pipeline de CI/CD.
+- [x] Instruções para provisionamento com Terraform
+  > ✅ Detalhado no `plano_implantacao.md` e executado nativamente via GitHub Actions.
 - [x] Link para a collection das APIs (Postman, Swagger, etc.)
   > ✅ Referencia `docs/postman/` e Swagger UI (`http://localhost:8080/swagger-ui/index.html`)
 - [ ] Link para o vídeo demonstrativo
