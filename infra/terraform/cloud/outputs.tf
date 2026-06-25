@@ -18,4 +18,13 @@ output "eks_cluster_certificate_authority" {
   value       = aws_eks_cluster.eks.certificate_authority[0].data
 }
 
+output "rds_endpoint" {
+  description = "Endpoint de conexao para o banco de dados RDS"
+  value       = aws_db_instance.postgres.endpoint
+}
+
+output "mailhog_endpoint" {
+  description = "Endpoint publico para acessar a interface web do MailHog"
+  value       = kubernetes_service.mailhog.status[0].load_balancer[0].ingress[0].hostname
+}
 

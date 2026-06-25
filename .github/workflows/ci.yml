@@ -119,12 +119,7 @@ jobs:
       - name: Start dependencies (Postgres & Mailhog)
         run: docker compose up -d postgres mailhog
 
-      - name: Wait for Postgres to be healthy
-        run: |
-          until [ "$(docker inspect -f '{{.State.Health.Status}}' repairshop-db)" == "healthy" ]; do
-            echo "Waiting for database..."
-            sleep 2
-          done
+
 
       - name: Run Application JAR
         env:
@@ -328,12 +323,7 @@ jobs:
       - name: Start dependencies (Postgres & Mailhog)
         run: docker compose -p repairshop up -d postgres mailhog
 
-      - name: Wait for Postgres to be healthy
-        run: |
-          until [ "$(docker inspect -f '{{.State.Health.Status}}' repairshop-db)" == "healthy" ]; do
-            echo "Waiting for database..."
-            sleep 2
-          done
+
 
       - name: Debug Environment Variables
         env:
