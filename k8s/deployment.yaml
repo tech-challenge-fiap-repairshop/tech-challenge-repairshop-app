@@ -40,6 +40,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: repairshop-config
+            - configMapRef:
+                name: repairshop-db-config
             - secretRef:
                 name: repairshop-db-credentials
           resources:

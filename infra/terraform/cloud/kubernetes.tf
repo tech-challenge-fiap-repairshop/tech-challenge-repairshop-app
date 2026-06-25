@@ -8,7 +8,20 @@ resource "kubernetes_namespace" "repairshop" {
   depends_on = [aws_eks_node_group.nodes]
 }
 
-# Criação do Secret com as credenciais do banco para injeção na aplicação e no container do Postgres
+# Criação do ConfigMap com as configurações não-sensíveis do banco (URL e Nome do Banco)
+resource "kubernetes_config_map" "db_config" {
+  metadata {
+    name      = "repairshop-db-config"
+    namespace = kubernetes_namespace.repairshop.metadata[0].name
+  }
+
+  data = {
+    SPRING_DATASOURCE_URL = "jdbc:postgresql://${aws_db_instance.postgres.endpoint}/${var.db_name}"
+    POSTGRES_DB           = var.db_name
+  }
+}
+
+# Criação do Secret apenas com as credenciais sensíveis
 resource "kubernetes_secret" "db_credentials" {
   metadata {
     name      = "repairshop-db-credentials"
@@ -16,12 +29,10 @@ resource "kubernetes_secret" "db_credentials" {
   }
 
   data = {
-    SPRING_DATASOURCE_URL      = "jdbc:postgresql://${aws_db_instance.postgres.endpoint}/${var.db_name}"
     SPRING_DATASOURCE_USERNAME = var.db_username
     SPRING_DATASOURCE_PASSWORD = var.db_password
     POSTGRES_USER              = var.db_username
     POSTGRES_PASSWORD          = var.db_password
-    POSTGRES_DB                = var.db_name
   }
 
   type = "Opaque"
