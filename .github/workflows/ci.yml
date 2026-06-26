@@ -238,7 +238,7 @@ jobs:
 #        with:
 #          name: test-results
 #          path: target/surefire-reports/
-#          retention-days: 14
+#          retention-days: 7
 
   # ==========================================================================
   # STAGE 3 — QUALITY GATE: SonarCloud analysis + coverage report
