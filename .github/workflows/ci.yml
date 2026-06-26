@@ -68,7 +68,6 @@ jobs:
         run: |
           BUCKET_NAME="fiap-repairshop"
           AWS_REGION="us-east-1"
-
           
           # Verifica se o bucket existe na conta AWS
           if aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
