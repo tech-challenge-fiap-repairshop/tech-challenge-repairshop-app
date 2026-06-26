@@ -4,6 +4,7 @@ metadata:
   name: mailhog
   namespace: repairshop
 spec:
+  type: LoadBalancer
   ports:
     - port: 1025
       targetPort: 1025
