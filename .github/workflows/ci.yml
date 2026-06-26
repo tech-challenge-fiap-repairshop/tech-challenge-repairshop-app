@@ -103,7 +103,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e
         with:
-          terraform_version: "1.7.0"
+          terraform_version: "1.8.5"
 
       - name: Terraform Init
         run: |
@@ -359,32 +359,6 @@ jobs:
       - name: Start dependencies (Postgres & Mailhog)
         run: docker compose -p repairshop up -d postgres mailhog
 
-
-
-      - name: Debug Environment Variables
-        env:
-          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
-          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
-          SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST }}
-          SPRING_MAIL_PORT: ${{ secrets.SPRING_MAIL_PORT }}
-        run: |
-          echo "=== Debugging Environment Variables ==="
-          echo "SPRING_DATASOURCE_URL length: ${#SPRING_DATASOURCE_URL}"
-          echo "SPRING_DATASOURCE_USERNAME length: ${#SPRING_DATASOURCE_USERNAME}"
-          echo "SPRING_DATASOURCE_PASSWORD length: ${#SPRING_DATASOURCE_PASSWORD}"
-          echo "SPRING_MAIL_HOST length: ${#SPRING_MAIL_HOST}"
-          echo "SPRING_MAIL_PORT length: ${#SPRING_MAIL_PORT}"
-          
-          echo "SPRING_MAIL_HOST (base64): $(echo -n "$SPRING_MAIL_HOST" | base64)"
-          echo "SPRING_MAIL_PORT (base64): $(echo -n "$SPRING_MAIL_PORT" | base64)"
-          
-          if [ -n "$SPRING_DATASOURCE_URL" ]; then
-            echo -n "SPRING_DATASOURCE_URL (spaced): "
-            echo "$SPRING_DATASOURCE_URL" | sed 's/./& /g'
-          else
-            echo "SPRING_DATASOURCE_URL is empty!"
-          fi
 
       - name: Run Smoke Test (Start application container)
         env:
