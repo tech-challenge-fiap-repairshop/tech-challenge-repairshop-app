@@ -64,6 +64,41 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: us-east-1
 
+      - name: Ensure S3 Bucket for Terraform State exists
+        run: |
+          BUCKET_NAME="fiap-repairshop"
+          AWS_REGION="us-east-1"
+          
+          # Verifica se o bucket existe na conta AWS
+          if aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
+            echo "Bucket $BUCKET_NAME já existe."
+          else
+            echo "Bucket $BUCKET_NAME não existe. Criando..."
+            aws s3api create-bucket --bucket "$BUCKET_NAME" --region "$AWS_REGION"
+            
+            # Habilita versionamento (essencial para histórico do tfstate)
+            aws s3api put-bucket-versioning --bucket "$BUCKET_NAME" --versioning-configuration Status=Enabled
+            
+            # Habilita criptografia AES256 no bucket
+            aws s3api put-bucket-encryption --bucket "$BUCKET_NAME" --server-side-encryption-configuration '{
+              "Rules": [
+                {
+                  "ApplyServerSideEncryptionByDefault": {
+                    "SSEAlgorithm": "AES256"
+                  }
+                }
+              ]
+            }'
+            
+            # Bloqueia todos os acessos públicos ao bucket (Segurança)
+            aws s3api put-public-access-block --bucket "$BUCKET_NAME" --public-access-block-configuration '{
+              "BlockPublicAcls": true,
+              "IgnorePublicAcls": true,
+              "BlockPublicPolicy": true,
+              "RestrictPublicBuckets": true
+            }'
+          fi
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e
         with:
