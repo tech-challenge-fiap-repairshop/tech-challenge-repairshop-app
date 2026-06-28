@@ -34,18 +34,10 @@ variable "db_password" {
   sensitive   = true
 }
 
-
-
 variable "eks_node_instance_type" {
   description = "Tipo de instância EC2 para os worker nodes do EKS"
   type        = string
   default     = "t3.small"
-}
-
-variable "lab_role_arn" {
-  description = "ARN da LabRole pré-criada na AWS Academy"
-  type        = string
-  default     = "arn:aws:iam::154448561009:role/LabRole"
 }
 
 

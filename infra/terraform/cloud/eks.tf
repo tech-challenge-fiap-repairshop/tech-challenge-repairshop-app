@@ -1,7 +1,13 @@
+# Busca o ID da conta de quem está rodando o Terraform automaticamente
+data "aws_caller_identity" "current" {}
+locals {
+  lab_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LabRole"
+}
+
 # EKS Cluster Control Plane
 resource "aws_eks_cluster" "eks" {
   name     = var.cluster_name
-  role_arn = var.lab_role_arn
+  role_arn = local.lab_role_arn
   version  = "1.36"
 
   access_config {
@@ -20,7 +26,7 @@ resource "aws_eks_cluster" "eks" {
 resource "aws_eks_node_group" "nodes" {
   cluster_name    = aws_eks_cluster.eks.name
   node_group_name = "${var.cluster_name}-node-group"
-  node_role_arn   = var.lab_role_arn
+  node_role_arn   = local.lab_role_arn
   subnet_ids      = aws_subnet.private[*].id
 
   scaling_config {
