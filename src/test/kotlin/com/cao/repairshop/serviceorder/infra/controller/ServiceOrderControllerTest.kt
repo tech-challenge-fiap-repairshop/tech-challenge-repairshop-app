@@ -104,7 +104,7 @@ class ServiceOrderControllerTest {
 
     @Test
     fun `GET service-orders should return 200`() {
-        every { findServiceOrder.findAll(any<Pageable>()) } returns PageImpl(listOf(sampleResponse()))
+        every { findServiceOrder.findAll(any(), any<Pageable>()) } returns PageImpl(listOf(sampleResponse()))
 
         mockMvc.perform(get("/service-orders"))
             .andExpect(status().isOk)

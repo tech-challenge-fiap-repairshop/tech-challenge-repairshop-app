@@ -19,6 +19,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.domain.Specification
 import java.util.Optional
 import java.util.UUID
 
@@ -111,9 +113,9 @@ class ServiceOrderGatewayImplJPATest {
         val serviceOrderEntity = mockk<ServiceOrderEntity>(relaxed = true)
         every { serviceOrderEntity.customer.id } returns UUID.randomUUID()
         every { serviceOrderEntity.vehicle.id } returns UUID.randomUUID()
-        every { serviceOrderRepository.findAll(pageable) } returns PageImpl(listOf(serviceOrderEntity))
+        every { serviceOrderRepository.findAll(any<Specification<ServiceOrderEntity>>(), any<Pageable>()) } returns PageImpl(listOf(serviceOrderEntity))
 
-        val result = serviceOrderGatewayImplJPA.findAll(pageable)
+        val result = serviceOrderGatewayImplJPA.findAll(null, pageable)
         assertEquals(1, result.totalElements)
     }
 

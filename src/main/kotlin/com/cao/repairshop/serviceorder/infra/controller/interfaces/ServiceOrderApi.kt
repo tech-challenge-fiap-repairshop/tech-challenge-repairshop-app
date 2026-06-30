@@ -24,9 +24,14 @@ interface ServiceOrderApi {
     )
     fun create(request: CreateServiceOrderRequest): ServiceOrderResponse
 
-    @Operation(summary = "List all service orders with pagination")
+    @Operation(summary = "List all service orders with pagination and filtering")
     @ApiResponses(ApiResponse(responseCode = "200", description = "Paginated service order list"))
-    fun findAll(pageable: Pageable): Page<ServiceOrderResponse>
+    fun findAll(
+        customerId: UUID?,
+        vehicleId: UUID?,
+        status: com.cao.repairshop.serviceorder.domain.ServiceOrderStatus?,
+        pageable: Pageable
+    ): Page<ServiceOrderResponse>
 
     @Operation(summary = "Find service order by ID")
     @ApiResponses(
