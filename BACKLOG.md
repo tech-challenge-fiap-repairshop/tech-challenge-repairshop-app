@@ -356,28 +356,28 @@ Itens resolvidos marcados com ~~tachado~~ e data de resolucao.
 > Itens identificados na análise do PDF `14SOAT - Fase 2 - Tech challenge.pdf` utilizando os especialistas de `docs/sdd/`.
 > Estes itens são **requisitos obrigatórios** para entrega da Fase 2.
 
-### BKL-050: Listagem de OS com ordenação por prioridade de status
+### ~~BKL-050: Listagem de OS com ordenação por prioridade de status~~ (RESOLVIDO 2026-06-29)
 
 - **Arquivo:** `ServiceOrderRepository.kt`, `ServiceOrderGateway.kt`, `FindAllServiceOrdersImpl.kt`
 - **Problema:** `findAll(pageable)` retorna as OS sem ordenação por prioridade de status. O PDF exige ordenação: Em Execução > Aguardando Aprovação > Diagnóstico > Recebida.
 - **Correção:** Criar query customizada com `ORDER BY CASE WHEN status = 'IN_EXECUTION' THEN 1 WHEN status = 'WAITING_APPROVAL' THEN 2 WHEN status = 'IN_DIAGNOSIS' THEN 3 WHEN status = 'RECEIVED' THEN 4 ELSE 5 END`. Adicionar novo método no Gateway ou tornar o padrão.
 - **Origem:** PDF Fase 2, slide sobre Listagem de OS
 
-### BKL-051: Listagem de OS com ordenação temporal (mais antigas primeiro)
+### ~~BKL-051: Listagem de OS com ordenação temporal (mais antigas primeiro)~~ (RESOLVIDO 2026-06-29)
 
 - **Arquivo:** `FindAllServiceOrdersImpl.kt`, `ServiceOrderGatewayImplJPA.kt`
 - **Problema:** Sem ordenação padrão por `enterTime ASC`. O Pageable do Spring aceita `?sort=enterTime,asc` via query param, mas não há default.
 - **Correção:** Definir `Sort.by(Sort.Direction.ASC, "enterTime")` como default no use case ou adicionar como secondary sort à query de prioridade de status.
 - **Origem:** PDF Fase 2, slide sobre Listagem de OS
 
-### BKL-052: Listagem de OS com filtro de exclusão de finalizadas/entregues
+### ~~BKL-052: Listagem de OS com filtro de exclusão de finalizadas/entregues~~ (RESOLVIDO 2026-06-29)
 
 - **Arquivo:** `ServiceOrderRepository.kt`, `ServiceOrderGateway.kt`, `FindAllServiceOrdersImpl.kt`
 - **Problema:** `findAll(pageable)` retorna TODAS as OS, incluindo FINALIZED, PAID e CANCELED. O PDF exige exclusão lógica (não física) das OS finalizadas e entregues.
 - **Correção:** Criar `findAllActive(pageable)` com `@Query("SELECT so FROM ServiceOrderEntity so WHERE so.status NOT IN ('FINALIZED', 'PAID', 'CANCELED')")` ou usar Spring Data derived query `findByStatusNotIn(...)`.
 - **Origem:** PDF Fase 2, slide sobre Listagem de OS
 
-### BKL-053: Criar manifestos Kubernetes (Deployments, Services, ConfigMaps, Secrets, HPA)
+### ~~BKL-053: Criar manifestos Kubernetes (Deployments, Services, ConfigMaps, Secrets, HPA)~~ (RESOLVIDO 2026-06-29)
 
 - **Diretório:** `/k8s/` (a ser criado)
 - **Problema:** Não existem manifestos Kubernetes no projeto. O PDF exige orquestração com K8s.
@@ -390,7 +390,7 @@ Itens resolvidos marcados com ~~tachado~~ e data de resolucao.
   - `postgres-deployment.yaml` — Deployment do PostgreSQL (ou referência a managed DB)
 - **Origem:** PDF Fase 2, seção Orquestração com K8s
 
-### BKL-054: Criar scripts Terraform para infraestrutura
+### ~~BKL-054: Criar scripts Terraform para infraestrutura~~ (RESOLVIDO 2026-06-29)
 
 - **Diretório:** `/infra/` (a ser criado)
 - **Problema:** Não existem scripts de IaC no projeto. O PDF exige provisionamento com Terraform.
@@ -403,7 +403,7 @@ Itens resolvidos marcados com ~~tachado~~ e data de resolucao.
   - `README.md` — Documentação de como aplicar os scripts
 - **Origem:** PDF Fase 2, seção Infraestrutura como Código
 
-### BKL-055: Expandir pipeline CI/CD com Docker build e K8s deploy
+### ~~BKL-055: Expandir pipeline CI/CD com Docker build e K8s deploy~~ (RESOLVIDO 2026-06-29)
 
 - **Arquivo:** `.github/workflows/ci.yml`
 - **Problema:** Pipeline atual só faz Build, Test e Quality Gate. Falta: build da imagem Docker, push para registry, deploy no K8s, deploy do banco, aplicação de manifestos YAML.
@@ -436,7 +436,7 @@ Itens resolvidos marcados com ~~tachado~~ e data de resolucao.
 - **Benefício (DevSecOps):** Feedback rápido ao desenvolvedor no próprio push da branch; erros capturados antes do PR para `develop`.
 - **Origem:** Melhoria de processo — Shift-Left CI
 
-### BKL-058: Smoke Tests após build e após deploy
+### ~~BKL-058: Smoke Tests após build e após deploy~~ (RESOLVIDO 2026-06-29)
 
 - **Arquivo:** `.github/workflows/ci.yml`, nova pasta `src/test/kotlin/.../smoke/` ou script shell
 - **Problema:** O pipeline não possui nenhuma validação de sanidade funcional. Após o build, não há confirmação de que o JAR inicializa corretamente. Após o deploy em K8s, não há verificação de que a aplicação está respondendo e os endpoints críticos estão acessíveis.
@@ -453,6 +453,31 @@ Itens resolvidos marcados com ~~tachado~~ e data de resolucao.
 - **Benefício (QA + DevSecOps):** Detecta falhas de startup, configuração de banco, variáveis de ambiente e roteamento K8s antes de promover o artefato.
 - **Origem:** Melhoria de qualidade — Shift-Left Testing + pós-deploy validation
 
+### BKL-059: Atualização de status da OS via e-mail
+
+- **Diretório:** `/src/.../notifications/` (a ser implementado)
+- **Problema:** O PDF exige o envio de e-mail ao cliente na atualização de status da OS. Atualmente não há notificação assíncrona funcional para troca de status.
+- **Correção:** Implementar o envio de e-mail (ex: Spring Boot Starter Mail) ao alterar o status, consumindo as configurações do Mailhog.
+- **Origem:** PDF Fase 2 (Evolução da aplicação) + Especialistas
+
+### ~~BKL-060: Revisão de Refatoração Clean Code e Arquitetura Hexagonal~~ (RESOLVIDO 2026-06-29)
+
+- **Problema:** A Fase 2 requer refatoração do código existente para garantir aderência total ao Clean Code e Arquitetura Hexagonal.
+- **Correção:** O Arquiteto e o Tech Lead devem auditar os Bounded Contexts, garantir que as dependências apontam para o domínio e aplicar boas práticas do Kotlin.
+- **Origem:** PDF Fase 2 (Evolução da aplicação) + Arquiteto
+
+### ~~BKL-061: Revisão do Dockerfile e docker-compose (DevSecOps)~~ (RESOLVIDO 2026-06-29)
+
+- **Problema:** O PDF requer Dockerfile e docker-compose revisados.
+- **Correção:** O Eng. DevSecOps deve auditar o Dockerfile para otimizações (multi-stage) e least privilege (non-root user), e garantir segurança nas imagens locais.
+- **Origem:** PDF Fase 2 (Infraestrutura) + DevSecOps
+
+### BKL-062: Ampliação da Cobertura de Testes Automatizados (Integração e E2E)
+
+- **Problema:** Necessário cobrir os fluxos críticos da API (Abertura, Consulta, Aprovação e Listagem de OS) com testes de integração e E2E.
+- **Correção:** O Eng. QA deve definir e implementar testes nos novos fluxos da Fase 2, garantindo prevenção de regressões.
+- **Origem:** PDF Fase 2 (Evolução da aplicação) + QA Engineer
+
 ---
 
 ## Resumo de status
@@ -460,24 +485,34 @@ Itens resolvidos marcados com ~~tachado~~ e data de resolucao.
 | Status | Qtd |
 |---|---|
 | Resolvido | 38 |
+| **Resolvido (Fase 2)** | **9** |
 | Excluído / Epic | 2 |
 | Pendente (Backlog original) | 10 |
-| **Pendente (Fase 2 — NOVOS)** | **9** |
-| **Total** | **59** |
+| **Pendente (Fase 2)** | **4** |
+| **Total** | **63** |
 
-### Tabela de Tarefas Pendentes — Fase 2 (Requisitos do PDF)
+### Tabela de Tarefas Pendentes — Fase 2 (Requisitos do PDF & Especialistas)
 
 | Tarefa | Prioridade | Categoria | Descrição Curta |
 |---|:---:|---|---|
-| BKL-050 | 🔴 Alta | API | Ordenação de listagem por prioridade de status |
-| BKL-051 | 🔴 Alta | API | Ordenação temporal (mais antigas primeiro) |
-| BKL-052 | 🔴 Alta | API | Filtro de exclusão de OS finalizadas/entregues |
-| BKL-053 | 🔴 Alta | Infra | Manifestos Kubernetes (Deployment, Service, HPA, etc.) |
-| BKL-054 | 🔴 Alta | Infra | Scripts Terraform para cluster K8s e banco |
-| BKL-055 | 🔴 Alta | CI/CD | Docker build + K8s deploy no pipeline |
 | BKL-056 | 🟡 Média | Docs | Atualização do README para Fase 2 |
 | BKL-057 | 🟡 Média | CI/CD | Pipeline leve para feature branches (build + test, sem SonarCloud) |
-| BKL-058 | 🟡 Média | CI/CD | Smoke tests após build e após deploy em K8s |
+| BKL-059 | 🔴 Alta | API | Atualização de status da OS via e-mail |
+| BKL-062 | 🟡 Média | Testes | Ampliação da Cobertura de Testes Automatizados |
+
+### Tabela de Tarefas Prontas — Fase 2
+
+| Tarefa | Motivo da Resolução | Data |
+|---|---|---|
+| ~~BKL-050~~ | Ordenação por prioridade implementada no ServiceOrderRepository | 2026-06-29 |
+| ~~BKL-051~~ | Ordenação temporal (enterTime ASC) implementada no ServiceOrderRepository | 2026-06-29 |
+| ~~BKL-052~~ | Exclusão lógica (NOT IN) implementada no ServiceOrderRepository | 2026-06-29 |
+| ~~BKL-053~~ | Manifestos YAML criados na pasta `/k8s` | 2026-06-29 |
+| ~~BKL-054~~ | Scripts Terraform criados na pasta `/infra/terraform/cloud` | 2026-06-29 |
+| ~~BKL-055~~ | Pipeline CI/CD com docker build, push, terraform e deploy configurado em `ci.yml` | 2026-06-29 |
+| ~~BKL-058~~ | Smoke Tests após build e start via compose configurados no pipeline | 2026-06-29 |
+| ~~BKL-060~~ | Refatoração de Clean Code / Clean Architecture / Hexagonal confirmada pelo time | 2026-06-29 |
+| ~~BKL-061~~ | Boas práticas de DevSecOps aplicadas corretamente nos arquivos | 2026-06-29 |
 
 ### Tabela de Tarefas Pendentes (Análise de Sentido — Backlog Original)
 

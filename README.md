@@ -13,7 +13,7 @@
 
 *MVP do back-end para gestão de ordens de serviço, clientes, veículos e peças de uma oficina mecânica.*
 
-**POSTECH 15SOAT — Tech Challenge Fase 1 — Grupo CAO**
+**POSTECH 15SOAT — Tech Challenge Fase 2 — Grupo CAO**
 
 ---
 
@@ -22,6 +22,8 @@
 - [Sobre o Projeto](#sobre-o-projeto)
 - [Funcionalidades](#funcionalidades)
 - [Arquitetura](#arquitetura)
+  - [Provisionamento Terraform](#provisionamento-terraform)
+  - [Deploy Kubernetes](#deploy-kubernetes)
 - [Justificativa do Banco de Dados](#justificativa-do-banco-de-dados)
 - [Tecnologias Utilizadas](#tecnologias-utilizadas)
 - [Pré-requisitos](#pré-requisitos)
@@ -39,18 +41,17 @@
 
 ## Sobre o Projeto
 
-Uma oficina mecânica de médio porte enfrenta desafios na gestão do fluxo de atendimento, diagnóstico, execução e entrega de veículos. Processos manuais baseados em planilhas geram erros de priorização, falhas no controle de estoque, perda de histórico e ineficiência em orçamentos.
+Após a implantação do sistema inicial para gestão da oficina mecânica (Fase 1), houve um ganho significativo de eficiência no atendimento. No entanto, com o aumento da demanda e a expansão para novas unidades, surgiu o desafio de garantir alta disponibilidade e suportar grandes volumes de operações simultâneas em horários de pico. 
 
-Este projeto é o **MVP do back-end** de um **Sistema Integrado de Atendimento e Execução de Serviços**, desenvolvido como parte do **Tech Challenge Fase 1** da pós-graduação **POSTECH 15SOAT** em Arquitetura de Software.
+O projeto atual, entregue para o **Tech Challenge Fase 2** da pós-graduação **POSTECH 15SOAT**, foca na evolução arquitetural e de infraestrutura da aplicação. O objetivo principal agora transcende as regras de negócio: é garantir que o sistema escale de maneira resiliente, automatizada e sustentável.
 
-### Objetivos
+### Objetivos da Fase 2
 
-- Centralizar a gestão de ordens de serviço, clientes, veículos e peças
-- Automatizar o fluxo de status das ordens de serviço
-- Gerar orçamentos automaticamente com base nos serviços e peças
-- Permitir que clientes acompanhem o andamento do serviço via API
-- Garantir segurança com autenticação JWT e validação de dados sensíveis
-- Aplicar Domain-Driven Design (DDD) com arquitetura em camadas
+- **Evolução da Infraestrutura:** Reduzir riscos operacionais provendo um ambiente escalável e dinâmico na nuvem.
+- **Orquestração e Alta Disponibilidade:** Conteinerizar a aplicação (Docker) e orquestrá-la via **Kubernetes** (EKS), utilizando o *Horizontal Pod Autoscaler (HPA)* para absorver variações de carga.
+- **Automação (IaC e CI/CD):** Provisionar toda a estrutura na AWS (VPC, Cluster, RDS, ECR) via **Terraform** e estabelecer uma pipeline completa de CI/CD para automação dos deploys.
+- **Qualidade e Refatoração:** Refinar a base de código orientada pela **Clean Architecture** e garantir altíssima cobertura de testes automatizados (unitários e de integração) nos fluxos críticos da aplicação.
+- **Evolução do Domínio:** Aprimorar o controle de Ordens de Serviço com filtros refinados, delegação de aprovação de orçamento externa e implementação do envio de notificações por e-mail a cada mudança de status (via Mailhog).
 
 ---
 
@@ -72,7 +73,111 @@ Este projeto é o **MVP do back-end** de um **Sistema Integrado de Atendimento e
 
 ## Arquitetura
 
-O projeto aplica **Domain-Driven Design (DDD)** de forma integral — tanto no nível **estratégico** (Event Storming, Bounded Contexts, Linguagem Ubíqua) quanto no nível **tático** (Entities, Value Objects, Aggregates, Repositories, Domain Services). A estrutura segue uma **arquitetura monolítica em camadas**, onde o domínio é o núcleo isolado e independente de frameworks e infraestrutura.
+O projeto aplica **Domain-Driven Design (DDD)** de forma integral — no nível estratégico (Linguagem Ubíqua, Bounded Contexts) e tático (Entities, Value Objects, Aggregates, Domain Services). 
+
+Para suportar o isolamento absoluto das regras de negócio, o código-fonte foi organizado de forma modular por contexto (ex: `customer`, `serviceorder`, `user`) e estruturado internamente utilizando a **Clean Architecture**. Essa abordagem garante que o núcleo da aplicação seja 100% agnóstico a tecnologias externas e frameworks. Cada módulo de domínio é subdividido em três camadas principais:
+- **`domain` (Domínio):** O coração do sistema. Contém as `entities` (entidades de negócio puras), lógicas/serviços de domínio centrais e os `mappers`. Não possui e não conhece nenhuma dependência externa.
+- **`application` (Aplicação):** Camada de orquestração. Contém os `usecases` (casos de uso) que executam o fluxo de negócio da aplicação. É aqui também que residem as interfaces dos `gateways` (portas de saída), definindo contratos que a infraestrutura deverá cumprir (Inversão de Dependência).
+- **`infra` (Infraestrutura):** A camada externa responsável pela I/O e comunicação real. Ela implementa os contratos e expõe o sistema ao mundo. Contém os `controllers` (API REST, rotas e DTOs), a implementação concreta dos `gateways` (ex: integrações externas) e a `persistence` (Modelos do Hibernate e Repositórios do Spring Data JPA ligados ao PostgreSQL).
+
+Isso resulta em um sistema altamente testável, manutenível e fracamente acoplado (onde o ecossistema Spring atua apenas como motor e injeção de dependência na camada `infra`).
+
+<div align="center">
+  <img src="docs/infrastructure/repairshop-diagrama-infra-cloud.svg" alt="Diagrama de Arquitetura, Nuvem e Orquestração" width="900">
+  <br>
+  <em><small><strong>Figura 1: Topologia Integrada (Infraestrutura Cloud e Orquestração Kubernetes)</strong><br>O diagrama ilustra o provisionamento dos recursos na AWS (Rede VPC, Cluster EKS e banco persistente no RDS) atuando em conjunto com a lógica dos manifestos K8s, demonstrando o ciclo de vida dos Pods da aplicação (via Deployments e HPA) e sua integração com serviços auxiliares, como o Mailhog.</small></em>
+  <br><br>
+</div>
+
+### Provisionamento Terraform
+
+Toda a infraestrutura de nuvem é provisionada via **Terraform** (diretório `/infra/terraform/cloud`), seguindo a cultura de IaC. A estrutura na provedora **AWS** foi escolhida pelos seguintes motivos:
+- **AWS EKS (Elastic Kubernetes Service):** Reduz o overhead operacional gerenciando o Control Plane, sendo usado especificamente para hospedar a aplicação de forma orquestrada.
+  - *Arquivo:* [`eks.tf`](infra/terraform/cloud/eks.tf)
+- **AWS RDS (Relational Database Service):** Banco de dados PostgreSQL gerenciado, escolhido para garantir persistência e consistência dos dados, evitando a característica efêmera e o risco de rodar o banco de dados dentro de um pod do Kubernetes.
+  - *Arquivo:* [`rds.tf`](infra/terraform/cloud/rds.tf)
+- **AWS ECR (Elastic Container Registry):** Armazenamento privado das imagens Docker do back-end. A escolha do ECR garante que o repositório de imagens esteja no mesmo ambiente de nuvem do cluster, otimizando o download e aumentando a segurança.
+  - *Arquivo:* [`ecr.tf`](infra/terraform/cloud/ecr.tf)
+- **AWS S3 (Simple Storage Service):** Utilizado como *backend* do Terraform para armazenar e proteger o arquivo de estado remoto (`tfstate`). Isso garante o gerenciamento centralizado da infraestrutura, bloqueio de estado (state locking) e trabalho em equipe de forma segura.
+  - *Arquivo:* [`backend.tf`](infra/terraform/cloud/backend.tf)
+- **VPC, Subnets, NAT e Internet Gateway:** Rede virtual dedicada criada do zero. Inclui um **NAT Gateway** que permite aos recursos em subnets privadas se comunicarem de forma segura com a internet, mantendo o banco protegido. Além disso, um **Internet Gateway (IGW)** foi provisionado nas subnets públicas para permitir tráfego de entrada, sendo usado especificamente para rotear o acesso externo à interface web do Mailhog.
+  - *Arquivo:* [`vpc.tf`](infra/terraform/cloud/vpc.tf)
+
+#### Como Aplicar a Infraestrutura
+
+Para rodar e provisionar os recursos na AWS, siga os passos abaixo:
+
+1. **Pré-requisitos e Credenciais:** Certifique-se de ter o [Terraform](https://developer.hashicorp.com/terraform/downloads) e o [AWS CLI](https://aws.amazon.com/pt/cli/) instalados em sua máquina. É essencial manter o arquivo de credenciais local (no diretório `~/.aws/credentials`) sempre atualizado — seja via comando `aws configure` ou colando as chaves temporárias de sessão (como no caso do AWS Academy/SSO) —, pois o Terraform o utiliza para se autenticar.
+2. **Criar o Bucket S3 (Pré-requisito):** Como o Terraform utilizará o S3 como backend remoto (`backend.tf`), é necessário criar o bucket manualmente **antes** de iniciar os comandos. O Terraform não consegue se inicializar em um bucket que ainda não existe. Para criar via CLI:
+   ```bash
+   aws s3 mb s3://fiap-repairshop --region us-east-1
+   ```
+3. **Acessar o Diretório:** Navegue até a pasta onde estão os scripts em nuvem:
+   ```bash
+   cd infra/terraform/cloud
+   ```
+4. **Inicializar o Terraform:** Baixa os plugins (providers) necessários e inicializa o *backend* no S3:
+   ```bash
+   terraform init
+   ```
+5. **Verificar o Plano:** Exibe o plano de execução, mostrando exatamente o que será criado/modificado na AWS:
+   ```bash
+   terraform plan
+   ```
+6. **Aplicar as Mudanças:** Provisiona os recursos na AWS de fato (confirme com `yes` ou passe a flag `-auto-approve`):
+   ```bash
+   terraform apply
+   ```
+7. **Configurar Acesso ao Kubernetes (EKS):** Após a criação do cluster, atualize seu `kubeconfig` local para interagir com o EKS recém-criado:
+   ```bash
+   aws eks update-kubeconfig --region us-east-1 --name repairshop-eks
+   ```
+
+### Deploy Kubernetes
+
+A aplicação é orquestrada via Kubernetes para garantir resiliência e escalabilidade. Os manifestos no diretório `/k8s` incluem:
+- **Deployment e Service:** Gerenciam o ciclo de vida dos pods e a exposição da API Spring Boot. Utilizam configurações definidas previamente em Secrets e ConfigMaps.
+  - *Arquivos:* [`deployment.yaml`](k8s/deployment.yaml), [`service.yaml`](k8s/service.yaml), [`configmap.yaml`](k8s/configmap.yaml), [`secret.yaml`](k8s/secret.yaml)
+- **HPA (Horizontal Pod Autoscaler):** Escala dinamicamente as réplicas da aplicação com base no consumo de recursos, garantindo performance e disponibilidade em picos de acesso.
+  - *Arquivo:* [`hpa.yaml`](k8s/hpa.yaml)
+- **Mailhog e Gateway:** Deploy isolado para interceptar envios de e-mails das notificações de status, incluindo a configuração de um gateway/service dedicado para acessar a interface web do Mailhog.
+  - *Arquivos:* [`mailhog-deployment.yaml`](k8s/mailhog-deployment.yaml), [`mailhog-service.yaml`](k8s/mailhog-service.yaml)
+- **Postgres (Local):** Manifestos para implantar o banco de dados caso você esteja rodando em um ambiente local (Minikube, Kind), simulando a estrutura sem AWS RDS.
+  - *Arquivos:* [`postgres-deployment.yaml`](k8s/local/postgres-deployment.yaml), [`postgres-service.yaml`](k8s/local/postgres-service.yaml)
+
+#### Como Aplicar os Manifestos
+
+Para implantar a aplicação no seu cluster Kubernetes (seja AWS EKS ou cluster local), siga os passos lógicos:
+
+1. **Pré-requisitos e Ambiente:** Para rodar os comandos, você precisa de um ambiente Kubernetes ativo. Se não estiver utilizando o EKS da AWS, certifique-se de ter o **[Docker](https://www.docker.com/)** instalado junto com uma ferramenta de cluster local (como **[Minikube](https://minikube.sigs.k8s.io/docs/start/)**, **Kind** ou Docker Desktop). Além disso, é obrigatório ter a ferramenta de linha de comando [`kubectl`](https://kubernetes.io/docs/tasks/tools/) instalada e conectada ao contexto do seu cluster atual (`kubectl config current-context`).
+2. **Criar o Namespace:** Crie o isolamento lógico para o projeto (`repairshop`):
+   ```bash
+   kubectl apply -f k8s/namespace.yaml
+   ```
+3. **Aplicar Configurações Sensíveis:** Provisione as variáveis de ambiente base:
+   ```bash
+   kubectl apply -f k8s/secret.yaml
+   kubectl apply -f k8s/configmap.yaml
+   ```
+4. **Deploy de Banco de Dados Local (Opcional):** Apenas se estiver fora da AWS (Minikube/Kind), suba os recursos locais do Postgres:
+   ```bash
+   kubectl apply -f k8s/local/
+   ```
+5. **Aplicar a Aplicação e HPA:** Faça o deploy da API Spring Boot, dos Serviços e do Autoscaler:
+   ```bash
+   kubectl apply -f k8s/deployment.yaml
+   kubectl apply -f k8s/service.yaml
+   kubectl apply -f k8s/hpa.yaml
+   ```
+6. **Aplicar Ferramentas Auxiliares:** Inicie os pods interceptadores de E-mail (Mailhog):
+   ```bash
+   kubectl apply -f k8s/mailhog-deployment.yaml
+   kubectl apply -f k8s/mailhog-service.yaml
+   ```
+7. **Monitorar o Status:** Verifique se tudo foi implantado e está `Running`:
+   ```bash
+   kubectl get pods -n repairshop
+   ```
 
 ---
 
@@ -88,7 +193,12 @@ Optamos pelo **PostgreSQL** pelos seguintes motivos:
 | **Ecossistema** | Integração madura com Spring Data JPA/Hibernate |
 | **Open source** | Sem custos de licenciamento, com comunidade ativa e documentação extensa |
 
-> 📊 O **Diagrama de Entidade e Relacionamento (ERD)** do banco de dados pode ser encontrado em [`docs/delivery/database-er-diagram.png`](docs/delivery/database-er-diagram.png).
+<div align="center">
+  <img src="docs/delivery/database-er-diagram.png" alt="Diagrama de Entidade e Relacionamento" width="850">
+  <br>
+  <em><small><strong>Figura 2: Diagrama de Entidade e Relacionamento (ERD)</strong><br>O modelo ilustra as principais tabelas do domínio (Clientes, Veículos, OS, Serviços, Peças) mapeadas via JPA, com foco em integridade referencial e controle transacional para o sistema da oficina.</small></em>
+  <br><br>
+</div>
 
 ---
 
@@ -139,7 +249,7 @@ O `docker-compose.yml` provisiona **quatro serviços** simultaneamente:
 
 | Serviço | Porta | Descrição |
 |---------|-------|-----------|
-| `postgres` | 5432 | PostgreSQL 17 com healthcheck |
+| `postgres` | 5432 | PostgreSQL 16 com healthcheck |
 | `app` | 8080 | Aplicação Spring Boot (aguarda o banco ficar healthy) |
 | `mailhog` | 8025 / 1025 | Interceptador de e-mails locais (Dashboard web em 8025) |
 | `sonarqube` | 9000 | Plataforma de análise contínua de qualidade de código |
@@ -262,10 +372,12 @@ O fluxo de atendimento da Ordem de Serviço segue um controle de status rigoroso
 7. `FINALIZED` ➡️ `PAID`
    - ⚠️ **Atenção:** Para que a OS avance para `PAID`, é necessário faturá-la chamando a API de Invoices (`POST /invoices`) para criar a nota fiscal.
 
-> 🖼️ **Fluxo de Estados da OS:**
-> 
-> ![Status Chain](docs/delivery/status_chain.png)
-> 
+<div align="center">
+  <img src="docs/delivery/status_chain.png" alt="Máquina de Estados da OS" width="850">
+  <br>
+  <em><small><strong>Figura 3: Máquina de Estados (Ordem de Serviço)</strong><br>O fluxo visualiza a transição de ciclo de vida de uma OS, passando por aprovação do cliente até a sua execução, faturamento (invoices) e pagamento final. Transições indevidas são bloqueadas na camada de aplicação.</small></em>
+  <br><br>
+</div>
 
 ### 🛠️ Máquina de Estados (Status da Execução de Serviço)
 

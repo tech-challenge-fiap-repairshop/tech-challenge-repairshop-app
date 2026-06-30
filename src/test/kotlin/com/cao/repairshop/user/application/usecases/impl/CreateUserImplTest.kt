@@ -89,4 +89,27 @@ class CreateUserImplTest {
         
         verify { userGateway.findByEmail(request.email) }
     }
+
+    @Test
+    fun `should throw error when password encoding fails`() {
+        val request = CreateUserRequest(
+            name = "Test User",
+            email = "test@example.com",
+            function = "ATTENDANT",
+            password = "password",
+            phone = "11999999999"
+        )
+
+        every { userGateway.findByEmail(request.email) } returns null
+        every { passwordEncoder.encode(request.password) } returns null
+
+        val exception = assertThrows(com.cao.repairshop.core.exception.PasswordEncodingException::class.java) {
+            createUserImpl.execute(request)
+        }
+
+        assertEquals(ErrorMessages.User.PASSWORD_ENCODING_FAILED, exception.message)
+        
+        verify { userGateway.findByEmail(request.email) }
+        verify { passwordEncoder.encode(request.password) }
+    }
 }
