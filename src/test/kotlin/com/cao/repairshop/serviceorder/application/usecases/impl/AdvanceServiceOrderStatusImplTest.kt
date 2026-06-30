@@ -14,6 +14,8 @@ import com.cao.repairshop.register.domain.entities.Vehicle
 import com.cao.repairshop.serviceorder.application.gateways.ServiceOrderGateway
 import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
 import com.cao.repairshop.serviceorder.domain.entities.ServiceOrder
+import com.cao.repairshop.serviceorder.application.usecases.impl.strategies.*
+import com.cao.repairshop.serviceorder.application.usecases.impl.strategies.EmailStrategy
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -40,7 +42,21 @@ class AdvanceServiceOrderStatusImplTest {
         vehicleGateway = mockk()
         emailService = mockk(relaxed = true)
         advanceServiceOrderStatusImpl = AdvanceServiceOrderStatusImpl(
-            serviceOrderGateway, customerGateway, vehicleGateway, emailService
+            serviceOrderGateway,
+            customerGateway,
+            vehicleGateway,
+            emailService,
+            listOf<EmailStrategy>(
+                ReceivedEmailStrategy(),
+                InDiagnosisEmailStrategy(),
+                WaitingApprovalEmailStrategy(),
+                ApprovedEmailStrategy(),
+                RefusedEmailStrategy(),
+                InExecutionEmailStrategy(),
+                FinalizedEmailStrategy(),
+                PaidEmailStrategy(),
+                CanceledEmailStrategy()
+            )
         )
     }
 
