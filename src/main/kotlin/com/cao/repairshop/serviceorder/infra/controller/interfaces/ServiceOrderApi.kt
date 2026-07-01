@@ -1,6 +1,7 @@
 package com.cao.repairshop.serviceorder.infra.controller.interfaces
 
 import com.cao.repairshop.execution.infra.controller.dtos.ExecutionMetricsResponse
+import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
 import com.cao.repairshop.serviceorder.infra.controller.dtos.*
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -29,7 +30,7 @@ interface ServiceOrderApi {
     fun findAll(
         customerId: UUID?,
         vehicleId: UUID?,
-        status: com.cao.repairshop.serviceorder.domain.ServiceOrderStatus?,
+        status: ServiceOrderStatus?,
         pageable: Pageable
     ): Page<ServiceOrderResponse>
 
