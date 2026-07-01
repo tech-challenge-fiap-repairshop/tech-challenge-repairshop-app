@@ -96,7 +96,7 @@ flowchart TD
 ### Resumo Cronológico:
 1. **Push:** Código chega no repositório GitHub.
 2. **Test & Quality (CI):** A pipeline compila, roda os testes locais e levanta instâncias temporárias de Postgres e Mailhog (via docker-compose) para garantir a saúde do software. Análises estáticas de segurança e código limpo (Sonar, Trivy) bloqueiam se houver vulnerabilidades.
-3. **Containerização (CI):** Imagem final Docker é construída e empurrada para o registro de imagens (`ghcr.io`).
+3. **Containerização (CI):** Imagem final Docker é construída e empurrada para o registro de imagens privado (**Amazon ECR**).
 4. **Infraestrutura (Provisionamento IaC):** (Se for a primeira vez), executa-se o Terraform para garantir que o RDS e o EKS estejam disponíveis e com rede configurada.
 5. **Autenticação & Injeção de Segredos:** A Action de Deploy do GitHub se conecta ao cluster EKS usando a role IAM. Pega as senhas do banco dos _GitHub Secrets_ e salva no K8s na forma de `Secret` do tipo opaco.
 6. **Deploy no K8s (CD):** Os manifestos K8s (no formato `.yaml` puro ou via helm) da aplicação, que usam as variáveis e apontam para a nova imagem Docker e para o endpoint público do RDS, são atualizados no cluster.

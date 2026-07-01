@@ -24,6 +24,8 @@
 - [Arquitetura](#arquitetura)
   - [Provisionamento Terraform](#provisionamento-terraform)
   - [Deploy Kubernetes](#deploy-kubernetes)
+- [Esteira de Integração e Entrega Contínua (CI/CD)](#esteira-de-integração-e-entrega-contínua-cicd)
+  - [Esteira de Destruição da Infraestrutura (Manual)](#esteira-de-destruição-da-infraestrutura-manual)
 - [Justificativa do Banco de Dados](#justificativa-do-banco-de-dados)
 - [Tecnologias Utilizadas](#tecnologias-utilizadas)
 - [Pré-requisitos](#pré-requisitos)
@@ -103,6 +105,10 @@ Toda a infraestrutura de nuvem é provisionada via **Terraform** (diretório `/i
 - **VPC, Subnets, NAT e Internet Gateway:** Rede virtual dedicada criada do zero. Inclui um **NAT Gateway** que permite aos recursos em subnets privadas se comunicarem de forma segura com a internet, mantendo o banco protegido. Além disso, um **Internet Gateway (IGW)** foi provisionado nas subnets públicas para permitir tráfego de entrada, sendo usado especificamente para rotear o acesso externo à interface web do Mailhog.
   - *Arquivo:* [`vpc.tf`](infra/terraform/cloud/vpc.tf)
 
+> [!IMPORTANT]
+> **Uso da `LabRole` (Ambiente AWS Academy):**
+> Devido às restrições de permissão do laboratório da **AWS Academy** (onde a criação de novas roles de IAM é bloqueada para os estudantes), os scripts Terraform foram parametrizados para utilizar a **`LabRole`** pré-criada na conta AWS (declarada na variável `lab_role_arn` no arquivo [`variables.tf`](infra/terraform/cloud/variables.tf)). Essa role é associada automaticamente ao Cluster EKS e ao Node Group, evitando falhas de permissão e garantindo o provisionamento sem atritos.
+
 #### Como Aplicar a Infraestrutura
 
 Para rodar e provisionar os recursos na AWS, siga os passos abaixo:
@@ -181,6 +187,114 @@ Para implantar a aplicação no seu cluster Kubernetes (seja AWS EKS ou cluster 
 
 ---
 
+## Esteira de Integração e Entrega Contínua (CI/CD)
+
+A esteira de CI/CD foi automatizada com o **GitHub Actions** (através do arquivo de workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml)), integrando todos os processos de compilação, testes, qualidade de código, segurança e deploy de forma automatizada e resiliente para atender aos requisitos da Fase 2.
+
+### Fluxo da Pipeline (GitHub Actions)
+
+A pipeline é disparada a cada `push` ou `pull_request` nas branches `main` e `develop`. 
+
+> [!IMPORTANT]
+> **Paralelismo e Regras de Execução:**
+> - O provisionamento da infraestrutura com **Terraform** roda em **paralelo (junto)** com o estágio de **Build da Aplicação** para otimizar o tempo total da pipeline.
+> - O deploy/aplicação de infraestrutura (`terraform apply`) ocorre **apenas em merges ou pushes diretos nas branches principais (`main` e `develop`)**, sendo **totalmente ignorado em Pull Requests (PR)** para garantir a estabilidade do ambiente.
+
+A pipeline possui uma arquitetura dividida em estágios complementares:
+
+```mermaid
+graph TD
+    A[Start / Trigger] --> B[🛠️ Provision Infrastructure - Terraform]
+    A --> C[🏗️ Build & Smoke Test]
+    C --> D[🧪 Test Unit & IT]
+    D --> E[🔍 Quality Gate - SonarCloud]
+    D --> F[🐳 Docker Build & Trivy Scan]
+    B --> G[⏳ Approve Deployment]
+    F --> G
+    G --> H[🚀 Continuous Deployment to EKS]
+```
+
+### Detalhamento dos Estágios
+
+Conforme exigido nas diretrizes do Tech Challenge (Fase 2), a pipeline executa:
+
+1. **Build da Aplicação:**
+   - Compilação e empacotamento da aplicação Kotlin / Spring Boot via Maven.
+   - **Smoke Test pós-Build:** Sobe temporariamente as dependências (Postgres e Mailhog) e roda o JAR compilado, verificando a inicialização da aplicação através do endpoint `/actuator/health`.
+2. **Deploy da Infraestrutura (Terraform):**
+   - Executado em **paralelo (junto)** com o estágio de **Build da Aplicação** (Stage 0).
+   - O provisionamento/deploy (comando `terraform apply`) **roda apenas quando há um merge ou push direto nas branches principais (`main` e `develop`)**, sendo **totalmente ignorado (pulado) em execuções de Pull Request (PR)** para evitar modificações indesejadas na infraestrutura antes da aprovação do PR.
+3. **Execução dos Testes Automatizados:**
+   - Execução de todos os testes unitários e de integração utilizando **Testcontainers** (para subir o banco PostgreSQL real de teste).
+   - Coleta de métricas e geração de relatório de cobertura de código via **JaCoCo**.
+4. **Quality Gate (Análise de Código):**
+   - Roda a verificação de qualidade estática no **SonarCloud**, validando o Quality Gate do projeto e enviando os dados de cobertura gerados pelo JaCoCo (garantindo que esteja acima de 80%).
+   - > [!NOTE]
+     > A atualização de status do Quality Gate consolidado no painel do SonarCloud é limitada à branch `main`, garantindo que as métricas de qualidade do projeto reflitam apenas o código de produção estável.
+5. **Build da Imagem Docker & Trivy Scan:**
+   - Criação da imagem Docker baseada no `Dockerfile` multi-stage com a JRE do Java 24 (`eclipse-temurin:24-jre`).
+   - Escaneamento de vulnerabilidades com a ferramenta **Trivy** (focando em falhas graves/críticas).
+   - **Smoke Test do Container:** Inicia o container gerado da aplicação para validar se está respondendo perfeitamente na porta HTTP 8080 antes de realizar qualquer publicação.
+   - Publicação/Push automático da imagem Docker no **Amazon ECR** (registro privado AWS).
+6. **Aprovação Manual:**
+   - **Quando é utilizado**: Este estágio é ativado **exclusivamente nas execuções das branches principais (`main` e `develop`)**, após a conclusão bem-sucedida do build da imagem Docker e do Terraform. Ele cria automaticamente uma issue de aprovação manual no repositório do GitHub e aguarda uma confirmação explícita para prosseguir com o deploy.
+   - **Quando é ignorado**: É **totalmente ignorado (pulado) em execuções originadas de Pull Request (PR)**, já que o deploy de novas versões só deve ser elegível após a aprovação e mesclagem das alterações.
+7. **Deploy no Cluster Kubernetes (EKS):**
+   - Configuração dinâmica das credenciais do Kubernetes usando o AWS CLI.
+   - Substituição de variáveis confidenciais (secrets como string de conexão do banco no RDS AWS) e aplicação automatizada dos manifestos (`kubectl apply -f k8s/`) no cluster EKS.
+   - Monitoramento do progresso (`kubectl rollout status`) para garantir que os novos pods estejam operantes.
+
+### Secrets e Variáveis de Ambiente Requeridos
+
+Para que a esteira de CI/CD seja executada com sucesso e consiga provisionar os recursos na AWS e realizar o deploy no EKS, as seguintes chaves secretas (**Secrets**) devem estar configuradas nas configurações do repositório no GitHub:
+
+| Secret Name | Estágio Utilizado | Finalidade | Obrigatório |
+|-------------|-------------------|------------|-------------|
+| `AWS_ACCESS_KEY_ID` | Terraform, ECR, EKS | ID da Chave de Acesso para autenticação de comandos AWS (IaC e deploy) | Sim |
+| `AWS_SECRET_ACCESS_KEY` | Terraform, ECR, EKS | Chave Secreta de Acesso AWS para autenticação | Sim |
+| `AWS_SESSION_TOKEN` | Terraform, ECR, EKS | Token de sessão temporária (exigido caso utilize credenciais dinâmicas do AWS Academy/Sandbox) | Opcional |
+| `SPRING_DATASOURCE_USERNAME` | Terraform, Smoke Test, EKS | Nome de usuário do banco PostgreSQL (utilizado no provisionamento RDS e injetado no cluster EKS) | Sim |
+| `SPRING_DATASOURCE_PASSWORD` | Terraform, Smoke Test, EKS | Senha de acesso do banco PostgreSQL (utilizado no provisionamento RDS e injetado no cluster EKS) | Sim |
+| `SPRING_DATASOURCE_URL` | Smoke Test | String de conexão JDBC para testes de integridade local durante a pipeline | Sim |
+| `SPRING_MAIL_HOST` | Smoke Test | Endereço do host do servidor SMTP para validação de disparo de e-mails nos testes (ex: `mailhog`) | Sim |
+| `SPRING_MAIL_PORT` | Smoke Test | Porta do servidor SMTP (ex: `1025`) | Sim |
+| `SONAR_TOKEN` | Quality Gate | Token de autenticação do **SonarCloud** para a análise estática e Quality Gate | Sim |
+
+> [!NOTE]
+> **Substituições Automáticas durante o Deploy:**
+> - O identificador da conta AWS (`ACCOUNT_ID`) é obtido dinamicamente no pipeline via AWS CLI para mapear a URL do ECR (`*.dkr.ecr.us-east-1.amazonaws.com`) e substituir o placeholder `ECR_REGISTRY` no `k8s/deployment.yaml`.
+> - Os placeholders `DB_USERNAME` e `DB_PASSWORD` localizados no manifesto [`k8s/secret.yaml`](k8s/secret.yaml) são substituídos dinamicamente em tempo de execução na esteira com os valores de `SPRING_DATASOURCE_USERNAME` e `SPRING_DATASOURCE_PASSWORD`, respectivamente.
+
+### Esteira de Destruição da Infraestrutura (Manual)
+
+Além do pipeline principal de implantação, foi estruturado um workflow manual dedicado para a remoção segura de todos os recursos provisionados na nuvem: o **Destroy Cloud Infrastructure** (localizado em [`.github/workflows/destroy.yml`](.github/workflows/destroy.yml)).
+
+Este workflow é acionado via **gatilho manual (`workflow_dispatch`)** no console de Actions do GitHub e possui as seguintes diretrizes e etapas:
+
+1. **Validação de Segurança (Input Exigido):**
+   - Para evitar acidentes operacionais, a esteira exige que o usuário digite literalmente a palavra **`DESTRUIR`** (em caixa alta) no parâmetro de entrada (`confirm_destroy`).
+   - Qualquer valor diferente (incluindo o padrão `NAO`) causará o aborto imediato do processo sem afetar nenhum recurso em nuvem.
+2. **Desativação Limpa do Kubernetes (Kubectl Clean):**
+   - Configura a autenticação de rede com o cluster EKS da AWS.
+   - Executa `kubectl delete -f k8s/` para desmontar de forma ordenada a aplicação e os seus serviços.
+   - Realiza uma **pausa programada de 60 segundos (`sleep 60`)**. Esse intervalo é vital para dar tempo de desassociar e desalocar as interfaces de rede dinâmicas (**ENIs**) e os **Load Balancers (ELBs)** da AWS integrados às subnets. Sem esse intervalo, o Terraform falharia na tentativa de apagar a rede VPC por ter dependências de rede ainda vinculadas a IPs ativos.
+3. **Desprovisionamento Cloud via Terraform:**
+   - Configura a versão correta do CLI do Terraform (`1.8.5`).
+   - Inicializa o diretório e executa o comando `terraform destroy -auto-approve` na pasta `infra/terraform/cloud` para remover de forma integral os bancos RDS PostgreSQL, clusters EKS, buckets S3, subnets, gateways e VPC, prevenindo qualquer cobrança de recursos órfãos na nuvem.
+
+> [!WARNING]
+> **Necessidade de Credenciais AWS Ativas:**
+> Antes de acionar esta esteira (assim como a de deploy), certifique-se de que os segredos de credenciais da AWS (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` e, se estiver rodando em laboratórios/sandboxes acadêmicos da AWS Academy, o `AWS_SESSION_TOKEN`) estejam **atualizados e válidos** nas configurações de Secrets do repositório. Credenciais expiradas farão com que a desativação de recursos no Kubernetes e o desprovisionamento no Terraform falhem no meio da execução.
+
+<div align="center">
+  <img src="docs/infrastructure/pipeline-destroy-more.png" alt="Fluxo da Pipeline de Destruição" width="850">
+  <br>
+  <em><small><strong>Figura 2: Fluxo da Pipeline de Destruição Manual (Destroy)</strong><br>O diagrama descreve de forma cronológica e detalhada as validações de segurança da entrada, a desmontagem limpa do Kubernetes para liberação de Load Balancers e a execução do Terraform Destroy em nuvem.</small></em>
+  <br><br>
+</div>
+
+---
+
 ## Justificativa do Banco de Dados
 
 Optamos pelo **PostgreSQL** pelos seguintes motivos:
@@ -196,7 +310,7 @@ Optamos pelo **PostgreSQL** pelos seguintes motivos:
 <div align="center">
   <img src="docs/delivery/database-er-diagram.png" alt="Diagrama de Entidade e Relacionamento" width="850">
   <br>
-  <em><small><strong>Figura 2: Diagrama de Entidade e Relacionamento (ERD)</strong><br>O modelo ilustra as principais tabelas do domínio (Clientes, Veículos, OS, Serviços, Peças) mapeadas via JPA, com foco em integridade referencial e controle transacional para o sistema da oficina.</small></em>
+  <em><small><strong>Figura 3: Diagrama de Entidade e Relacionamento (ERD)</strong><br>O modelo ilustra as principais tabelas do domínio (Clientes, Veículos, OS, Serviços, Peças) mapeadas via JPA, com foco em integridade referencial e controle transacional para o sistema da oficina.</small></em>
   <br><br>
 </div>
 
@@ -375,7 +489,7 @@ O fluxo de atendimento da Ordem de Serviço segue um controle de status rigoroso
 <div align="center">
   <img src="docs/delivery/status_chain.png" alt="Máquina de Estados da OS" width="850">
   <br>
-  <em><small><strong>Figura 3: Máquina de Estados (Ordem de Serviço)</strong><br>O fluxo visualiza a transição de ciclo de vida de uma OS, passando por aprovação do cliente até a sua execução, faturamento (invoices) e pagamento final. Transições indevidas são bloqueadas na camada de aplicação.</small></em>
+  <em><small><strong>Figura 4: Máquina de Estados (Ordem de Serviço)</strong><br>O fluxo visualiza a transição de ciclo de vida de uma OS, passando por aprovação do cliente até a sua execução, faturamento (invoices) e pagamento final. Transições indevidas são bloqueadas na camada de aplicação.</small></em>
   <br><br>
 </div>
 
