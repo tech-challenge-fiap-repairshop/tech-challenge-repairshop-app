@@ -286,12 +286,22 @@ Este workflow é acionado via **gatilho manual (`workflow_dispatch`)** no consol
 > **Necessidade de Credenciais AWS Ativas:**
 > Antes de acionar esta esteira (assim como a de deploy), certifique-se de que os segredos de credenciais da AWS (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` e, se estiver rodando em laboratórios/sandboxes acadêmicos da AWS Academy, o `AWS_SESSION_TOKEN`) estejam **atualizados e válidos** nas configurações de Secrets do repositório. Credenciais expiradas farão com que a desativação de recursos no Kubernetes e o desprovisionamento no Terraform falhem no meio da execução.
 
-<div align="center">
-  <img src="docs/infrastructure/pipeline-destroy-more.png" alt="Fluxo da Pipeline de Destruição" width="850">
-  <br>
-  <em><small><strong>Figura 2: Fluxo da Pipeline de Destruição Manual (Destroy)</strong><br>O diagrama descreve de forma cronológica e detalhada as validações de segurança da entrada, a desmontagem limpa do Kubernetes para liberação de Load Balancers e a execução do Terraform Destroy em nuvem.</small></em>
-  <br><br>
-</div>
+#### Fluxo da Pipeline de Destruição (Manual)
+
+O fluxo da esteira manual de exclusão de recursos segue as seguintes etapas integradas:
+
+```mermaid
+graph TD
+    A[Start / Manual Trigger] --> B{"Input == 'DESTRUIR'?"}
+    B -- Não --> C[🛑 Abortar Execução]
+    B -- Sim --> D[🔐 Configurar Credenciais AWS]
+    D --> E[☸️ Kubectl Delete - Manifestos k8s]
+    E --> F["⏳ Pausa (sleep 60s) - Desalocar ENIs e ELBs"]
+    F --> G[🛠️ Setup Terraform 1.8.5]
+    G --> H[⚙️ Terraform Init]
+    H --> I[💥 Terraform Destroy -auto-approve]
+    I --> J[🏁 Recursos em Nuvem Excluídos]
+```
 
 ---
 
@@ -310,7 +320,7 @@ Optamos pelo **PostgreSQL** pelos seguintes motivos:
 <div align="center">
   <img src="docs/delivery/database-er-diagram.png" alt="Diagrama de Entidade e Relacionamento" width="850">
   <br>
-  <em><small><strong>Figura 3: Diagrama de Entidade e Relacionamento (ERD)</strong><br>O modelo ilustra as principais tabelas do domínio (Clientes, Veículos, OS, Serviços, Peças) mapeadas via JPA, com foco em integridade referencial e controle transacional para o sistema da oficina.</small></em>
+  <em><small><strong>Figura 2: Diagrama de Entidade e Relacionamento (ERD)</strong><br>O modelo ilustra as principais tabelas do domínio (Clientes, Veículos, OS, Serviços, Peças) mapeadas via JPA, com foco em integridade referencial e controle transacional para o sistema da oficina.</small></em>
   <br><br>
 </div>
 
@@ -489,7 +499,7 @@ O fluxo de atendimento da Ordem de Serviço segue um controle de status rigoroso
 <div align="center">
   <img src="docs/delivery/status_chain.png" alt="Máquina de Estados da OS" width="850">
   <br>
-  <em><small><strong>Figura 4: Máquina de Estados (Ordem de Serviço)</strong><br>O fluxo visualiza a transição de ciclo de vida de uma OS, passando por aprovação do cliente até a sua execução, faturamento (invoices) e pagamento final. Transições indevidas são bloqueadas na camada de aplicação.</small></em>
+  <em><small><strong>Figura 3: Máquina de Estados (Ordem de Serviço)</strong><br>O fluxo visualiza a transição de ciclo de vida de uma OS, passando por aprovação do cliente até a sua execução, faturamento (invoices) e pagamento final. Transições indevidas são bloqueadas na camada de aplicação.</small></em>
   <br><br>
 </div>
 
