@@ -84,6 +84,9 @@ Para suportar o isolamento absoluto das regras de negócio, o código-fonte foi 
 
 Isso resulta em um sistema altamente testável, manutenível e fracamente acoplado (onde o ecossistema Spring atua apenas como motor e injeção de dependência na camada `infra`).
 
+
+>>>>>>>>>>>>>>>>>>>> FALTA O DESENHO DA ARQUITETURA DA APLICAÇÃO <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 ### Provisionamento Terraform
 
 Toda a infraestrutura de nuvem é provisionada via **Terraform** (diretório `/infra/terraform/cloud`), seguindo a cultura de IaC. A estrutura na provedora **AWS** foi escolhida pelos seguintes motivos:
