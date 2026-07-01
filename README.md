@@ -84,13 +84,6 @@ Para suportar o isolamento absoluto das regras de negócio, o código-fonte foi 
 
 Isso resulta em um sistema altamente testável, manutenível e fracamente acoplado (onde o ecossistema Spring atua apenas como motor e injeção de dependência na camada `infra`).
 
-<div align="center">
-  <img src="docs/infrastructure/repairshop-diagrama-infra-cloud.svg" alt="Diagrama de Arquitetura, Nuvem e Orquestração" width="900">
-  <br>
-  <em><small><strong>Figura 1: Topologia Integrada (Infraestrutura Cloud e Orquestração Kubernetes)</strong><br>O diagrama ilustra o provisionamento dos recursos na AWS (Rede VPC, Cluster EKS e banco persistente no RDS) atuando em conjunto com a lógica dos manifestos K8s, demonstrando o ciclo de vida dos Pods da aplicação (via Deployments e HPA) e sua integração com serviços auxiliares, como o Mailhog.</small></em>
-  <br><br>
-</div>
-
 ### Provisionamento Terraform
 
 Toda a infraestrutura de nuvem é provisionada via **Terraform** (diretório `/infra/terraform/cloud`), seguindo a cultura de IaC. A estrutura na provedora **AWS** foi escolhida pelos seguintes motivos:
@@ -139,6 +132,13 @@ Para rodar e provisionar os recursos na AWS, siga os passos abaixo:
    aws eks update-kubeconfig --region us-east-1 --name repairshop-eks
    ```
 
+<div align="center">
+  <img src="docs/infrastructure/repairshop-diagrama-infra-cloud.svg" alt="Diagrama de Arquitetura, Nuvem e Orquestração" width="900">
+  <br>
+  <em><small><strong>Figura 1: Topologia Integrada (Infraestrutura Cloud e Orquestração Kubernetes)</strong><br>O diagrama ilustra o provisionamento dos recursos na AWS (Rede VPC, Cluster EKS e banco persistente no RDS) atuando em conjunto com a lógica dos manifestos K8s, demonstrando o ciclo de vida dos Pods da aplicação (via Deployments e HPA) e sua integração com serviços auxiliares, como o Mailhog.</small></em>
+  <br><br>
+</div>
+
 ### Deploy Kubernetes
 
 A aplicação é orquestrada via Kubernetes para garantir resiliência e escalabilidade. Os manifestos no diretório `/k8s` incluem:
@@ -155,7 +155,32 @@ A aplicação é orquestrada via Kubernetes para garantir resiliência e escalab
 
 Para implantar a aplicação no seu cluster Kubernetes (seja AWS EKS ou cluster local), siga os passos lógicos:
 
-1. **Pré-requisitos e Ambiente:** Para rodar os comandos, você precisa de um ambiente Kubernetes ativo. Se não estiver utilizando o EKS da AWS, certifique-se de ter o **[Docker](https://www.docker.com/)** instalado junto com uma ferramenta de cluster local (como **[Minikube](https://minikube.sigs.k8s.io/docs/start/)**, **Kind** ou Docker Desktop). Além disso, é obrigatório ter a ferramenta de linha de comando [`kubectl`](https://kubernetes.io/docs/tasks/tools/) instalada e conectada ao contexto do seu cluster atual (`kubectl config current-context`).
+1. **Pré-requisitos e Ambiente:** Para rodar os comandos, você precisa de um ambiente Kubernetes ativo. Se não estiver utilizando o EKS da AWS, certifique-se de ter o **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** instalado junto com uma ferramenta de cluster local (como **[Minikube](https://minikube.sigs.k8s.io/docs/start/)**, **Kind** ou o próprio Kubernetes nativo integrado ao Docker Desktop). Além disso, é obrigatório ter a ferramenta de linha de comando [`kubectl`](https://kubernetes.io/docs/tasks/tools/) instalada.
+   * **Listar contextos conhecidos na máquina:**
+     ```bash
+     kubectl config get-contexts
+     ```
+   * **Alternar para o ambiente local (Minikube / Docker Desktop):**
+     ```bash
+     # Caso utilize Minikube:
+     kubectl config use-context minikube
+     
+     # Caso utilize o Kubernetes nativo do Docker Desktop:
+     kubectl config use-context docker-desktop
+     ```
+   * **Alternar para o ambiente em nuvem (AWS EKS):**
+     Primeiramente, configure/atualize o arquivo `kubeconfig` local associado ao cluster da AWS Academy:
+     ```bash
+     aws eks update-kubeconfig --region us-east-1 --name repairshop-eks
+     ```
+     O comando acima já define o contexto do EKS como padrão automaticamente. Caso precise alternar manualmente depois:
+     ```bash
+     kubectl config use-context arn:aws:eks:us-east-1:<ID_CONTA_AWS>:cluster/repairshop-eks
+     ```
+   * **Verificar contexto ativo atualmente:**
+     ```bash
+     kubectl config current-context
+     ```
 2. **Criar o Namespace:** Crie o isolamento lógico para o projeto (`repairshop`):
    ```bash
    kubectl apply -f k8s/namespace.yaml
@@ -229,15 +254,17 @@ Conforme exigido nas diretrizes do Tech Challenge (Fase 2), a pipeline executa:
    - Coleta de métricas e geração de relatório de cobertura de código via **JaCoCo**.
 4. **Quality Gate (Análise de Código):**
    - Roda a verificação de qualidade estática no **SonarCloud**, validando o Quality Gate do projeto e enviando os dados de cobertura gerados pelo JaCoCo (garantindo que esteja acima de 80%).
-   - > [!NOTE]
-     > A atualização de status do Quality Gate consolidado no painel do SonarCloud é limitada à branch `main`, garantindo que as métricas de qualidade do projeto reflitam apenas o código de produção estável.
+   > [!NOTE]
+   > A atualização de status do Quality Gate consolidado no painel do SonarCloud é limitada à branch `main`, garantindo que as métricas de qualidade do projeto reflitam apenas o código de produção estável.
 5. **Build da Imagem Docker & Trivy Scan:**
    - Criação da imagem Docker baseada no `Dockerfile` multi-stage com a JRE do Java 24 (`eclipse-temurin:24-jre`).
-   - Escaneamento de vulnerabilidades com a ferramenta **Trivy** (focando em falhas graves/críticas).
+   - Escaneamento de vulnerabilidades com a ferramenta **Trivy** (focando em falhas graves/criticas).
    - **Smoke Test do Container:** Inicia o container gerado da aplicação para validar se está respondendo perfeitamente na porta HTTP 8080 antes de realizar qualquer publicação.
    - Publicação/Push automático da imagem Docker no **Amazon ECR** (registro privado AWS).
+     - > [!NOTE]
+       > O envio da imagem (comando `docker push`) é executado **exclusivamente após merges ou pushes diretos nas branches principais (`main` e `develop`)**. Em execuções de Pull Request (PR), o build, o Trivy scan e o Smoke Test são executados normalmente para validação técnica, mas a imagem final **não** é publicada no ECR.
 6. **Aprovação Manual:**
-   - **Quando é utilizado**: Este estágio é ativado **exclusivamente nas execuções das branches principais (`main` e `develop`)**, após a conclusão bem-sucedida do build da imagem Docker e do Terraform. Ele cria automaticamente uma issue de aprovação manual no repositório do GitHub e aguarda uma confirmação explícita para prosseguir com o deploy.
+   - **Quando é utilizado**: Este estágio é ativado **exclusivamente nas execuções das branches principais (`main` e `develop`)**. Ele **depende diretamente da conclusão bem-sucedida do build/push da imagem Docker (Docker Build & Push) E do provisionamento de infraestrutura (Terraform)** para ser acionado. Uma vez ativado, ele cria automaticamente uma issue de aprovação manual no repositório do GitHub e aguarda uma confirmação explícita do operador para prosseguir com o deploy.
    - **Quando é ignorado**: É **totalmente ignorado (pulado) em execuções originadas de Pull Request (PR)**, já que o deploy de novas versões só deve ser elegível após a aprovação e mesclagem das alterações.
 7. **Deploy no Cluster Kubernetes (EKS):**
    - Configuração dinâmica das credenciais do Kubernetes usando o AWS CLI.
@@ -342,7 +369,7 @@ Optamos pelo **PostgreSQL** pelos seguintes motivos:
 
 ## Pré-requisitos
 
-- [Docker](https://docs.docker.com/get-docker/) e [Docker Compose](https://docs.docker.com/compose/install/)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (com Docker Engine e Docker Compose integrados e em execução)
 - **Java 24** (Obrigatório apenas caso deseje rodar a aplicação ou os testes localmente sem o Docker)
 
 ---
