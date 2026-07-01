@@ -254,15 +254,19 @@ Conforme exigido nas diretrizes do Tech Challenge (Fase 2), a pipeline executa:
    - Coleta de métricas e geração de relatório de cobertura de código via **JaCoCo**.
 4. **Quality Gate (Análise de Código):**
    - Roda a verificação de qualidade estática no **SonarCloud**, validando o Quality Gate do projeto e enviando os dados de cobertura gerados pelo JaCoCo (garantindo que esteja acima de 80%).
-   > [!NOTE]
-   > A atualização de status do Quality Gate consolidado no painel do SonarCloud é limitada à branch `main`, garantindo que as métricas de qualidade do projeto reflitam apenas o código de produção estável.
+
+> [!NOTE]
+> A atualização de status do Quality Gate consolidado no painel do SonarCloud é limitada à branch `main`, garantindo que as métricas de qualidade do projeto reflitam apenas o código de produção estável.
+
 5. **Build da Imagem Docker & Trivy Scan:**
    - Criação da imagem Docker baseada no `Dockerfile` multi-stage com a JRE do Java 24 (`eclipse-temurin:24-jre`).
    - Escaneamento de vulnerabilidades com a ferramenta **Trivy** (focando em falhas graves/criticas).
    - **Smoke Test do Container:** Inicia o container gerado da aplicação para validar se está respondendo perfeitamente na porta HTTP 8080 antes de realizar qualquer publicação.
    - Publicação/Push automático da imagem Docker no **Amazon ECR** (registro privado AWS).
-     - > [!NOTE]
-       > O envio da imagem (comando `docker push`) é executado **exclusivamente após merges ou pushes diretos nas branches principais (`main` e `develop`)**. Em execuções de Pull Request (PR), o build, o Trivy scan e o Smoke Test são executados normalmente para validação técnica, mas a imagem final **não** é publicada no ECR.
+
+> [!NOTE]
+> O envio da imagem (comando `docker push`) é executado **exclusivamente após merges ou pushes diretos nas branches principais (`main` e `develop`)**. Em execuções de Pull Request (PR), o build, o Trivy scan e o Smoke Test são executados normalmente para validação técnica, mas a imagem final **não** é publicada no ECR.
+
 6. **Aprovação Manual:**
    - **Quando é utilizado**: Este estágio é ativado **exclusivamente nas execuções das branches principais (`main` e `develop`)**. Ele **depende diretamente da conclusão bem-sucedida do build/push da imagem Docker (Docker Build & Push) E do provisionamento de infraestrutura (Terraform)** para ser acionado. Uma vez ativado, ele cria automaticamente uma issue de aprovação manual no repositório do GitHub e aguarda uma confirmação explícita do operador para prosseguir com o deploy.
    - **Quando é ignorado**: É **totalmente ignorado (pulado) em execuções originadas de Pull Request (PR)**, já que o deploy de novas versões só deve ser elegível após a aprovação e mesclagem das alterações.
