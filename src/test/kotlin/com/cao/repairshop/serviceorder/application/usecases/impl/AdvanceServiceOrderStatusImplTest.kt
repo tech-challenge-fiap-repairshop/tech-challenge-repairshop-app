@@ -97,4 +97,97 @@ class AdvanceServiceOrderStatusImplTest {
             advanceServiceOrderStatusImpl.execute(orderId, ServiceOrderStatus.IN_DIAGNOSIS)
         }
     }
+
+    @Test
+    fun `should throw error when customer not found during notification`() {
+        val orderId = UUID.randomUUID()
+        val customerId = UUID.randomUUID()
+        val vehicleId = UUID.randomUUID()
+
+        val order = ServiceOrder(
+            id = orderId,
+            customerId = customerId,
+            vehicleId = vehicleId,
+            status = ServiceOrderStatus.IN_DIAGNOSIS,
+            enterTime = LocalDateTime.now()
+        )
+        val insume = Insume(name = "Test", price = BigDecimal.TEN, unityPrice = BigDecimal.TEN, quantity = 10)
+        order.addExecution(BasicExecution.OIL_CHANGE, null, BigDecimal("100"), null, listOf(insume to 1))
+
+
+        every { serviceOrderGateway.findDetailedById(orderId) } returns order
+        every { serviceOrderGateway.save(any()) } answers { firstArg() }
+        every { customerGateway.findById(customerId) } returns null
+
+        assertThrows(EntityNotFoundException::class.java) {
+            advanceServiceOrderStatusImpl.execute(orderId, ServiceOrderStatus.WAITING_APPROVAL)
+        }
+    }
+
+    @Test
+    fun `should not send email if customer email is null`() {
+        val orderId = UUID.randomUUID()
+        val customerId = UUID.randomUUID()
+        val vehicleId = UUID.randomUUID()
+
+        val order = ServiceOrder(
+            id = orderId,
+            customerId = customerId,
+            vehicleId = vehicleId,
+            status = ServiceOrderStatus.IN_DIAGNOSIS,
+            enterTime = LocalDateTime.now()
+        )
+        val insume = Insume(name = "Test", price = BigDecimal.TEN, unityPrice = BigDecimal.TEN, quantity = 10)
+        order.addExecution(BasicExecution.OIL_CHANGE, null, BigDecimal("100"), null, listOf(insume to 1))
+
+        val customer = Customer(
+            id = customerId,
+            name = "John Doe",
+            document = Document("12345678909"),
+            email = null
+        )
+
+        every { serviceOrderGateway.findDetailedById(orderId) } returns order
+        every { serviceOrderGateway.save(any()) } answers { firstArg() }
+        every { customerGateway.findById(customerId) } returns customer
+
+        val response = advanceServiceOrderStatusImpl.execute(orderId, ServiceOrderStatus.WAITING_APPROVAL)
+
+        assertEquals(ServiceOrderStatus.WAITING_APPROVAL, response.status)
+        verify { serviceOrderGateway.save(order) }
+        verify(exactly = 0) { emailService.sendEmail(any()) }
+    }
+
+    @Test
+    fun `should throw error when vehicle not found during notification`() {
+        val orderId = UUID.randomUUID()
+        val customerId = UUID.randomUUID()
+        val vehicleId = UUID.randomUUID()
+
+        val order = ServiceOrder(
+            id = orderId,
+            customerId = customerId,
+            vehicleId = vehicleId,
+            status = ServiceOrderStatus.IN_DIAGNOSIS,
+            enterTime = LocalDateTime.now()
+        )
+        val insume = Insume(name = "Test", price = BigDecimal.TEN, unityPrice = BigDecimal.TEN, quantity = 10)
+        order.addExecution(BasicExecution.OIL_CHANGE, null, BigDecimal("100"), null, listOf(insume to 1))
+
+        val customer = Customer(
+            id = customerId,
+            name = "John Doe",
+            document = Document("12345678909"),
+            email = Email("john@example.com")
+        )
+
+        every { serviceOrderGateway.findDetailedById(orderId) } returns order
+        every { serviceOrderGateway.save(any()) } answers { firstArg() }
+        every { customerGateway.findById(customerId) } returns customer
+        every { vehicleGateway.findById(vehicleId) } returns null
+
+        assertThrows(EntityNotFoundException::class.java) {
+            advanceServiceOrderStatusImpl.execute(orderId, ServiceOrderStatus.WAITING_APPROVAL)
+        }
+    }
 }

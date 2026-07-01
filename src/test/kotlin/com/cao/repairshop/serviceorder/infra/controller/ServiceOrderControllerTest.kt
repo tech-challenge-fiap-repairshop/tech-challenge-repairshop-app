@@ -25,6 +25,9 @@ import tools.jackson.databind.json.JsonMapper
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.UUID
+import org.springframework.data.jpa.domain.Specification
+import com.cao.repairshop.serviceorder.infra.persistence.models.ServiceOrderEntity
+import io.mockk.slot
 
 class ServiceOrderControllerTest {
 
@@ -104,9 +107,23 @@ class ServiceOrderControllerTest {
 
     @Test
     fun `GET service-orders should return 200`() {
-        every { findServiceOrder.findAll(any(), any<Pageable>()) } returns PageImpl(listOf(sampleResponse()))
+        val spec = slot<Specification<ServiceOrderEntity>>()
+        every { findServiceOrder.findAll(capture(spec), any<Pageable>()) } returns PageImpl(listOf(sampleResponse()))
 
         mockMvc.perform(get("/service-orders"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.content[0].status").value("RECEIVED"))
+    }
+    
+    @Test
+    fun `GET service-orders with all filters should return 200`() {
+        val spec = slot<Specification<ServiceOrderEntity>>()
+        every { findServiceOrder.findAll(capture(spec), any<Pageable>()) } returns PageImpl(listOf(sampleResponse()))
+
+        mockMvc.perform(get("/service-orders")
+            .param("customerId", customerId.toString())
+            .param("vehicleId", vehicleId.toString())
+            .param("status", ServiceOrderStatus.RECEIVED.toString()))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.content[0].status").value("RECEIVED"))
     }
