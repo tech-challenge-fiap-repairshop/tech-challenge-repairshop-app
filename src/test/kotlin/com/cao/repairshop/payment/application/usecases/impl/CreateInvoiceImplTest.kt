@@ -126,4 +126,93 @@ class CreateInvoiceImplTest {
             createInvoiceImpl.execute(request)
         }
     }
+
+    @Test
+    fun `should throw error when service order is not found`() {
+        val request = CreateInvoiceRequest(
+            serviceOrderId = UUID.randomUUID(),
+            invoiceNumber = "INV-001"
+        )
+
+        every { serviceOrderGateway.findDetailedById(request.serviceOrderId) } returns null
+
+        assertThrows(EntityNotFoundException::class.java) {
+            createInvoiceImpl.execute(request)
+        }
+    }
+
+    @Test
+    fun `should throw error when invoice already exists for service order`() {
+        val request = CreateInvoiceRequest(
+            serviceOrderId = UUID.randomUUID(),
+            invoiceNumber = "INV-001"
+        )
+
+        val serviceOrder = ServiceOrder(
+            id = request.serviceOrderId,
+            customerId = UUID.randomUUID(),
+            vehicleId = UUID.randomUUID(),
+            status = ServiceOrderStatus.FINALIZED,
+            enterTime = LocalDateTime.now()
+        )
+
+        every { serviceOrderGateway.findDetailedById(request.serviceOrderId) } returns serviceOrder
+        every { invoiceGateway.findByServiceOrderId(request.serviceOrderId) } returns mockk<Invoice>()
+
+        assertThrows(DuplicateEntityException::class.java) {
+            createInvoiceImpl.execute(request)
+        }
+    }
+
+    @Test
+    fun `should throw error when customer is not found`() {
+        val request = CreateInvoiceRequest(
+            serviceOrderId = UUID.randomUUID(),
+            invoiceNumber = "INV-001"
+        )
+
+        val serviceOrder = ServiceOrder(
+            id = request.serviceOrderId,
+            customerId = UUID.randomUUID(),
+            vehicleId = UUID.randomUUID(),
+            status = ServiceOrderStatus.FINALIZED,
+            enterTime = LocalDateTime.now()
+        )
+
+        every { serviceOrderGateway.findDetailedById(request.serviceOrderId) } returns serviceOrder
+        every { invoiceGateway.findByServiceOrderId(request.serviceOrderId) } returns null
+        every { invoiceGateway.findByInvoiceNumber(request.invoiceNumber) } returns null
+        every { customerGateway.findById(serviceOrder.customerId) } returns null
+
+        assertThrows(EntityNotFoundException::class.java) {
+            createInvoiceImpl.execute(request)
+        }
+    }
+
+    @Test
+    fun `should throw error when vehicle is not found`() {
+        val request = CreateInvoiceRequest(
+            serviceOrderId = UUID.randomUUID(),
+            invoiceNumber = "INV-001"
+        )
+
+        val customer = Customer(name = "John", document = Document("12345678909"))
+        val serviceOrder = ServiceOrder(
+            id = request.serviceOrderId,
+            customerId = customer.id,
+            vehicleId = UUID.randomUUID(),
+            status = ServiceOrderStatus.FINALIZED,
+            enterTime = LocalDateTime.now()
+        )
+
+        every { serviceOrderGateway.findDetailedById(request.serviceOrderId) } returns serviceOrder
+        every { invoiceGateway.findByServiceOrderId(request.serviceOrderId) } returns null
+        every { invoiceGateway.findByInvoiceNumber(request.invoiceNumber) } returns null
+        every { customerGateway.findById(serviceOrder.customerId) } returns customer
+        every { vehicleGateway.findById(serviceOrder.vehicleId) } returns null
+
+        assertThrows(EntityNotFoundException::class.java) {
+            createInvoiceImpl.execute(request)
+        }
+    }
 }
