@@ -92,9 +92,13 @@ class ServiceOrder(
         totalPrice = executions.fold(BigDecimal.ZERO) { acc, exec -> acc.add(exec.getTotalPrice()) }
     }
 
-    fun checkCompletion() {
-        takeIf { status == ServiceOrderStatus.IN_EXECUTION && executions.all { it.status == ExecutionStatus.FINALIZED } }
-            ?.advanceStatus(ServiceOrderStatus.FINALIZED)
+    fun checkCompletion(): Boolean {
+        val shouldFinalize = status == ServiceOrderStatus.IN_EXECUTION && executions.all { it.status == ExecutionStatus.FINALIZED }
+        if (shouldFinalize) {
+            advanceStatus(ServiceOrderStatus.FINALIZED)
+            return true
+        }
+        return false
     }
 
     fun recordHistory(newStatus: ServiceOrderStatus, description: String? = null) {

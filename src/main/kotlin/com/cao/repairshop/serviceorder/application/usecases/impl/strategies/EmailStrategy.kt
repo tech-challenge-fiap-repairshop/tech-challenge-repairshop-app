@@ -6,7 +6,6 @@ import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
 import com.cao.repairshop.serviceorder.domain.entities.ServiceOrder
 
 sealed interface EmailStrategy {
-    val status: ServiceOrderStatus
     fun formatSubject(order: ServiceOrder): String
     fun formatBody(customer: Customer, order: ServiceOrder, vehicle: Vehicle): String
 }

@@ -8,8 +8,6 @@ import org.springframework.stereotype.Component
 
 @Component
 class PaidEmailStrategy : EmailStrategy {
-    override val status = ServiceOrderStatus.PAID
-
     override fun formatSubject(order: ServiceOrder): String {
         return "Ordem de Serviço #${order.id} - Paga"
     }

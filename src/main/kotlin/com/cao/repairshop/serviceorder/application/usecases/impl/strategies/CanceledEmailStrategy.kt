@@ -8,8 +8,6 @@ import org.springframework.stereotype.Component
 
 @Component
 class CanceledEmailStrategy : EmailStrategy {
-    override val status = ServiceOrderStatus.CANCELED
-
     override fun formatSubject(order: ServiceOrder): String {
         return "Ordem de Serviço #${order.id} - Cancelada"
     }

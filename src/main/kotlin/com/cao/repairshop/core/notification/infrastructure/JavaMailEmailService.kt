@@ -22,6 +22,7 @@ class JavaMailEmailService(
         runCatching {
             val message = mailSender.createMimeMessage()
             MimeMessageHelper(message, true, "UTF-8").apply {
+                setFrom("atendimento@repairshop.com.br", "Atendimento Repair Shop")
                 setTo(request.to)
                 setSubject(request.subject)
                 setText(request.body, request.isHtml)
