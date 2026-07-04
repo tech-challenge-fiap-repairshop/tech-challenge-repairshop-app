@@ -40,7 +40,7 @@ class CreateServiceOrderImplTest {
         customerGateway = mockk()
         vehicleGateway = mockk()
         insumeGateway = mockk()
-        notifyCustomer = mockk()
+        notifyCustomer = mockk(relaxed = true)
         createServiceOrderImpl = CreateServiceOrderImpl(
             serviceOrderGateway, customerGateway, vehicleGateway, insumeGateway, notifyCustomer
         )
@@ -80,6 +80,7 @@ class CreateServiceOrderImplTest {
         assertEquals(BigDecimal("120.00"), response.totalPrice)
         
         verify { serviceOrderGateway.save(any()) }
+        verify { notifyCustomer.execute(any(), ServiceOrderStatus.RECEIVED) }
     }
 
     @Test
