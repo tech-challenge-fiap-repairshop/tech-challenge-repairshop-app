@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # Recursos base do projeto
+  - ../deployment.yaml
+  - ../service.yaml
+  - ../configmap.yaml
+  - ../hpa.yaml
+  - ../mailhog-deployment.yaml
+  - ../mailhog-service.yaml
+  # Recursos específicos locais
+  - ./postgres-deployment.yaml
+  - ./postgres-service.yaml
+  - ./secret.yaml
+  - ./db-configmap.yaml
+
+# Substituição automática da imagem de produção pela imagem local
+images:
+  - name: ECR_REGISTRY/repairshop
+    newName: repairshop
+    newTag: local

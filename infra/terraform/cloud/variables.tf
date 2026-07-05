@@ -25,13 +25,14 @@ variable "db_name" {
 variable "db_username" {
   description = "Usuário master do banco de dados RDS"
   type        = string
-  default     = "postgres"
+  default     = "repairshop"
 }
 
 variable "db_password" {
   description = "Senha master do banco de dados RDS (passada de forma segura)"
   type        = string
   sensitive   = true
+  default     = "repairshop"
 }
 
 
@@ -46,6 +47,14 @@ variable "lab_role_arn" {
   description = "ARN da LabRole pré-criada na AWS Academy"
   type        = string
   default     = "arn:aws:iam::154448561009:role/LabRole"
+}
+
+# Busca dinâmica do ID da conta AWS
+data "aws_caller_identity" "current" {}
+
+locals {
+  # Constrói o ARN da role dinamicamente utilizando a conta atual logada
+  lab_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LabRole"
 }
 
 

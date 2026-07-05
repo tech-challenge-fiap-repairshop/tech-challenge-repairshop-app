@@ -85,7 +85,7 @@ Para suportar o isolamento absoluto das regras de negócio, o código-fonte foi 
 Isso resulta em um sistema altamente testável, manutenível e fracamente acoplado (onde o ecossistema Spring atua apenas como motor e injeção de dependência na camada `infra`).
 
 
->>>>>>>>>>>>>>>>>>>> FALTA O DESENHO DA ARQUITETURA DA APLICAÇÃO <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+>>>>>>>>>>>>>>>>>>>> FALTA O DESENHO DA ARQUITETURA DA APLICAÇÃO 
 
 ### Provisionamento Terraform
 
@@ -128,7 +128,7 @@ Para rodar e provisionar os recursos na AWS, siga os passos abaixo:
    ```
 6. **Aplicar as Mudanças:** Provisiona os recursos na AWS de fato (confirme com `yes` ou passe a flag `-auto-approve`):
    ```bash
-   terraform apply
+   terraform apply -auto-approve
    ```
 7. **Configurar Acesso ao Kubernetes (EKS):** Após a criação do cluster, atualize seu `kubeconfig` local para interagir com o EKS recém-criado:
    ```bash
@@ -151,24 +151,20 @@ A aplicação é orquestrada via Kubernetes para garantir resiliência e escalab
   - *Arquivo:* [`hpa.yaml`](k8s/hpa.yaml)
 - **Mailhog e Gateway:** Deploy isolado para interceptar envios de e-mails das notificações de status, incluindo a configuração de um gateway/service dedicado para acessar a interface web do Mailhog.
   - *Arquivos:* [`mailhog-deployment.yaml`](k8s/mailhog-deployment.yaml), [`mailhog-service.yaml`](k8s/mailhog-service.yaml)
-- **Postgres (Local):** Manifestos para implantar o banco de dados caso você esteja rodando em um ambiente local (Minikube, Kind), simulando a estrutura sem AWS RDS.
+- **Postgres (Local):** Manifestos para implantar o banco de dados caso você esteja rodando em um ambiente local (Docker Desktop), simulando a estrutura sem AWS RDS.
   - *Arquivos:* [`postgres-deployment.yaml`](k8s/local/postgres-deployment.yaml), [`postgres-service.yaml`](k8s/local/postgres-service.yaml)
 
 #### Como Aplicar os Manifestos
 
 Para implantar a aplicação no seu cluster Kubernetes (seja AWS EKS ou cluster local), siga os passos lógicos:
 
-1. **Pré-requisitos e Ambiente:** Para rodar os comandos, você precisa de um ambiente Kubernetes ativo. Se não estiver utilizando o EKS da AWS, certifique-se de ter o **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** instalado junto com uma ferramenta de cluster local (como **[Minikube](https://minikube.sigs.k8s.io/docs/start/)**, **Kind** ou o próprio Kubernetes nativo integrado ao Docker Desktop). Além disso, é obrigatório ter a ferramenta de linha de comando [`kubectl`](https://kubernetes.io/docs/tasks/tools/) instalada.
+1. **Pré-requisitos e Ambiente:** Para rodar os comandos, você precisa de um ambiente Kubernetes ativo. Se não estiver utilizando o EKS da AWS, certifique-se de ter o **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** instalado com a opção do Kubernetes habilitada. Além disso, é obrigatório ter a ferramenta de linha de comando [`kubectl`](https://kubernetes.io/docs/tasks/tools/) instalada.
    * **Listar contextos conhecidos na máquina:**
      ```bash
      kubectl config get-contexts
      ```
-   * **Alternar para o ambiente local (Minikube / Docker Desktop):**
+   * **Alternar para o ambiente local (Docker Desktop):**
      ```bash
-     # Caso utilize Minikube:
-     kubectl config use-context minikube
-     
-     # Caso utilize o Kubernetes nativo do Docker Desktop:
      kubectl config use-context docker-desktop
      ```
    * **Alternar para o ambiente em nuvem (AWS EKS):**
@@ -188,30 +184,75 @@ Para implantar a aplicação no seu cluster Kubernetes (seja AWS EKS ou cluster 
    ```bash
    kubectl apply -f k8s/namespace.yaml
    ```
-3. **Aplicar Configurações Sensíveis:** Provisione as variáveis de ambiente base:
+
+A partir daqui, escolha o fluxo de deploy de acordo com o seu ambiente:
+
+### Deploy Local (Desenvolvimento)
+Este cenário utiliza o **Kustomize** para injetar as credenciais locais do banco de dados PostgreSQL e substituir a imagem do ECR de produção por uma imagem buildada localmente (`repairshop:local`).
+
+1. **Buildar a imagem local da aplicação:**
+   No diretório raiz do projeto, execute o comando de build especificando a tag `local`:
    ```bash
-   kubectl apply -f k8s/secret.yaml
-   kubectl apply -f k8s/configmap.yaml
+   docker build -t repairshop:local .
    ```
-4. **Deploy de Banco de Dados Local (Opcional):** Apenas se estiver fora da AWS (Minikube/Kind), suba os recursos locais do Postgres:
+
+2. **Deploy Integrado via Kustomize:**
+   Execute o Kustomize para aplicar de forma ordenada todo o ambiente (Postgres local, variáveis de ambiente locais, aplicação local, Service, HPA e Mailhog):
    ```bash
-   kubectl apply -f k8s/local/
+   kubectl kustomize k8s/local/ --load-restrictor LoadRestrictionsNone | kubectl apply -f -
    ```
-5. **Aplicar a Aplicação e HPA:** Faça o deploy da API Spring Boot, dos Serviços e do Autoscaler:
+
+---
+
+### Deploy na Nuvem (AWS EKS)
+
+> [!IMPORTANT]
+> **Pré-requisito:** Antes de realizar qualquer deploy na nuvem (seja automático ou manual), certifique-se de ter executado o provisionamento de toda a infraestrutura da AWS via Terraform (passo a passo detalhado na seção anterior [Como Aplicar a Infraestrutura](#como-aplicar-a-infraestrutura)).
+
+Para realizar o deploy manual no EKS a partir de sua máquina de forma dinâmica (sem a necessidade de editar arquivos manualmente), certifique-se de **estar no diretório raiz do projeto** (caso esteja no diretório do Terraform, retorne executando `cd ../../..`). Utilize os comandos abaixo no terminal (PowerShell):
+
+1. **Autenticar e Enviar a Imagem para o ECR:**
+   ```powershell
+   # 1. Obtém o Account ID automaticamente do AWS CLI
+   $accountId = (aws sts get-caller-identity --query Account --output text)
+
+   # 2. Obtém a senha do ECR e realiza o login (evita bug de encoding do pipe no PowerShell)
+   $password = (aws ecr get-login-password --region us-east-1)
+   docker login --username AWS --password $password "${accountId}.dkr.ecr.us-east-1.amazonaws.com"
+
+   # 3. Builda a imagem da aplicação (especificando o caminho do Dockerfile)
+   docker build -t repairshop:latest -f ./Dockerfile .
+
+   # 4. Taggea e envia a imagem para o seu repositório ECR
+   docker tag repairshop:latest "${accountId}.dkr.ecr.us-east-1.amazonaws.com/repairshop:latest"
+   docker push "${accountId}.dkr.ecr.us-east-1.amazonaws.com/repairshop:latest"
+   ```
+
+2. **Aplicar os manifestos no EKS com substituição dinâmica:**
+
+   Conecte-se ao contexto do cluster e crie o namespace:
    ```bash
-   kubectl apply -f k8s/deployment.yaml
-   kubectl apply -f k8s/service.yaml
-   kubectl apply -f k8s/hpa.yaml
+   # Conectar ao cluster EKS da AWS
+   aws eks update-kubeconfig --region us-east-1 --name repairshop-eks
+
+   # Criar o Namespace (se ainda não existir no cluster)
+   kubectl apply -f k8s/namespace.yaml
    ```
-6. **Aplicar Ferramentas Auxiliares:** Inicie os pods interceptadores de E-mail (Mailhog):
-   ```bash
-   kubectl apply -f k8s/mailhog-deployment.yaml
-   kubectl apply -f k8s/mailhog-service.yaml
+
+   Execute o deploy aplicando a substituição do ID de conta AWS dinamicamente em memória:
+   ```powershell
+   $accountId = (aws sts get-caller-identity --query Account --output text)
+   (kubectl kustomize k8s/aws/ --load-restrictor LoadRestrictionsNone) -replace '<SUA_CONTA_AWS>', $accountId | kubectl apply -f -
    ```
-7. **Monitorar o Status:** Verifique se tudo foi implantado e está `Running`:
-   ```bash
-   kubectl get pods -n repairshop
-   ```
+
+---
+
+### Monitorar o Status
+Acompanhe os pods do namespace até que fiquem no status `Running`:
+```bash
+kubectl get pods -n repairshop
+```
+
 
 ---
 
