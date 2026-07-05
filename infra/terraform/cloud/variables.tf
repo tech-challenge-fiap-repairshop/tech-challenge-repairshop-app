@@ -35,18 +35,10 @@ variable "db_password" {
   default     = "repairshop"
 }
 
-
-
 variable "eks_node_instance_type" {
   description = "Tipo de instância EC2 para os worker nodes do EKS"
   type        = string
   default     = "t3.small"
-}
-
-variable "lab_role_arn" {
-  description = "ARN da LabRole pré-criada na AWS Academy"
-  type        = string
-  default     = "arn:aws:iam::154448561009:role/LabRole"
 }
 
 # Busca dinâmica do ID da conta AWS
@@ -56,5 +48,4 @@ locals {
   # Constrói o ARN da role dinamicamente utilizando a conta atual logada
   lab_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LabRole"
 }
-
 
