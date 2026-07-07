@@ -75,7 +75,9 @@ O projeto atual, entregue para o **Tech Challenge Fase 2** da pós-graduação *
 
 ## Arquitetura
 
-O projeto aplica **Domain-Driven Design (DDD)** de forma integral — no nível estratégico (Linguagem Ubíqua, Bounded Contexts) e tático (Entities, Value Objects, Aggregates, Domain Services). 
+O projeto aplica **Domain-Driven Design (DDD)** de forma integral — no nível estratégico (Linguagem Ubíqua, Bounded Contexts) e tático (Entities, Value Objects, Aggregates, Domain Services).
+
+![diagrama_entidades_e_contextos.png](docs/delivery/fase2/diagrama_entidades_e_contextos.png)
 
 Para suportar o isolamento absoluto das regras de negócio, o código-fonte foi organizado de forma modular por contexto (ex: `customer`, `serviceorder`, `user`) e estruturado internamente utilizando a **Clean Architecture**. Essa abordagem garante que o núcleo da aplicação seja 100% agnóstico a tecnologias externas e frameworks. Cada módulo de domínio é subdividido em três camadas principais:
 - **`domain` (Domínio):** O coração do sistema. Contém as `entities` (entidades de negócio puras), lógicas/serviços de domínio centrais e os `mappers`. Não possui e não conhece nenhuma dependência externa.
@@ -84,8 +86,7 @@ Para suportar o isolamento absoluto das regras de negócio, o código-fonte foi 
 
 Isso resulta em um sistema altamente testável, manutenível e fracamente acoplado (onde o ecossistema Spring atua apenas como motor e injeção de dependência na camada `infra`).
 
-
->>>>>>>>>>>>>>>>>>>> FALTA O DESENHO DA ARQUITETURA DA APLICAÇÃO 
+![diagrama_arquitetura.png](docs/delivery/fase2/diagrama_arquitetura.png)
 
 ### Provisionamento Terraform
 
