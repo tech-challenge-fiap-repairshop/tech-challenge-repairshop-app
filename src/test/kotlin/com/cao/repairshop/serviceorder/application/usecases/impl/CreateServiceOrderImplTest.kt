@@ -10,6 +10,7 @@ import com.cao.repairshop.register.domain.entities.Document
 import com.cao.repairshop.register.domain.entities.Plate
 import com.cao.repairshop.register.domain.entities.Vehicle
 import com.cao.repairshop.serviceorder.application.gateways.ServiceOrderGateway
+import com.cao.repairshop.serviceorder.application.usecases.NotifyCustomer
 import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
 import com.cao.repairshop.serviceorder.infra.controller.dtos.CreateServiceOrderRequest
 import com.cao.repairshop.serviceorder.infra.controller.dtos.ExecutionDefinitionRequest
@@ -30,6 +31,7 @@ class CreateServiceOrderImplTest {
     private lateinit var customerGateway: CustomerGateway
     private lateinit var vehicleGateway: VehicleGateway
     private lateinit var insumeGateway: InsumeGateway
+    private lateinit var notifyCustomer: NotifyCustomer
     private lateinit var createServiceOrderImpl: CreateServiceOrderImpl
 
     @BeforeEach
@@ -38,8 +40,9 @@ class CreateServiceOrderImplTest {
         customerGateway = mockk()
         vehicleGateway = mockk()
         insumeGateway = mockk()
+        notifyCustomer = mockk(relaxed = true)
         createServiceOrderImpl = CreateServiceOrderImpl(
-            serviceOrderGateway, customerGateway, vehicleGateway, insumeGateway
+            serviceOrderGateway, customerGateway, vehicleGateway, insumeGateway, notifyCustomer
         )
     }
 
@@ -77,6 +80,7 @@ class CreateServiceOrderImplTest {
         assertEquals(BigDecimal("120.00"), response.totalPrice)
         
         verify { serviceOrderGateway.save(any()) }
+        verify { notifyCustomer.execute(any(), ServiceOrderStatus.RECEIVED) }
     }
 
     @Test

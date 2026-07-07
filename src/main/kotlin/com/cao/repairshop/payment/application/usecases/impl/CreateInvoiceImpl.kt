@@ -13,6 +13,7 @@ import com.cao.repairshop.payment.infra.controller.dtos.InvoiceResponse
 import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
 import com.cao.repairshop.serviceorder.domain.entities.ServiceOrder
 import com.cao.repairshop.serviceorder.application.gateways.ServiceOrderGateway
+import com.cao.repairshop.serviceorder.application.usecases.NotifyCustomer
 import com.cao.repairshop.register.application.gateways.CustomerGateway
 import com.cao.repairshop.register.application.gateways.VehicleGateway
 import org.springframework.stereotype.Service
@@ -23,7 +24,8 @@ class CreateInvoiceImpl(
     private val invoiceGateway: InvoiceGateway,
     private val serviceOrderGateway: ServiceOrderGateway,
     private val customerGateway: CustomerGateway,
-    private val vehicleGateway: VehicleGateway
+    private val vehicleGateway: VehicleGateway,
+    private val notifyCustomer: NotifyCustomer
 ) : CreateInvoice {
 
     @Transactional
@@ -48,7 +50,8 @@ class CreateInvoiceImpl(
         )
 
         serviceOrder.advanceStatus(ServiceOrderStatus.PAID)
-        serviceOrderGateway.save(serviceOrder)
+        val saved = serviceOrderGateway.save(serviceOrder)
+        notifyCustomer.execute(saved, ServiceOrderStatus.PAID)
         
         return invoiceGateway.save(invoice).toResponse()
     }

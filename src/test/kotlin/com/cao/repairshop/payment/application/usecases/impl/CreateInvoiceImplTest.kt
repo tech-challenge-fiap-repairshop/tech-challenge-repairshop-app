@@ -13,6 +13,7 @@ import com.cao.repairshop.register.domain.entities.Document
 import com.cao.repairshop.register.domain.entities.Plate
 import com.cao.repairshop.register.domain.entities.Vehicle
 import com.cao.repairshop.serviceorder.application.gateways.ServiceOrderGateway
+import com.cao.repairshop.serviceorder.application.usecases.NotifyCustomer
 import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
 import com.cao.repairshop.serviceorder.domain.entities.ServiceOrder
 import io.mockk.every
@@ -32,6 +33,7 @@ class CreateInvoiceImplTest {
     private lateinit var serviceOrderGateway: ServiceOrderGateway
     private lateinit var customerGateway: CustomerGateway
     private lateinit var vehicleGateway: VehicleGateway
+    private lateinit var notifyCustomer: NotifyCustomer
     private lateinit var createInvoiceImpl: CreateInvoiceImpl
 
     @BeforeEach
@@ -40,8 +42,9 @@ class CreateInvoiceImplTest {
         serviceOrderGateway = mockk()
         customerGateway = mockk()
         vehicleGateway = mockk()
+        notifyCustomer = mockk(relaxed = true)
         createInvoiceImpl = CreateInvoiceImpl(
-            invoiceGateway, serviceOrderGateway, customerGateway, vehicleGateway
+            invoiceGateway, serviceOrderGateway, customerGateway, vehicleGateway, notifyCustomer
         )
     }
 
@@ -79,6 +82,7 @@ class CreateInvoiceImplTest {
         
         verify { invoiceGateway.save(any()) }
         verify { serviceOrderGateway.save(serviceOrder) }
+        verify { notifyCustomer.execute(any(), ServiceOrderStatus.PAID) }
     }
 
     @Test

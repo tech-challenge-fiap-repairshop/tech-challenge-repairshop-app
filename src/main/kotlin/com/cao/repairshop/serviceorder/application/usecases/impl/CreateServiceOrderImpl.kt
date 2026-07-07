@@ -10,6 +10,7 @@ import com.cao.repairshop.register.domain.entities.Email
 import com.cao.repairshop.register.domain.entities.Plate
 import com.cao.repairshop.serviceorder.application.gateways.ServiceOrderGateway
 import com.cao.repairshop.serviceorder.application.usecases.CreateServiceOrder
+import com.cao.repairshop.serviceorder.application.usecases.NotifyCustomer
 import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
 import com.cao.repairshop.serviceorder.domain.entities.ServiceOrder
 import com.cao.repairshop.serviceorder.domain.entities.mapper.toResponse
@@ -25,7 +26,8 @@ class CreateServiceOrderImpl(
     private val serviceOrderGateway: ServiceOrderGateway,
     private val customerGateway: CustomerGateway,
     private val vehicleGateway: VehicleGateway,
-    private val insumeGateway: InsumeGateway
+    private val insumeGateway: InsumeGateway,
+    private val notifyCustomer: NotifyCustomer
 ) : CreateServiceOrder {
 
     @Transactional
@@ -59,6 +61,7 @@ class CreateServiceOrderImpl(
         order.recordHistory(ServiceOrderStatus.RECEIVED)
 
         val saved = serviceOrderGateway.save(order)
+        notifyCustomer.execute(saved, ServiceOrderStatus.RECEIVED)
         return saved.toResponse()
     }
 }

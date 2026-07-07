@@ -15,14 +15,11 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-  mailhog:
-    image: mailhog/mailhog:latest
-    container_name: mailhog
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mailpit
     environment:
-      MH_STORAGE: maildir
-      MH_MAILDIR_PATH: /tmp/mailhog
-    volumes:
-      - mailhog-data:/tmp/mailhog
+      MP_MAX_MESSAGES: 500
     ports:
       - "1025:1025" # Porta SMTP
       - "8025:8025" # Porta Interface Web (Dashboard)
@@ -33,7 +30,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/repairshop
       SPRING_DATASOURCE_USERNAME: repairshop
       SPRING_DATASOURCE_PASSWORD: repairshop
-      SPRING_MAIL_HOST: mailhog
+      SPRING_MAIL_HOST: mailpit
       SPRING_MAIL_PORT: 1025
     ports:
       - "8080:8080"
@@ -52,7 +49,6 @@ services:
 
 volumes:
   repairshop-data:
-  mailhog-data:
   sonarqube_data:
   sonarqube_extensions:
   sonarqube_logs:

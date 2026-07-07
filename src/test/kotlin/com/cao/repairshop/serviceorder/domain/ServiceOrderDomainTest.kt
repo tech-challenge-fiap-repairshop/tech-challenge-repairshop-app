@@ -150,7 +150,8 @@ class ServiceOrderDomainTest {
         val exec = order.addExecution(BasicExecution.OIL_CHANGE, null, BigDecimal("100"), null, emptyList<Pair<Insume, Int>>())
         exec.status = ExecutionStatus.FINALIZED
         
-        order.checkCompletion()
+        val result = order.checkCompletion()
+        assertThat(result).isTrue()
         assertThat(order.status).isEqualTo(ServiceOrderStatus.FINALIZED)
     }
 
@@ -159,7 +160,8 @@ class ServiceOrderDomainTest {
         val order = buildOrder(ServiceOrderStatus.IN_EXECUTION)
         order.addExecution(BasicExecution.OIL_CHANGE, null, BigDecimal("100"), null, emptyList<Pair<Insume, Int>>())
         
-        order.checkCompletion()
+        val result = order.checkCompletion()
+        assertThat(result).isFalse()
         assertThat(order.status).isEqualTo(ServiceOrderStatus.IN_EXECUTION)
     }
 

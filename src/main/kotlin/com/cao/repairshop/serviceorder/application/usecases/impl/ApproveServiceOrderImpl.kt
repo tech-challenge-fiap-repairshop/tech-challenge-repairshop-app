@@ -5,6 +5,7 @@ import com.cao.repairshop.core.exception.ErrorMessages
 import com.cao.repairshop.inventory.application.usecases.DeductInsumeStock
 import com.cao.repairshop.serviceorder.application.gateways.ServiceOrderGateway
 import com.cao.repairshop.serviceorder.application.usecases.ApproveServiceOrder
+import com.cao.repairshop.serviceorder.application.usecases.NotifyCustomer
 import com.cao.repairshop.serviceorder.domain.ApprovalDomainService
 import com.cao.repairshop.serviceorder.domain.entities.mapper.toResponse
 import com.cao.repairshop.serviceorder.infra.controller.dtos.ApprovalRequest
@@ -17,7 +18,8 @@ import java.util.UUID
 class ApproveServiceOrderImpl(
     private val serviceOrderGateway: ServiceOrderGateway,
     private val deductInsumeStock: DeductInsumeStock,
-    private val approvalDomainService: ApprovalDomainService
+    private val approvalDomainService: ApprovalDomainService,
+    private val notifyCustomer: NotifyCustomer
 ) : ApproveServiceOrder {
 
     @Transactional
@@ -35,6 +37,7 @@ class ApproveServiceOrderImpl(
         }
 
         val saved = serviceOrderGateway.save(order)
+        notifyCustomer.execute(saved, saved.status)
         return saved.toResponse()
     }
 }
