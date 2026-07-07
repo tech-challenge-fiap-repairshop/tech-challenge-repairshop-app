@@ -471,9 +471,12 @@ Com os containers rodando, as interfaces estão disponíveis nos seguintes ender
 
 A grande maioria dos endpoints exige autenticação JWT. Recomendamos realizar o primeiro uso diretamente pelo **Swagger UI** (`http://localhost:8080/swagger-ui/index.html`) para evitar problemas de formatação de JSON no terminal do Windows (como no caso do `curl`):
 
-> 💡 **Dica para o Postman:** Se preferir, temos coleções prontas no diretório [`docs/postman/`](docs/postman/):
-> - **Repair Shop API - Swagger**: Importada diretamente da especificação OpenAPI, ideal para explorar todos os endpoints de forma técnica.
-> - **Tech Challenge Fiap - Passo a Passo**: Uma coleção organizada com um fluxo lógico de negócio (Cadastro -> Login -> OS -> Execução -> Pagamento) para facilitar a validação do desafio.
+> 💡 **Dica para o Postman:** Utilize a collection disponível no diretório [`docs/postman/`](docs/postman/)
+> 
+> Uma coleção organizada com um fluxo lógico de negócio para facilitar a validação do desafio.
+>   - Cadastro => Login => OS => Execução => Pagamento
+
+[Collection do Postman]("docs/postman/Tech_Challenge_Fiap_-_Completo.postman_collection.json")
 
 1. Vá até o endpoint `POST /auth/register` no Swagger e cadastre o usuário inicial:
    ```json
