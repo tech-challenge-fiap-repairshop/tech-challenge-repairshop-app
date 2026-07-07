@@ -6,8 +6,10 @@ import com.cao.repairshop.serviceorder.application.gateways.ServiceOrderGateway
 import com.cao.repairshop.serviceorder.application.usecases.FindServiceOrder
 import com.cao.repairshop.serviceorder.domain.entities.mapper.toResponse
 import com.cao.repairshop.serviceorder.infra.controller.dtos.ServiceOrderResponse
+import com.cao.repairshop.serviceorder.infra.persistence.models.ServiceOrderEntity
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.domain.Specification
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -25,8 +27,7 @@ class FindServiceOrderImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun findAll(pageable: Pageable): Page<ServiceOrderResponse> {
-        return serviceOrderGateway.findAll(pageable).map { it.toResponse() }
+    override fun findAll(spec: Specification<ServiceOrderEntity>?, pageable: Pageable): Page<ServiceOrderResponse> {
+        return serviceOrderGateway.findAll(spec, pageable).map { it.toResponse() }
     }
 }
-
