@@ -144,8 +144,8 @@ jobs:
       - name: Package application (skip tests)
         run: mvn package -B -ntp -DskipTests
 
-      - name: Start dependencies (Postgres & Mailhog)
-        run: docker compose up -d postgres mailhog
+      - name: Start dependencies (Postgres & Mailpit)
+        run: docker compose up -d postgres mailpit
 
 
       - name: Run Application JAR
@@ -157,7 +157,7 @@ jobs:
           SPRING_MAIL_PORT: ${{ secrets.SPRING_MAIL_PORT }}
           JAVA_TOOL_OPTIONS: "-Djava.net.preferIPv4Stack=true"
         run: |
-          docker run -d --name smoke-jar --network host --add-host mailhog:127.0.0.1 \
+          docker run -d --name smoke-jar --network host --add-host mailpit:127.0.0.1 \
             -v ${{ github.workspace }}:/app \
             -w /app \
             -e SPRING_DATASOURCE_URL="$SPRING_DATASOURCE_URL" \
@@ -342,8 +342,8 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
-      - name: Start dependencies (Postgres & Mailhog)
-        run: docker compose -p repairshop up -d postgres mailhog
+      - name: Start dependencies (Postgres & Mailpit)
+        run: docker compose -p repairshop up -d postgres mailpit
 
 
       - name: Run Smoke Test (Start application container)
@@ -355,7 +355,7 @@ jobs:
           SPRING_MAIL_PORT: ${{ secrets.SPRING_MAIL_PORT }}
           JAVA_TOOL_OPTIONS: "-Djava.net.preferIPv4Stack=true"
         run: |
-          docker run -d --name smoke-app --network host --add-host mailhog:127.0.0.1 \
+          docker run -d --name smoke-app --network host --add-host mailpit:127.0.0.1 \
             -e SPRING_DATASOURCE_URL="$SPRING_DATASOURCE_URL" \
             -e SPRING_DATASOURCE_USERNAME="$SPRING_DATASOURCE_USERNAME" \
             -e SPRING_DATASOURCE_PASSWORD="$SPRING_DATASOURCE_PASSWORD" \
