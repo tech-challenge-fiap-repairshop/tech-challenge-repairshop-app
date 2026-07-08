@@ -48,7 +48,7 @@
 - [ ] **Listagem de OS (Filtro):** Excluir (lógica não física) as OS finalizadas e entregues da listagem
   > ❌ `findAll(pageable)` retorna TODAS as OS incluindo FINALIZED, PAID e CANCELED. Requer filtro `WHERE status NOT IN (...)`
 - [x] **Notificação:** Atualização de status da OS via e-mail ou ferramenta similar
-  > ✅ `EmailService` + `JavaMailEmailService` + MailHog no docker-compose. Disparo de e-mail em `AdvanceServiceOrderStatusImpl` na transição para `WAITING_APPROVAL`
+  > ✅ `EmailService` + `JavaMailEmailService` + Mailpit no docker-compose. Disparo de e-mail em `AdvanceServiceOrderStatusImpl` na transição para `WAITING_APPROVAL`
 
 ---
 
@@ -59,7 +59,7 @@
 - [x] Atualizar o `Dockerfile`
   > ✅ Multi-stage build (Maven builder → JRE runtime), usuário não-root (`appuser`), imagem `eclipse-temurin:24-jre`
 - [x] Atualizar/Criar o `docker-compose` para desenvolvimento local
-  > ✅ 4 serviços: PostgreSQL 17 (healthcheck), App Spring Boot, MailHog (SMTP + Dashboard), SonarQube
+  > ✅ 4 serviços: PostgreSQL 17 (healthcheck), App Spring Boot, Mailpit (SMTP + Dashboard), SonarQube
 
 ### Orquestração (Kubernetes - K8s)
 

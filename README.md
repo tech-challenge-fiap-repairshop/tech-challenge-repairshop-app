@@ -53,7 +53,7 @@ O projeto atual, entregue para o **Tech Challenge Fase 2** da pós-graduação *
 - **Orquestração e Alta Disponibilidade:** Conteinerizar a aplicação (Docker) e orquestrá-la via **Kubernetes** (EKS), utilizando o *Horizontal Pod Autoscaler (HPA)* para absorver variações de carga.
 - **Automação (IaC e CI/CD):** Provisionar toda a estrutura na AWS (VPC, Cluster, RDS, ECR) via **Terraform** e estabelecer uma pipeline completa de CI/CD para automação dos deploys.
 - **Qualidade e Refatoração:** Refinar a base de código orientada pela **Clean Architecture** e garantir altíssima cobertura de testes automatizados (unitários e de integração) nos fluxos críticos da aplicação.
-- **Evolução do Domínio:** Aprimorar o controle de Ordens de Serviço com filtros refinados, delegação de aprovação de orçamento externa e implementação do envio de notificações por e-mail a cada mudança de status (via Mailhog).
+- **Evolução do Domínio:** Aprimorar o controle de Ordens de Serviço com filtros refinados, delegação de aprovação de orçamento externa e implementação do envio de notificações por e-mail a cada mudança de status (via Mailpit).
 
 ---
 
@@ -99,7 +99,7 @@ Toda a infraestrutura de nuvem é provisionada via **Terraform** (diretório `/i
   - *Arquivo:* [`ecr.tf`](infra/terraform/cloud/ecr.tf)
 - **AWS S3 (Simple Storage Service):** Utilizado como *backend* do Terraform para armazenar e proteger o arquivo de estado remoto (`tfstate`). Isso garante o gerenciamento centralizado da infraestrutura, bloqueio de estado (state locking) e trabalho em equipe de forma segura.
   - *Arquivo:* [`backend.tf`](infra/terraform/cloud/backend.tf)
-- **VPC, Subnets, NAT e Internet Gateway:** Rede virtual dedicada criada do zero. Inclui um **NAT Gateway** que permite aos recursos em subnets privadas se comunicarem de forma segura com a internet, mantendo o banco protegido. Além disso, um **Internet Gateway (IGW)** foi provisionado nas subnets públicas para permitir tráfego de entrada, sendo usado especificamente para rotear o acesso externo à interface web do Mailhog.
+- **VPC, Subnets, NAT e Internet Gateway:** Rede virtual dedicada criada do zero. Inclui um **NAT Gateway** que permite aos recursos em subnets privadas se comunicarem de forma segura com a internet, mantendo o banco protegido. Além disso, um **Internet Gateway (IGW)** foi provisionado nas subnets públicas para permitir tráfego de entrada, sendo usado especificamente para rotear o acesso externo à interface web do Mailpit.
   - *Arquivo:* [`vpc.tf`](infra/terraform/cloud/vpc.tf)
 
 > [!IMPORTANT]
@@ -139,7 +139,7 @@ Para rodar e provisionar os recursos na AWS, siga os passos abaixo:
 <div align="center">
   <img src="docs/infrastructure/repairshop-diagrama-infra-cloud.svg" alt="Diagrama de Arquitetura, Nuvem e Orquestração" width="900">
   <br>
-  <em><small><strong>Figura 1: Topologia Integrada (Infraestrutura Cloud e Orquestração Kubernetes)</strong><br>O diagrama ilustra o provisionamento dos recursos na AWS (Rede VPC, Cluster EKS e banco persistente no RDS) atuando em conjunto com a lógica dos manifestos K8s, demonstrando o ciclo de vida dos Pods da aplicação (via Deployments e HPA) e sua integração com serviços auxiliares, como o Mailhog.</small></em>
+  <em><small><strong>Figura 1: Topologia Integrada (Infraestrutura Cloud e Orquestração Kubernetes)</strong><br>O diagrama ilustra o provisionamento dos recursos na AWS (Rede VPC, Cluster EKS e banco persistente no RDS) atuando em conjunto com a lógica dos manifestos K8s, demonstrando o ciclo de vida dos Pods da aplicação (via Deployments e HPA) e sua integração com serviços auxiliares, como o Mailpit.</small></em>
   <br><br>
 </div>
 
@@ -150,8 +150,8 @@ A aplicação é orquestrada via Kubernetes para garantir resiliência e escalab
   - *Arquivos:* [`deployment.yaml`](k8s/deployment.yaml), [`service.yaml`](k8s/service.yaml), [`configmap.yaml`](k8s/configmap.yaml), [`secret.yaml`](k8s/secret.yaml)
 - **HPA (Horizontal Pod Autoscaler):** Escala dinamicamente as réplicas da aplicação com base no consumo de recursos, garantindo performance e disponibilidade em picos de acesso.
   - *Arquivo:* [`hpa.yaml`](k8s/hpa.yaml)
-- **Mailhog e Gateway:** Deploy isolado para interceptar envios de e-mails das notificações de status, incluindo a configuração de um gateway/service dedicado para acessar a interface web do Mailhog.
-  - *Arquivos:* [`mailhog-deployment.yaml`](k8s/mailhog-deployment.yaml), [`mailhog-service.yaml`](k8s/mailhog-service.yaml)
+- **Mailpit e Gateway:** Deploy isolado para interceptar envios de e-mails das notificações de status, incluindo a configuração de um gateway/service dedicado para acessar a interface web do Mailpit.
+  - *Arquivos:* [`mailpit-deployment.yaml`](k8s/mailpit-deployment.yaml), [`mailpit-service.yaml`](k8s/mailpit-service.yaml)
 - **Postgres (Local):** Manifestos para implantar o banco de dados caso você esteja rodando em um ambiente local (Docker Desktop), simulando a estrutura sem AWS RDS.
   - *Arquivos:* [`postgres-deployment.yaml`](k8s/local/postgres-deployment.yaml), [`postgres-service.yaml`](k8s/local/postgres-service.yaml)
 
@@ -198,7 +198,7 @@ Este cenário utiliza o **Kustomize** para injetar as credenciais locais do banc
    ```
 
 2. **Deploy Integrado via Kustomize:**
-   Execute o Kustomize para aplicar de forma ordenada todo o ambiente (Postgres local, variáveis de ambiente locais, aplicação local, Service, HPA e Mailhog):
+    Execute o Kustomize para aplicar de forma ordenada todo o ambiente (Postgres local, variáveis de ambiente locais, aplicação local, Service, HPA e Mailpit):
    ```bash
    kubectl kustomize k8s/local/ --load-restrictor LoadRestrictionsNone | kubectl apply -f -
    ```
@@ -290,7 +290,7 @@ Conforme exigido nas diretrizes do Tech Challenge (Fase 2), a pipeline executa:
 
 1. **Build da Aplicação:**
    - Compilação e empacotamento da aplicação Kotlin / Spring Boot via Maven.
-   - **Smoke Test pós-Build:** Sobe temporariamente as dependências (Postgres e Mailhog) e roda o JAR compilado, verificando a inicialização da aplicação através do endpoint `/actuator/health`.
+    - **Smoke Test pós-Build:** Sobe temporariamente as dependências (Postgres e Mailpit) e roda o JAR compilado, verificando a inicialização da aplicação através do endpoint `/actuator/health`.
 2. **Deploy da Infraestrutura (Terraform):**
    - Executado em **paralelo (junto)** com o estágio de **Build da Aplicação** (Stage 0).
    - O provisionamento/deploy (comando `terraform apply`) **roda apenas quando há um merge ou push direto nas branches principais (`main` e `develop`)**, sendo **totalmente ignorado (pulado) em execuções de Pull Request (PR)** para evitar modificações indesejadas na infraestrutura antes da aprovação do PR.
@@ -332,7 +332,7 @@ Para que a esteira de CI/CD seja executada com sucesso e consiga provisionar os 
 | `SPRING_DATASOURCE_USERNAME` | Terraform, Smoke Test, EKS | Nome de usuário do banco PostgreSQL (utilizado no provisionamento RDS e injetado no cluster EKS) | Sim |
 | `SPRING_DATASOURCE_PASSWORD` | Terraform, Smoke Test, EKS | Senha de acesso do banco PostgreSQL (utilizado no provisionamento RDS e injetado no cluster EKS) | Sim |
 | `SPRING_DATASOURCE_URL` | Smoke Test | String de conexão JDBC para testes de integridade local durante a pipeline | Sim |
-| `SPRING_MAIL_HOST` | Smoke Test | Endereço do host do servidor SMTP para validação de disparo de e-mails nos testes (ex: `mailhog`) | Sim |
+| `SPRING_MAIL_HOST` | Smoke Test | Endereço do host do servidor SMTP para validação de disparo de e-mails nos testes (ex: `mailpit`) | Sim |
 | `SPRING_MAIL_PORT` | Smoke Test | Porta do servidor SMTP (ex: `1025`) | Sim |
 | `SONAR_TOKEN` | Quality Gate | Token de autenticação do **SonarCloud** para a análise estática e Quality Gate | Sim |
 
@@ -451,7 +451,7 @@ O `docker-compose.yml` provisiona **quatro serviços** simultaneamente:
 |---------|-------|-----------|
 | `postgres` | 5432 | PostgreSQL 16 com healthcheck |
 | `app` | 8080 | Aplicação Spring Boot (aguarda o banco ficar healthy) |
-| `mailhog` | 8025 / 1025 | Interceptador de e-mails locais (Dashboard web em 8025) |
+| `mailpit` | 8025 / 1025 | Interceptador de e-mails locais (Dashboard web em 8025) |
 | `sonarqube` | 9000 | Plataforma de análise contínua de qualidade de código |
 
 > Na primeira execução, o **Flyway** da aplicação aplica automaticamente todas as migrations no banco de dados (criação de tabelas, indexes e seed de insumos).
@@ -464,7 +464,7 @@ Com os containers rodando, as interfaces estão disponíveis nos seguintes ender
 |---------|-----|
 | Swagger UI (Recomendado) | http://localhost:8080/swagger-ui/index.html |
 | API REST (Base) | http://localhost:8080 |
-| Caixa de E-mails (MailHog) | http://localhost:8025 |
+| Caixa de E-mails (Mailpit) | http://localhost:8025 |
 | Dashboard SonarQube | http://localhost:9000 |
 
 ### 🚀 Primeiro uso (Via Swagger UI ou Postman)

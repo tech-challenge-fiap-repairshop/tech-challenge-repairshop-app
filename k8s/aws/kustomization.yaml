@@ -7,8 +7,8 @@ resources:
   - ../service.yaml
   - ../configmap.yaml
   - ../hpa.yaml
-  - ../mailhog-deployment.yaml
-  - ../mailhog-service.yaml
+  - ../mailpit-deployment.yaml
+  - ../mailpit-service.yaml
   # Segredo com credenciais genéricas
   - ./secret-aws.yaml
 
