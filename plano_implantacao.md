@@ -13,7 +13,7 @@ A melhor prática é separar o **Provisionamento da Infraestrutura** (Terraform)
 ## 2. Aplicação, Banco de Dados e Mailpit
 
 - **A Aplicação:** Roda de forma "stateless" (sem estado) em pods escaláveis (Deployment/HPA) dentro do EKS.
-- **O Banco de Dados (RDS):** A abordagem mais sólida para produção é utilizar um banco de dados gerenciado (como o AWS RDS PostgreSQL) fora do cluster Kubernetes. Isso tira a complexidade de gerenciar volumes persistentes (PVCs) em clusters, além de fornecer backups automatizados nativamente e alta disponibilidade (Multi-AZ). A aplicação no EKS simplesmente se conecta ao endpoint do RDS via rede interna da VPC.
+- **O Banco de Dados (RDS):** A abordagem mais sólida para produção é utilizar um banco de dados gerenciado (como o AWS RDS PostgreSQL) **fora** do cluster Kubernetes. Isso tira a complexidade de gerenciar volumes persistentes (PVCs) em clusters, além de fornecer backups automatizados nativamente e alta disponibilidade (Multi-AZ). A aplicação no EKS simplesmente se conecta ao endpoint do RDS via rede interna da VPC.
 - **O Mailpit:** É uma ferramenta fantástica para desenvolvimento e testes automatizados. Na pipeline de CI (durante os testes de integração e smoke tests), ele sobe via Docker Compose. Em produção, ele não deve ser instalado. A aplicação em produção no cluster deve se conectar a um serviço real de SMTP (como AWS SES, SendGrid, etc).
 
 **Organização dos Manifestos do Repositório:**

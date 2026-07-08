@@ -5,7 +5,7 @@
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![Coverage](https://img.shields.io/badge/Coverage-80%25+-brightgreen)](.)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=repairshop&metric=alert_status&token=607ce2711213e7f43617f23c2b284b461dae2f37)](https://sonarcloud.io/summary/new_code?id=repairshop)
@@ -198,7 +198,7 @@ Este cenário utiliza o **Kustomize** para injetar as credenciais locais do banc
    ```
 
 2. **Deploy Integrado via Kustomize:**
-    Execute o Kustomize para aplicar de forma ordenada todo o ambiente (Postgres local, variáveis de ambiente locais, aplicação local, Service, HPA e Mailpit):
+   Execute o Kustomize para aplicar de forma ordenada todo o ambiente (Postgres local, variáveis de ambiente locais, aplicação local, Service, HPA e Mailpit):
    ```bash
    kubectl kustomize k8s/local/ --load-restrictor LoadRestrictionsNone | kubectl apply -f -
    ```
@@ -290,7 +290,7 @@ Conforme exigido nas diretrizes do Tech Challenge (Fase 2), a pipeline executa:
 
 1. **Build da Aplicação:**
    - Compilação e empacotamento da aplicação Kotlin / Spring Boot via Maven.
-    - **Smoke Test pós-Build:** Sobe temporariamente as dependências (Postgres e Mailpit) e roda o JAR compilado, verificando a inicialização da aplicação através do endpoint `/actuator/health`.
+   - **Smoke Test pós-Build:** Sobe temporariamente as dependências (Postgres e Mailpit) e roda o JAR compilado, verificando a inicialização da aplicação através do endpoint `/actuator/health`.
 2. **Deploy da Infraestrutura (Terraform):**
    - Executado em **paralelo (junto)** com o estágio de **Build da Aplicação** (Stage 0).
    - O provisionamento/deploy (comando `terraform apply`) **roda apenas quando há um merge ou push direto nas branches principais (`main` e `develop`)**, sendo **totalmente ignorado (pulado) em execuções de Pull Request (PR)** para evitar modificações indesejadas na infraestrutura antes da aprovação do PR.
