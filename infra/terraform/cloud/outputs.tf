@@ -23,8 +23,8 @@ output "rds_endpoint" {
   value       = aws_db_instance.postgres.endpoint
 }
 
-output "mailhog_endpoint" {
-  description = "Endpoint publico para acessar a interface web do MailHog"
-  value       = kubernetes_service.mailhog.status[0].load_balancer[0].ingress[0].hostname
+output "mailpit_endpoint" {
+  description = "Endpoint publico para acessar a interface web do Mailpit"
+  value       = kubernetes_service.mailpit.status[0].load_balancer[0].ingress[0].hostname
 }
 

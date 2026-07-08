@@ -48,6 +48,10 @@ spec:
           volumeMounts:
             - name: tmp-volume
               mountPath: /tmp
+            - name: data-volume
+              mountPath: /data
       volumes:
         - name: tmp-volume
+          emptyDir: {}
+        - name: data-volume
           emptyDir: {}

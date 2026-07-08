@@ -22,16 +22,16 @@ resource "kubernetes_config_map" "db_config" {
 }
 
 
-# Serviço do MailHog do tipo LoadBalancer para exposição externa
-resource "kubernetes_service" "mailhog" {
+# Serviço do Mailpit do tipo LoadBalancer para exposição externa
+resource "kubernetes_service" "mailpit" {
   metadata {
-    name      = "mailhog"
+    name      = "mailpit"
     namespace = kubernetes_namespace.repairshop.metadata[0].name
   }
 
   spec {
     selector = {
-      app = "mailhog"
+      app = "mailpit"
     }
 
     port {

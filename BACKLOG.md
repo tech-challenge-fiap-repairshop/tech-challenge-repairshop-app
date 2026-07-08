@@ -457,7 +457,7 @@ Itens resolvidos marcados com ~~tachado~~ e data de resolucao.
 
 - **Diretório:** `/src/.../notifications/` (a ser implementado)
 - **Problema:** O PDF exige o envio de e-mail ao cliente na atualização de status da OS. Atualmente não há notificação assíncrona funcional para troca de status.
-- **Correção:** Implementar o envio de e-mail (ex: Spring Boot Starter Mail) ao alterar o status, consumindo as configurações do Mailhog.
+- **Correção:** Implementar o envio de e-mail (ex: Spring Boot Starter Mail) ao alterar o status, consumindo as configurações do Mailpit.
 - **Origem:** PDF Fase 2 (Evolução da aplicação) + Especialistas
 
 ### ~~BKL-060: Revisão de Refatoração Clean Code e Arquitetura Hexagonal~~ (RESOLVIDO 2026-06-29)
