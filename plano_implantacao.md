@@ -10,11 +10,11 @@ A melhor prática é separar o **Provisionamento da Infraestrutura** (Terraform)
 - **Infraestrutura Base (AWS):** A criação de rede (VPC), bancos de dados (RDS) e o cluster (EKS) devem ser gerenciados pelo Terraform. Isso muda com pouca frequência.
 - **Aplicação (K8s):** A atualização da versão da aplicação (Deployments, Services, Ingress) deve ser acionada rapidamente pela pipeline de CI/CD (GitHub Actions) a cada novo push no código-fonte, utilizando ferramentas nativas (ex: `kubectl apply`, Helm, ou ArgoCD) em vez de executar o Terraform toda vez que uma nova imagem Docker for gerada.
 
-## 2. Aplicação, Banco de Dados e Mailhog
+## 2. Aplicação, Banco de Dados e Mailpit
 
 - **A Aplicação:** Roda de forma "stateless" (sem estado) em pods escaláveis (Deployment/HPA) dentro do EKS.
 - **O Banco de Dados (RDS):** A abordagem mais sólida para produção é utilizar um banco de dados gerenciado (como o AWS RDS PostgreSQL) **fora** do cluster Kubernetes. Isso tira a complexidade de gerenciar volumes persistentes (PVCs) em clusters, além de fornecer backups automatizados nativamente e alta disponibilidade (Multi-AZ). A aplicação no EKS simplesmente se conecta ao endpoint do RDS via rede interna da VPC.
-- **O Mailhog:** É uma ferramenta fantástica para desenvolvimento e testes automatizados. Na pipeline de CI (durante os testes de integração e smoke tests), ele sobe via Docker Compose. Em produção, ele não deve ser instalado. A aplicação em produção no cluster deve se conectar a um serviço real de SMTP (como AWS SES, SendGrid, etc).
+- **O Mailpit:** É uma ferramenta fantástica para desenvolvimento e testes automatizados. Na pipeline de CI (durante os testes de integração e smoke tests), ele sobe via Docker Compose. Em produção, ele não deve ser instalado. A aplicação em produção no cluster deve se conectar a um serviço real de SMTP (como AWS SES, SendGrid, etc).
 
 **Organização dos Manifestos do Repositório:**
 Para suportar essa separação em produção, os arquivos Kubernetes na raiz do diretório foram organizados de modo a implantar apenas a aplicação stateless:
@@ -95,7 +95,7 @@ flowchart TD
 
 ### Resumo Cronológico:
 1. **Push:** Código chega no repositório GitHub.
-2. **Test & Quality (CI):** A pipeline compila, roda os testes locais e levanta instâncias temporárias de Postgres e Mailhog (via docker-compose) para garantir a saúde do software. Análises estáticas de segurança e código limpo (Sonar, Trivy) bloqueiam se houver vulnerabilidades.
+2. **Test & Quality (CI):** A pipeline compila, roda os testes locais e levanta instâncias temporárias de Postgres e Mailpit (via docker-compose) para garantir a saúde do software. Análises estáticas de segurança e código limpo (Sonar, Trivy) bloqueiam se houver vulnerabilidades.
 3. **Containerização (CI):** Imagem final Docker é construída e empurrada para o registro de imagens privado (**Amazon ECR**).
 4. **Infraestrutura (Provisionamento IaC):** (Se for a primeira vez), executa-se o Terraform para garantir que o RDS e o EKS estejam disponíveis e com rede configurada.
 5. **Autenticação & Injeção de Segredos:** A Action de Deploy do GitHub se conecta ao cluster EKS usando a role IAM. Pega as senhas do banco dos _GitHub Secrets_ e salva no K8s na forma de `Secret` do tipo opaco.

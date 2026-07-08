@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mailhog
+  name: mailpit
   namespace: repairshop
   labels:
-    app: mailhog
+    app: mailpit
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: mailhog
+      app: mailpit
   template:
     metadata:
       labels:
-        app: mailhog
+        app: mailpit
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -23,8 +23,8 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       containers:
-        - name: mailhog
-          image: mailhog/mailhog:v1.0.1
+        - name: mailpit
+          image: axllent/mailpit:latest
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
