@@ -1,11 +1,11 @@
 {
   "info": {
-    "_postman_id": "1d71d5ef-4c7d-4a60-a7a9-9cd17d81e068",
+    "_postman_id": "c89f7547-7b62-474d-a68e-db75fa4174c2",
     "name": "Repair Shop (Tech Challenge FIAP)",
     "description": "Collection passo a passo separada por domínios do projeto, facilitando a execução e testes da API de maneira fluída.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "16060735",
-    "_collection_link": "https://go.postman.co/collection/16060735-1d71d5ef-4c7d-4a60-a7a9-9cd17d81e068?source=collection_link"
+    "_collection_link": "https://go.postman.co/collection/16060735-c89f7547-7b62-474d-a68e-db75fa4174c2?source=collection_link"
   },
   "item": [
     {
@@ -366,7 +366,12 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"IN_DIAGNOSIS\"\n}"
+              "raw": "{\"status\": \"IN_DIAGNOSIS\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": {
               "raw": "{{base_url}}/service-orders/{{service_order_id}}/status",
@@ -858,9 +863,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/auth/register",
+                      "raw": "{{base_url}}/auth/register",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "auth",
@@ -899,9 +904,9 @@
                           }
                         },
                         "url": {
-                          "raw": "{{baseUrl}}/auth/register",
+                          "raw": "{{base_url}}/auth/register",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "auth",
@@ -947,9 +952,9 @@
                           }
                         },
                         "url": {
-                          "raw": "{{baseUrl}}/auth/register",
+                          "raw": "{{base_url}}/auth/register",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "auth",
@@ -990,9 +995,9 @@
                           }
                         },
                         "url": {
-                          "raw": "{{baseUrl}}/auth/register",
+                          "raw": "{{base_url}}/auth/register",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "auth",
@@ -1055,9 +1060,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/auth/login",
+                      "raw": "{{base_url}}/auth/login",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "auth",
@@ -1096,9 +1101,9 @@
                           }
                         },
                         "url": {
-                          "raw": "{{baseUrl}}/auth/login",
+                          "raw": "{{base_url}}/auth/login",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "auth",
@@ -1144,9 +1149,9 @@
                           }
                         },
                         "url": {
-                          "raw": "{{baseUrl}}/auth/login",
+                          "raw": "{{base_url}}/auth/login",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "auth",
@@ -1184,9 +1189,9 @@
                       }
                     ],
                     "url": {
-                      "raw": "{{baseUrl}}/invoices/:id",
+                      "raw": "{{base_url}}/invoices/:id",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "invoices",
@@ -1217,9 +1222,9 @@
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/invoices/:id",
+                          "raw": "{{base_url}}/invoices/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "invoices",
@@ -1257,9 +1262,9 @@
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/invoices/:id",
+                          "raw": "{{base_url}}/invoices/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "invoices",
@@ -1295,9 +1300,9 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{baseUrl}}/invoices?page=1153&size=957&sort=string,string",
+                  "raw": "{{base_url}}/invoices?page=1153&size=957&sort=string,string",
                   "host": [
-                    "{{baseUrl}}"
+                    "{{base_url}}"
                   ],
                   "path": [
                     "invoices"
@@ -1335,9 +1340,9 @@
                       }
                     ],
                     "url": {
-                      "raw": "{{baseUrl}}/invoices?page=1153&size=957&sort=string,string",
+                      "raw": "{{base_url}}/invoices?page=1153&size=957&sort=string,string",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "invoices"
@@ -1397,9 +1402,9 @@
                   }
                 },
                 "url": {
-                  "raw": "{{baseUrl}}/invoices",
+                  "raw": "{{base_url}}/invoices",
                   "host": [
-                    "{{baseUrl}}"
+                    "{{base_url}}"
                   ],
                   "path": [
                     "invoices"
@@ -1437,9 +1442,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/invoices",
+                      "raw": "{{base_url}}/invoices",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "invoices"
@@ -1484,9 +1489,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/invoices",
+                      "raw": "{{base_url}}/invoices",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "invoices"
@@ -1526,9 +1531,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/invoices",
+                      "raw": "{{base_url}}/invoices",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "invoices"
@@ -1568,9 +1573,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/invoices",
+                      "raw": "{{base_url}}/invoices",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "invoices"
@@ -1610,9 +1615,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/invoices",
+                      "raw": "{{base_url}}/invoices",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "invoices"
@@ -1647,9 +1652,9 @@
                       }
                     ],
                     "url": {
-                      "raw": "{{baseUrl}}/customers/:id",
+                      "raw": "{{base_url}}/customers/:id",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "customers",
@@ -1680,9 +1685,9 @@
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/customers/:id",
+                          "raw": "{{base_url}}/customers/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "customers",
@@ -1720,9 +1725,9 @@
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/customers/:id",
+                          "raw": "{{base_url}}/customers/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "customers",
@@ -1770,9 +1775,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/customers/:id",
+                      "raw": "{{base_url}}/customers/:id",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "customers",
@@ -1817,9 +1822,9 @@
                           }
                         },
                         "url": {
-                          "raw": "{{baseUrl}}/customers/:id",
+                          "raw": "{{base_url}}/customers/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "customers",
@@ -1871,9 +1876,9 @@
                           }
                         },
                         "url": {
-                          "raw": "{{baseUrl}}/customers/:id",
+                          "raw": "{{base_url}}/customers/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "customers",
@@ -1902,9 +1907,9 @@
                     "method": "DELETE",
                     "header": [],
                     "url": {
-                      "raw": "{{baseUrl}}/customers/:id",
+                      "raw": "{{base_url}}/customers/:id",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "customers",
@@ -1931,9 +1936,9 @@
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/customers/:id",
+                          "raw": "{{base_url}}/customers/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "customers",
@@ -1966,9 +1971,9 @@
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/customers/:id",
+                          "raw": "{{base_url}}/customers/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "customers",
@@ -2001,9 +2006,9 @@
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/customers/:id",
+                          "raw": "{{base_url}}/customers/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "customers",
@@ -2039,9 +2044,9 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{baseUrl}}/customers?page=1153&size=957&sort=string,string",
+                  "raw": "{{base_url}}/customers?page=1153&size=957&sort=string,string",
                   "host": [
-                    "{{baseUrl}}"
+                    "{{base_url}}"
                   ],
                   "path": [
                     "customers"
@@ -2079,9 +2084,9 @@
                       }
                     ],
                     "url": {
-                      "raw": "{{baseUrl}}/customers?page=1153&size=957&sort=string,string",
+                      "raw": "{{base_url}}/customers?page=1153&size=957&sort=string,string",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "customers"
@@ -2141,9 +2146,9 @@
                   }
                 },
                 "url": {
-                  "raw": "{{baseUrl}}/customers",
+                  "raw": "{{base_url}}/customers",
                   "host": [
-                    "{{baseUrl}}"
+                    "{{base_url}}"
                   ],
                   "path": [
                     "customers"
@@ -2181,9 +2186,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/customers",
+                      "raw": "{{base_url}}/customers",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "customers"
@@ -2228,9 +2233,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/customers",
+                      "raw": "{{base_url}}/customers",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "customers"
@@ -2270,9 +2275,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/customers",
+                      "raw": "{{base_url}}/customers",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "customers"
@@ -2307,9 +2312,9 @@
                       }
                     ],
                     "url": {
-                      "raw": "{{baseUrl}}/insumes/:id",
+                      "raw": "{{base_url}}/insumes/:id",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "insumes",
@@ -2340,9 +2345,9 @@
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/insumes/:id",
+                          "raw": "{{base_url}}/insumes/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "insumes",
@@ -2380,9 +2385,9 @@
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/insumes/:id",
+                          "raw": "{{base_url}}/insumes/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "insumes",
@@ -2430,9 +2435,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/insumes/:id",
+                      "raw": "{{base_url}}/insumes/:id",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "insumes",
@@ -2477,9 +2482,9 @@
                           }
                         },
                         "url": {
-                          "raw": "{{baseUrl}}/insumes/:id",
+                          "raw": "{{base_url}}/insumes/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "insumes",
@@ -2531,9 +2536,9 @@
                           }
                         },
                         "url": {
-                          "raw": "{{baseUrl}}/insumes/:id",
+                          "raw": "{{base_url}}/insumes/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "insumes",
@@ -2562,9 +2567,9 @@
                     "method": "DELETE",
                     "header": [],
                     "url": {
-                      "raw": "{{baseUrl}}/insumes/:id",
+                      "raw": "{{base_url}}/insumes/:id",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "insumes",
@@ -2591,9 +2596,9 @@
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/insumes/:id",
+                          "raw": "{{base_url}}/insumes/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "insumes",
@@ -2626,9 +2631,9 @@
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/insumes/:id",
+                          "raw": "{{base_url}}/insumes/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "insumes",
@@ -2664,9 +2669,9 @@
                   }
                 ],
                 "url": {
-                  "raw": "{{baseUrl}}/insumes?page=1153&size=957&sort=string,string",
+                  "raw": "{{base_url}}/insumes?page=1153&size=957&sort=string,string",
                   "host": [
-                    "{{baseUrl}}"
+                    "{{base_url}}"
                   ],
                   "path": [
                     "insumes"
@@ -2704,9 +2709,9 @@
                       }
                     ],
                     "url": {
-                      "raw": "{{baseUrl}}/insumes?page=1153&size=957&sort=string,string",
+                      "raw": "{{base_url}}/insumes?page=1153&size=957&sort=string,string",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "insumes"
@@ -2766,9 +2771,9 @@
                   }
                 },
                 "url": {
-                  "raw": "{{baseUrl}}/insumes",
+                  "raw": "{{base_url}}/insumes",
                   "host": [
-                    "{{baseUrl}}"
+                    "{{base_url}}"
                   ],
                   "path": [
                     "insumes"
@@ -2806,9 +2811,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/insumes",
+                      "raw": "{{base_url}}/insumes",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "insumes"
@@ -2853,9 +2858,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/insumes",
+                      "raw": "{{base_url}}/insumes",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "insumes"
@@ -2895,9 +2900,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/insumes",
+                      "raw": "{{base_url}}/insumes",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "insumes"
@@ -2955,9 +2960,9 @@
                                   }
                                 },
                                 "url": {
-                                  "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions/:executionId/status",
+                                  "raw": "{{base_url}}/service-orders/:serviceOrderId/executions/:executionId/status",
                                   "host": [
-                                    "{{baseUrl}}"
+                                    "{{base_url}}"
                                   ],
                                   "path": [
                                     "service-orders",
@@ -3009,9 +3014,9 @@
                                       }
                                     },
                                     "url": {
-                                      "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions/:executionId/status",
+                                      "raw": "{{base_url}}/service-orders/:serviceOrderId/executions/:executionId/status",
                                       "host": [
-                                        "{{baseUrl}}"
+                                        "{{base_url}}"
                                       ],
                                       "path": [
                                         "service-orders",
@@ -3070,9 +3075,9 @@
                                       }
                                     },
                                     "url": {
-                                      "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions/:executionId/status",
+                                      "raw": "{{base_url}}/service-orders/:serviceOrderId/executions/:executionId/status",
                                       "host": [
-                                        "{{baseUrl}}"
+                                        "{{base_url}}"
                                       ],
                                       "path": [
                                         "service-orders",
@@ -3126,9 +3131,9 @@
                                       }
                                     },
                                     "url": {
-                                      "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions/:executionId/status",
+                                      "raw": "{{base_url}}/service-orders/:serviceOrderId/executions/:executionId/status",
                                       "host": [
-                                        "{{baseUrl}}"
+                                        "{{base_url}}"
                                       ],
                                       "path": [
                                         "service-orders",
@@ -3168,12 +3173,17 @@
                               {
                                 "key": "Accept",
                                 "value": "*/*"
+                              },
+                              {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
                               }
                             ],
                             "url": {
-                              "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions/:executionId",
+                              "raw": "{{base_url}}/service-orders/:serviceOrderId/executions/:executionId",
                               "host": [
-                                "{{baseUrl}}"
+                                "{{base_url}}"
                               ],
                               "path": [
                                 "service-orders",
@@ -3210,9 +3220,9 @@
                                   }
                                 ],
                                 "url": {
-                                  "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions/:executionId",
+                                  "raw": "{{base_url}}/service-orders/:serviceOrderId/executions/:executionId",
                                   "host": [
-                                    "{{baseUrl}}"
+                                    "{{base_url}}"
                                   ],
                                   "path": [
                                     "service-orders",
@@ -3256,9 +3266,9 @@
                                   }
                                 ],
                                 "url": {
-                                  "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions/:executionId",
+                                  "raw": "{{base_url}}/service-orders/:serviceOrderId/executions/:executionId",
                                   "host": [
-                                    "{{baseUrl}}"
+                                    "{{base_url}}"
                                   ],
                                   "path": [
                                     "service-orders",
@@ -3312,9 +3322,9 @@
                               }
                             },
                             "url": {
-                              "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions/:executionId",
+                              "raw": "{{base_url}}/service-orders/:serviceOrderId/executions/:executionId",
                               "host": [
-                                "{{baseUrl}}"
+                                "{{base_url}}"
                               ],
                               "path": [
                                 "service-orders",
@@ -3365,9 +3375,9 @@
                                   }
                                 },
                                 "url": {
-                                  "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions/:executionId",
+                                  "raw": "{{base_url}}/service-orders/:serviceOrderId/executions/:executionId",
                                   "host": [
-                                    "{{baseUrl}}"
+                                    "{{base_url}}"
                                   ],
                                   "path": [
                                     "service-orders",
@@ -3425,9 +3435,9 @@
                                   }
                                 },
                                 "url": {
-                                  "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions/:executionId",
+                                  "raw": "{{base_url}}/service-orders/:serviceOrderId/executions/:executionId",
                                   "host": [
-                                    "{{baseUrl}}"
+                                    "{{base_url}}"
                                   ],
                                   "path": [
                                     "service-orders",
@@ -3480,9 +3490,9 @@
                                   }
                                 },
                                 "url": {
-                                  "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions/:executionId",
+                                  "raw": "{{base_url}}/service-orders/:serviceOrderId/executions/:executionId",
                                   "host": [
-                                    "{{baseUrl}}"
+                                    "{{base_url}}"
                                   ],
                                   "path": [
                                     "service-orders",
@@ -3517,9 +3527,9 @@
                             "method": "DELETE",
                             "header": [],
                             "url": {
-                              "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions/:executionId",
+                              "raw": "{{base_url}}/service-orders/:serviceOrderId/executions/:executionId",
                               "host": [
-                                "{{baseUrl}}"
+                                "{{base_url}}"
                               ],
                               "path": [
                                 "service-orders",
@@ -3552,9 +3562,9 @@
                                   }
                                 ],
                                 "url": {
-                                  "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions/:executionId",
+                                  "raw": "{{base_url}}/service-orders/:serviceOrderId/executions/:executionId",
                                   "host": [
-                                    "{{baseUrl}}"
+                                    "{{base_url}}"
                                   ],
                                   "path": [
                                     "service-orders",
@@ -3593,9 +3603,9 @@
                                   }
                                 ],
                                 "url": {
-                                  "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions/:executionId",
+                                  "raw": "{{base_url}}/service-orders/:serviceOrderId/executions/:executionId",
                                   "host": [
-                                    "{{baseUrl}}"
+                                    "{{base_url}}"
                                   ],
                                   "path": [
                                     "service-orders",
@@ -3654,9 +3664,9 @@
                               }
                             },
                             "url": {
-                              "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions/batch",
+                              "raw": "{{base_url}}/service-orders/:serviceOrderId/executions/batch",
                               "host": [
-                                "{{baseUrl}}"
+                                "{{base_url}}"
                               ],
                               "path": [
                                 "service-orders",
@@ -3703,9 +3713,9 @@
                                   }
                                 },
                                 "url": {
-                                  "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions/batch",
+                                  "raw": "{{base_url}}/service-orders/:serviceOrderId/executions/batch",
                                   "host": [
-                                    "{{baseUrl}}"
+                                    "{{base_url}}"
                                   ],
                                   "path": [
                                     "service-orders",
@@ -3759,9 +3769,9 @@
                                   }
                                 },
                                 "url": {
-                                  "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions/batch",
+                                  "raw": "{{base_url}}/service-orders/:serviceOrderId/executions/batch",
                                   "host": [
-                                    "{{baseUrl}}"
+                                    "{{base_url}}"
                                   ],
                                   "path": [
                                     "service-orders",
@@ -3810,9 +3820,9 @@
                                   }
                                 },
                                 "url": {
-                                  "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions/batch",
+                                  "raw": "{{base_url}}/service-orders/:serviceOrderId/executions/batch",
                                   "host": [
-                                    "{{baseUrl}}"
+                                    "{{base_url}}"
                                   ],
                                   "path": [
                                     "service-orders",
@@ -3864,9 +3874,9 @@
                           }
                         },
                         "url": {
-                          "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions",
+                          "raw": "{{base_url}}/service-orders/:serviceOrderId/executions",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "service-orders",
@@ -3912,9 +3922,9 @@
                               }
                             },
                             "url": {
-                              "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions",
+                              "raw": "{{base_url}}/service-orders/:serviceOrderId/executions",
                               "host": [
-                                "{{baseUrl}}"
+                                "{{base_url}}"
                               ],
                               "path": [
                                 "service-orders",
@@ -3967,9 +3977,9 @@
                               }
                             },
                             "url": {
-                              "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions",
+                              "raw": "{{base_url}}/service-orders/:serviceOrderId/executions",
                               "host": [
-                                "{{baseUrl}}"
+                                "{{base_url}}"
                               ],
                               "path": [
                                 "service-orders",
@@ -4017,9 +4027,9 @@
                               }
                             },
                             "url": {
-                              "raw": "{{baseUrl}}/service-orders/:serviceOrderId/executions",
+                              "raw": "{{base_url}}/service-orders/:serviceOrderId/executions",
                               "host": [
-                                "{{baseUrl}}"
+                                "{{base_url}}"
                               ],
                               "path": [
                                 "service-orders",
@@ -4078,9 +4088,9 @@
                           }
                         },
                         "url": {
-                          "raw": "{{baseUrl}}/service-orders/:id/approve",
+                          "raw": "{{base_url}}/service-orders/:id/approve",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "service-orders",
@@ -4126,9 +4136,9 @@
                               }
                             },
                             "url": {
-                              "raw": "{{baseUrl}}/service-orders/:id/approve",
+                              "raw": "{{base_url}}/service-orders/:id/approve",
                               "host": [
-                                "{{baseUrl}}"
+                                "{{base_url}}"
                               ],
                               "path": [
                                 "service-orders",
@@ -4181,9 +4191,9 @@
                               }
                             },
                             "url": {
-                              "raw": "{{baseUrl}}/service-orders/:id/approve",
+                              "raw": "{{base_url}}/service-orders/:id/approve",
                               "host": [
-                                "{{baseUrl}}"
+                                "{{base_url}}"
                               ],
                               "path": [
                                 "service-orders",
@@ -4231,9 +4241,9 @@
                               }
                             },
                             "url": {
-                              "raw": "{{baseUrl}}/service-orders/:id/approve",
+                              "raw": "{{base_url}}/service-orders/:id/approve",
                               "host": [
-                                "{{baseUrl}}"
+                                "{{base_url}}"
                               ],
                               "path": [
                                 "service-orders",
@@ -4287,9 +4297,9 @@
                           }
                         },
                         "url": {
-                          "raw": "{{baseUrl}}/service-orders/:id/status",
+                          "raw": "{{base_url}}/service-orders/:id/status",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "service-orders",
@@ -4335,9 +4345,9 @@
                               }
                             },
                             "url": {
-                              "raw": "{{baseUrl}}/service-orders/:id/status",
+                              "raw": "{{base_url}}/service-orders/:id/status",
                               "host": [
-                                "{{baseUrl}}"
+                                "{{base_url}}"
                               ],
                               "path": [
                                 "service-orders",
@@ -4390,9 +4400,9 @@
                               }
                             },
                             "url": {
-                              "raw": "{{baseUrl}}/service-orders/:id/status",
+                              "raw": "{{base_url}}/service-orders/:id/status",
                               "host": [
-                                "{{baseUrl}}"
+                                "{{base_url}}"
                               ],
                               "path": [
                                 "service-orders",
@@ -4440,9 +4450,9 @@
                               }
                             },
                             "url": {
-                              "raw": "{{baseUrl}}/service-orders/:id/status",
+                              "raw": "{{base_url}}/service-orders/:id/status",
                               "host": [
-                                "{{baseUrl}}"
+                                "{{base_url}}"
                               ],
                               "path": [
                                 "service-orders",
@@ -4476,12 +4486,17 @@
                       {
                         "key": "Accept",
                         "value": "*/*"
+                      },
+                      {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}",
+                        "type": "text"
                       }
                     ],
                     "url": {
-                      "raw": "{{baseUrl}}/service-orders/:id",
+                      "raw": "{{base_url}}/service-orders/:id",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "service-orders",
@@ -4512,9 +4527,9 @@
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/service-orders/:id",
+                          "raw": "{{base_url}}/service-orders/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "service-orders",
@@ -4552,9 +4567,9 @@
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/service-orders/:id",
+                          "raw": "{{base_url}}/service-orders/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "service-orders",
@@ -4590,12 +4605,17 @@
                       {
                         "key": "Accept",
                         "value": "*/*"
+                      },
+                      {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}",
+                        "type": "text"
                       }
                     ],
                     "url": {
-                      "raw": "{{baseUrl}}/service-orders/metrics",
+                      "raw": "{{base_url}}/service-orders/metrics",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "service-orders",
@@ -4620,9 +4640,9 @@
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/service-orders/metrics",
+                          "raw": "{{base_url}}/service-orders/metrics",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "service-orders",
@@ -4663,9 +4683,9 @@
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/service-orders/executions/metrics",
+                          "raw": "{{base_url}}/service-orders/executions/metrics",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "service-orders",
@@ -4691,9 +4711,9 @@
                               }
                             ],
                             "url": {
-                              "raw": "{{baseUrl}}/service-orders/executions/metrics",
+                              "raw": "{{base_url}}/service-orders/executions/metrics",
                               "host": [
-                                "{{baseUrl}}"
+                                "{{base_url}}"
                               ],
                               "path": [
                                 "service-orders",
@@ -4732,14 +4752,14 @@
                   },
                   {
                     "key": "Authorization",
-                    "value": "Bearer {{bearerToken}}",
+                    "value": "Bearer {{token}}",
                     "type": "text"
                   }
                 ],
                 "url": {
-                  "raw": "{{baseUrl}}/service-orders?page=1153&size=957&sort=string,string",
+                  "raw": "{{base_url}}/service-orders?page=1&size=20",
                   "host": [
-                    "{{baseUrl}}"
+                    "{{base_url}}"
                   ],
                   "path": [
                     "service-orders"
@@ -4747,15 +4767,11 @@
                   "query": [
                     {
                       "key": "page",
-                      "value": "1153"
+                      "value": "1"
                     },
                     {
                       "key": "size",
-                      "value": "957"
-                    },
-                    {
-                      "key": "sort",
-                      "value": "string,string"
+                      "value": "20"
                     }
                   ]
                 }
@@ -4777,9 +4793,9 @@
                       }
                     ],
                     "url": {
-                      "raw": "{{baseUrl}}/service-orders?page=1153&size=957&sort=string,string",
+                      "raw": "{{base_url}}/service-orders?page=1153&size=957&sort=string,string",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "service-orders"
@@ -4839,9 +4855,9 @@
                   }
                 },
                 "url": {
-                  "raw": "{{baseUrl}}/service-orders",
+                  "raw": "{{base_url}}/service-orders",
                   "host": [
-                    "{{baseUrl}}"
+                    "{{base_url}}"
                   ],
                   "path": [
                     "service-orders"
@@ -4879,9 +4895,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/service-orders",
+                      "raw": "{{base_url}}/service-orders",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "service-orders"
@@ -4926,9 +4942,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/service-orders",
+                      "raw": "{{base_url}}/service-orders",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "service-orders"
@@ -4968,9 +4984,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/service-orders",
+                      "raw": "{{base_url}}/service-orders",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "service-orders"
@@ -5005,9 +5021,9 @@
                       }
                     ],
                     "url": {
-                      "raw": "{{baseUrl}}/vehicles/:id",
+                      "raw": "{{base_url}}/vehicles/:id",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "vehicles",
@@ -5038,9 +5054,9 @@
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/vehicles/:id",
+                          "raw": "{{base_url}}/vehicles/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "vehicles",
@@ -5078,9 +5094,9 @@
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/vehicles/:id",
+                          "raw": "{{base_url}}/vehicles/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "vehicles",
@@ -5128,9 +5144,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/vehicles/:id",
+                      "raw": "{{base_url}}/vehicles/:id",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "vehicles",
@@ -5175,9 +5191,9 @@
                           }
                         },
                         "url": {
-                          "raw": "{{baseUrl}}/vehicles/:id",
+                          "raw": "{{base_url}}/vehicles/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "vehicles",
@@ -5229,9 +5245,9 @@
                           }
                         },
                         "url": {
-                          "raw": "{{baseUrl}}/vehicles/:id",
+                          "raw": "{{base_url}}/vehicles/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "vehicles",
@@ -5260,9 +5276,9 @@
                     "method": "DELETE",
                     "header": [],
                     "url": {
-                      "raw": "{{baseUrl}}/vehicles/:id",
+                      "raw": "{{base_url}}/vehicles/:id",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "vehicles",
@@ -5289,9 +5305,9 @@
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/vehicles/:id",
+                          "raw": "{{base_url}}/vehicles/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "vehicles",
@@ -5324,9 +5340,9 @@
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/vehicles/:id",
+                          "raw": "{{base_url}}/vehicles/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "vehicles",
@@ -5359,9 +5375,9 @@
                           }
                         ],
                         "url": {
-                          "raw": "{{baseUrl}}/vehicles/:id",
+                          "raw": "{{base_url}}/vehicles/:id",
                           "host": [
-                            "{{baseUrl}}"
+                            "{{base_url}}"
                           ],
                           "path": [
                             "vehicles",
@@ -5394,12 +5410,17 @@
                   {
                     "key": "Accept",
                     "value": "*/*"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{token}}",
+                    "type": "text"
                   }
                 ],
                 "url": {
-                  "raw": "{{baseUrl}}/vehicles?page=1153&size=957&sort=string,string",
+                  "raw": "{{base_url}}/vehicles?page=1&size=20",
                   "host": [
-                    "{{baseUrl}}"
+                    "{{base_url}}"
                   ],
                   "path": [
                     "vehicles"
@@ -5407,15 +5428,11 @@
                   "query": [
                     {
                       "key": "page",
-                      "value": "1153"
+                      "value": "1"
                     },
                     {
                       "key": "size",
-                      "value": "957"
-                    },
-                    {
-                      "key": "sort",
-                      "value": "string,string"
+                      "value": "20"
                     }
                   ]
                 }
@@ -5437,9 +5454,9 @@
                       }
                     ],
                     "url": {
-                      "raw": "{{baseUrl}}/vehicles?page=1153&size=957&sort=string,string",
+                      "raw": "{{base_url}}/vehicles?page=1153&size=957&sort=string,string",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "vehicles"
@@ -5499,9 +5516,9 @@
                   }
                 },
                 "url": {
-                  "raw": "{{baseUrl}}/vehicles",
+                  "raw": "{{base_url}}/vehicles",
                   "host": [
-                    "{{baseUrl}}"
+                    "{{base_url}}"
                   ],
                   "path": [
                     "vehicles"
@@ -5539,9 +5556,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/vehicles",
+                      "raw": "{{base_url}}/vehicles",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "vehicles"
@@ -5586,9 +5603,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/vehicles",
+                      "raw": "{{base_url}}/vehicles",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "vehicles"
@@ -5628,9 +5645,9 @@
                       }
                     },
                     "url": {
-                      "raw": "{{baseUrl}}/vehicles",
+                      "raw": "{{base_url}}/vehicles",
                       "host": [
-                        "{{baseUrl}}"
+                        "{{base_url}}"
                       ],
                       "path": [
                         "vehicles"

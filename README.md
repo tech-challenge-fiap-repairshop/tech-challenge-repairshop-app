@@ -476,7 +476,9 @@ A grande maioria dos endpoints exige autenticação JWT. Recomendamos realizar o
 > Uma coleção organizada com um fluxo lógico de negócio para facilitar a validação do desafio.
 >   - Cadastro => Login => OS => Execução => Pagamento
 
-[Collection do Postman]("docs/postman/Tech_Challenge_Fiap_-_Completo.postman_collection.json")
+[Ambiente Local](docs/postman/Local.postman_environment.json)
+
+[Collection do Postman](docs/postman/Tech_Challenge_Fiap_-_Completo.postman_collection.json)
 
 1. Vá até o endpoint `POST /auth/register` no Swagger e cadastre o usuário inicial:
    ```json
