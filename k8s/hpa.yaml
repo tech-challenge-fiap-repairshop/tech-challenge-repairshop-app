@@ -19,24 +19,18 @@ spec:
         target:
           type: Utilization
           averageUtilization: 70
-    - type: Resource
-      resource:
-        name: memory
-        target:
-          type: Utilization
-          averageUtilization: 80
   behavior:
     scaleUp:
-      stabilizationWindowSeconds: 60
+      stabilizationWindowSeconds: 20
       selectPolicy: Max
       policies:
         - type: Pods
           value: 1
-          periodSeconds: 60
+          periodSeconds: 20
     scaleDown:
-      stabilizationWindowSeconds: 300
-      selectPolicy: Min
+      stabilizationWindowSeconds: 60
+      selectPolicy: Max
       policies:
-        - type: Pods
-          value: 1
-          periodSeconds: 120
+        - type: Percent
+          value: 100
+          periodSeconds: 60

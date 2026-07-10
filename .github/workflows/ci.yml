@@ -442,16 +442,15 @@ jobs:
       - name: Prepare Deployment Manifests
         run: |
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com"
-          echo "Using ECR Registry: $ECR_REGISTRY"
-          sed -i "s|ECR_REGISTRY|${ECR_REGISTRY}|g" k8s/deployment.yaml
+          echo "Using Account ID: $ACCOUNT_ID"
+          sed -i "s|<SUA_CONTA_AWS>|${ACCOUNT_ID}|g" k8s/deploy/kustomization.yaml
           sed -i "s|DB_USERNAME|${{ secrets.SPRING_DATASOURCE_USERNAME }}|g" k8s/secret.yaml
           sed -i "s|DB_PASSWORD|${{ secrets.SPRING_DATASOURCE_PASSWORD }}|g" k8s/secret.yaml
 
       - name: Apply Manifests
         run: |
-          echo "Applying Kubernetes manifests..."
-          kubectl apply -f k8s/
+          echo "Applying Kubernetes manifests via Kustomize..."
+          kubectl kustomize k8s/deploy/ | kubectl apply -f -
 
       - name: Wait for Deployment Rollout
         run: |
