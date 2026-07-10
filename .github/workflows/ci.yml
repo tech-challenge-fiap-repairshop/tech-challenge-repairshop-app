@@ -19,7 +19,7 @@ on:
       - 'k8s/**'
       - '.github/workflows/ci.yml'
   pull_request:
-    branches: [ '**' ]
+    branches: [ 'main', 'develop' ]
     paths:
       - 'infra/**'
       - 'src/**'
