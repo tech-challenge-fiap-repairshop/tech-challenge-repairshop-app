@@ -12,7 +12,7 @@ import java.util.Optional
 import java.util.UUID
 
 interface ServiceOrderRepository : JpaRepository<ServiceOrderEntity, UUID>, JpaSpecificationExecutor<ServiceOrderEntity> {
-    @EntityGraph(attributePaths = ["customer", "vehicle", "executions", "executions.insumes", "executions.insumes.insume", "histories"])
+    @EntityGraph(attributePaths = ["customer", "vehicle"])
     override fun findAll(spec: Specification<ServiceOrderEntity>, pageable: Pageable): Page<ServiceOrderEntity>
 
     @EntityGraph(attributePaths = ["customer", "vehicle", "executions", "executions.insumes", "executions.insumes.insume", "histories"])
