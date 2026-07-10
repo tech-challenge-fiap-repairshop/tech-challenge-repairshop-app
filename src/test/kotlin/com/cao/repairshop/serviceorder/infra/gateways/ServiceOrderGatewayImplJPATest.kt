@@ -115,7 +115,7 @@ class ServiceOrderGatewayImplJPATest {
         every { serviceOrderEntity.vehicle.id } returns UUID.randomUUID()
         every { serviceOrderRepository.findAll(any<Specification<ServiceOrderEntity>>(), any<Pageable>()) } returns PageImpl(listOf(serviceOrderEntity))
 
-        val result = serviceOrderGatewayImplJPA.findAll(null, pageable)
+        val result = serviceOrderGatewayImplJPA.findAll(null, null, null, pageable)
         assertEquals(1, result.totalElements)
     }
 

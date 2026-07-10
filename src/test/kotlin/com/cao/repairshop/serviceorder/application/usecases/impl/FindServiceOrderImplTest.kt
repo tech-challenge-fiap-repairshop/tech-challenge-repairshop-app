@@ -14,8 +14,7 @@ import org.springframework.data.domain.PageRequest
 import java.time.LocalDateTime
 import java.util.UUID
 
-import com.cao.repairshop.serviceorder.infra.persistence.models.ServiceOrderEntity
-import org.springframework.data.jpa.domain.Specification
+
 
 class FindServiceOrderImplTest {
 
@@ -66,9 +65,9 @@ class FindServiceOrderImplTest {
         )
         val pageable = PageRequest.of(0, 10)
         
-        every { serviceOrderGateway.findAll(null, pageable) } returns PageImpl(listOf(serviceOrder))
+        every { serviceOrderGateway.findAll(null, null, null, pageable) } returns PageImpl(listOf(serviceOrder))
 
-        val response = findServiceOrderImpl.findAll(null, pageable)
+        val response = findServiceOrderImpl.findAll(null, null, null, pageable)
 
         assertEquals(1, response.totalElements)
         assertEquals(serviceOrder.id, response.content[0].id)

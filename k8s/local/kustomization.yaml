@@ -14,6 +14,19 @@ resources:
   - ./postgres-service.yaml
   - ./secret.yaml
   - ./db-configmap.yaml
+  # Metrics Server remoto para possibilitar o HPA local
+  - https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+# Permite que o Metrics Server local funcione ignorando certificados autoassinados
+patches:
+  - target:
+      kind: Deployment
+      name: metrics-server
+      namespace: kube-system
+    patch: |
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --kubelet-insecure-tls
 
 # Substituição automática da imagem de produção pela imagem local
 images:

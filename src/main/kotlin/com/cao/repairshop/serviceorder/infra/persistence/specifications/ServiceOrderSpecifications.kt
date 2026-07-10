@@ -1,12 +1,43 @@
-package com.cao.repairshop.serviceorder.infra.persistence.repositories
+package com.cao.repairshop.serviceorder.infra.persistence.specifications
 
+import com.cao.repairshop.register.infra.persistence.models.CustomerEntity
+import com.cao.repairshop.register.infra.persistence.models.VehicleEntity
 import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
 import com.cao.repairshop.serviceorder.infra.persistence.models.ServiceOrderEntity
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.domain.Specification
 import java.time.LocalDateTime
+import java.util.UUID
 
 object ServiceOrderSpecifications {
+
+    fun withFilters(
+        customerId: UUID?,
+        vehicleId: UUID?,
+        status: ServiceOrderStatus?
+    ): Specification<ServiceOrderEntity> {
+        return Specification { root, _, cb ->
+            val predicates = mutableListOf<jakarta.persistence.criteria.Predicate>()
+
+            customerId?.let {
+                predicates.add(cb.equal(root.get<CustomerEntity>("customer").get<UUID>("id"), it))
+            }
+            vehicleId?.let {
+                predicates.add(cb.equal(root.get<VehicleEntity>("vehicle").get<UUID>("id"), it))
+            }
+            if (status != null) {
+                predicates.add(cb.equal(root.get<ServiceOrderStatus>("status"), status))
+            } else {
+                predicates.add(cb.not(root.get<ServiceOrderStatus>("status").`in`(
+                    ServiceOrderStatus.FINALIZED,
+                    ServiceOrderStatus.PAID,
+                    ServiceOrderStatus.CANCELED
+                )))
+            }
+
+            cb.and(*predicates.toTypedArray())
+        }
+    }
 
     fun withCustomOrderingAndFilters(
         spec: Specification<ServiceOrderEntity>?,

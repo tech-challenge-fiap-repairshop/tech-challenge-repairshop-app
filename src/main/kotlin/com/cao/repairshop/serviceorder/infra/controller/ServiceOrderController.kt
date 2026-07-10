@@ -11,10 +11,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.util.UUID
 
-import org.springframework.data.jpa.domain.Specification
-import com.cao.repairshop.serviceorder.infra.persistence.models.ServiceOrderEntity
-import com.cao.repairshop.register.infra.persistence.models.CustomerEntity
-import com.cao.repairshop.register.infra.persistence.models.VehicleEntity
 import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
 
 @RestController
@@ -40,28 +36,7 @@ class ServiceOrderController(
         @RequestParam(required = false) status: ServiceOrderStatus?,
         pageable: Pageable
     ): Page<ServiceOrderResponse> {
-        val spec = Specification<ServiceOrderEntity> { root, _, cb ->
-            val predicates = mutableListOf<jakarta.persistence.criteria.Predicate>()
-
-            customerId?.let {
-                predicates.add(cb.equal(root.get<CustomerEntity>("customer").get<UUID>("id"), it))
-            }
-            vehicleId?.let {
-                predicates.add(cb.equal(root.get<VehicleEntity>("vehicle").get<UUID>("id"), it))
-            }
-            if (status != null) {
-                predicates.add(cb.equal(root.get<ServiceOrderStatus>("status"), status))
-            } else {
-                predicates.add(cb.not(root.get<ServiceOrderStatus>("status").`in`(
-                    ServiceOrderStatus.FINALIZED,
-                    ServiceOrderStatus.PAID,
-                    ServiceOrderStatus.CANCELED
-                )))
-            }
-
-            cb.and(*predicates.toTypedArray())
-        }
-        return findServiceOrder.findAll(spec, pageable)
+        return findServiceOrder.findAll(customerId, vehicleId, status, pageable)
     }
 
     @GetMapping("/{id}")

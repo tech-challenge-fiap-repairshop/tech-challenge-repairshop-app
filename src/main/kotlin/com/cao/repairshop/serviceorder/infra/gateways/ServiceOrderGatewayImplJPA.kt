@@ -4,15 +4,14 @@ import com.cao.repairshop.core.exception.EntityNotFoundException
 import com.cao.repairshop.register.infra.persistence.repositories.CustomerRepository
 import com.cao.repairshop.register.infra.persistence.repositories.VehicleRepository
 import com.cao.repairshop.serviceorder.application.gateways.ServiceOrderGateway
+import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
 import com.cao.repairshop.serviceorder.domain.entities.ServiceOrder
 import com.cao.repairshop.serviceorder.domain.entities.mapper.toDomain
 import com.cao.repairshop.serviceorder.domain.entities.mapper.toEntity
-import com.cao.repairshop.serviceorder.infra.persistence.models.ServiceOrderEntity
 import com.cao.repairshop.serviceorder.infra.persistence.repositories.ServiceOrderRepository
-import com.cao.repairshop.serviceorder.infra.persistence.repositories.ServiceOrderSpecifications
+import com.cao.repairshop.serviceorder.infra.persistence.specifications.ServiceOrderSpecifications
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.data.jpa.domain.Specification
 import org.springframework.stereotype.Component
 import java.util.*
 
@@ -37,7 +36,13 @@ class ServiceOrderGatewayImplJPA(
         return serviceOrderRepository.findDetailedById(id).orElse(null)?.toDomain()
     }
 
-    override fun findAll(spec: Specification<ServiceOrderEntity>?, pageable: Pageable): Page<ServiceOrder> {
+    override fun findAll(
+        customerId: UUID?,
+        vehicleId: UUID?,
+        status: ServiceOrderStatus?,
+        pageable: Pageable
+    ): Page<ServiceOrder> {
+        val spec = ServiceOrderSpecifications.withFilters(customerId, vehicleId, status)
         val finalSpec = ServiceOrderSpecifications.withCustomOrderingAndFilters(spec, pageable)
         return serviceOrderRepository.findAll(finalSpec, pageable).map { it.toDomain() }
     }

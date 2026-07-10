@@ -1,5 +1,7 @@
-package com.cao.repairshop.serviceorder.infra.persistence.repositories
+package com.cao.repairshop.serviceorder.infra.persistence.specifications
 
+import com.cao.repairshop.register.infra.persistence.models.CustomerEntity
+import com.cao.repairshop.register.infra.persistence.models.VehicleEntity
 import com.cao.repairshop.serviceorder.domain.ServiceOrderStatus
 import com.cao.repairshop.serviceorder.infra.persistence.models.ServiceOrderEntity
 import io.mockk.every
@@ -13,6 +15,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
 import java.time.LocalDateTime
+import java.util.UUID
 
 class ServiceOrderSpecificationsTest {
 
@@ -330,5 +333,75 @@ class ServiceOrderSpecificationsTest {
         verify(exactly = 1) {
             query.orderBy(orderStatusCase, orderEnterTime)
         }
+    }
+
+    @Test
+    fun `should build default status specification when no parameters are provided`() {
+        val spec = ServiceOrderSpecifications.withFilters(null, null, null)
+
+        val root = mockk<Root<ServiceOrderEntity>>()
+        val query = mockk<CriteriaQuery<*>>()
+        val cb = mockk<CriteriaBuilder>()
+
+        val statusPath = mockk<Path<ServiceOrderStatus>>()
+        val inExpression = mockk<CriteriaBuilder.In<ServiceOrderStatus>>()
+        val notPredicate = mockk<Predicate>()
+        val andPredicate = mockk<Predicate>()
+
+        every { root.get<ServiceOrderStatus>("status") } returns statusPath
+        every {
+            statusPath.`in`(
+                ServiceOrderStatus.FINALIZED,
+                ServiceOrderStatus.PAID,
+                ServiceOrderStatus.CANCELED
+            )
+        } returns inExpression
+        every { cb.not(inExpression) } returns notPredicate
+        every { cb.and(notPredicate) } returns andPredicate
+
+        val result = spec.toPredicate(root, query, cb)
+
+        assertNotNull(result)
+        assertSame(andPredicate, result)
+    }
+
+    @Test
+    fun `should build specification with customer, vehicle and status predicates when all parameters are provided`() {
+        val customerId = UUID.randomUUID()
+        val vehicleId = UUID.randomUUID()
+        val spec = ServiceOrderSpecifications.withFilters(customerId, vehicleId, ServiceOrderStatus.RECEIVED)
+
+        val root = mockk<Root<ServiceOrderEntity>>()
+        val query = mockk<CriteriaQuery<*>>()
+        val cb = mockk<CriteriaBuilder>()
+
+        val customerPath = mockk<Path<CustomerEntity>>()
+        val customerIdPath = mockk<Path<UUID>>()
+        val vehiclePath = mockk<Path<VehicleEntity>>()
+        val vehicleIdPath = mockk<Path<UUID>>()
+        val statusPath = mockk<Path<ServiceOrderStatus>>()
+
+        every { root.get<CustomerEntity>("customer") } returns customerPath
+        every { customerPath.get<UUID>("id") } returns customerIdPath
+
+        every { root.get<VehicleEntity>("vehicle") } returns vehiclePath
+        every { vehiclePath.get<UUID>("id") } returns vehicleIdPath
+
+        every { root.get<ServiceOrderStatus>("status") } returns statusPath
+
+        val eqCustomer = mockk<Predicate>()
+        val eqVehicle = mockk<Predicate>()
+        val eqStatus = mockk<Predicate>()
+        val andPredicate = mockk<Predicate>()
+
+        every { cb.equal(customerIdPath, customerId) } returns eqCustomer
+        every { cb.equal(vehicleIdPath, vehicleId) } returns eqVehicle
+        every { cb.equal(statusPath, ServiceOrderStatus.RECEIVED) } returns eqStatus
+        every { cb.and(eqCustomer, eqVehicle, eqStatus) } returns andPredicate
+
+        val result = spec.toPredicate(root, query, cb)
+
+        assertNotNull(result)
+        assertSame(andPredicate, result)
     }
 }
