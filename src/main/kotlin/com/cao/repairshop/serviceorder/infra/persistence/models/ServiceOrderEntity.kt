@@ -44,11 +44,11 @@ class ServiceOrderEntity(
     @Column(name = "valid_date")
     var validDate: LocalDate? = null,
 
-    @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "service_order_id", insertable = false, updatable = false)
     var histories: MutableSet<ServiceOrderHistoryEntity> = mutableSetOf(),
 
-    @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     @JoinColumn(name = "service_order", insertable = false, updatable = false)
     var executions: MutableSet<ExecutionEntity> = mutableSetOf(),
 
