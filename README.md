@@ -99,8 +99,10 @@ Toda a infraestrutura de nuvem é provisionada via **Terraform** (diretório `/i
   - *Arquivo:* [`ecr.tf`](infra/terraform/cloud/ecr.tf)
 - **AWS S3 (Simple Storage Service):** Utilizado como *backend* do Terraform para armazenar e proteger o arquivo de estado remoto (`tfstate`). Isso garante o gerenciamento centralizado da infraestrutura, bloqueio de estado (state locking) e trabalho em equipe de forma segura.
   - *Arquivo:* [`backend.tf`](infra/terraform/cloud/backend.tf)
-- **VPC, Subnets, NAT e Internet Gateway:** Rede virtual dedicada criada do zero. Inclui um **NAT Gateway** que permite aos recursos em subnets privadas se comunicarem de forma segura com a internet, mantendo o banco protegido. Além disso, um **Internet Gateway (IGW)** foi provisionado nas subnets públicas para permitir tráfego de entrada, sendo usado especificamente para rotear o acesso externo à interface web do Mailpit.
+- **VPC, Subnets e Internet Gateway:** Rede virtual dedicada criada do zero. Mapeia sub-redes públicas e privadas configuradas com IPs públicos e rota direta via **Internet Gateway (IGW)** para permitir que os nós acessem a internet de forma direta. O IGW nas subnets públicas também permite o roteamento do acesso externo à interface web do Mailpit.
   - *Arquivo:* [`vpc.tf`](infra/terraform/cloud/vpc.tf)
+- **Metrics Server (Helm):** Instalação automática do Metrics Server no EKS via Helm, necessária para a coleta de métricas de recursos e o funcionamento do Horizontal Pod Autoscaler (HPA).
+  - *Arquivo:* [`metrics_server.tf`](infra/terraform/cloud/metrics_server.tf)
 
 > [!IMPORTANT]
 > **Uso da `LabRole` (Ambiente AWS Academy):**
