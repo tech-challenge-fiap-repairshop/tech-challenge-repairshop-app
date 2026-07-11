@@ -533,9 +533,16 @@ body {
 
 /* === MISC === */
 
-/* Hide Servers bar entirely — not needed for single-server MVP */
-.swagger-ui .scheme-container {
-  display: none !important;
+html.dark-mode .swagger-ui .scheme-container {
+  background: transparent !important;
+}
+
+.modal-ux-inner {
+  background: var(--rs-bg) !important;
+}
+
+.auth-btn-wrapper {
+  gap: 20px;
 }
 
 .swagger-ui svg:not(:root) {
