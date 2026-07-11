@@ -651,6 +651,12 @@ O serviço `/register` (disponível na API de autenticação) existe **apenas pa
 
 Em um cenário de produção real, o cadastro de novos usuários administradores/funcionários do sistema não seria exposto em um endpoint de uso aberto. A criação de usuários seria feita de forma controlada, através de um painel administrativo com os devidos controles de acesso, ou por um processo interno de provisionamento.
 
+### Workflow de Destruição (`destroy.yml`)
+
+O workflow automatizado de destruição de infraestrutura ([`destroy.yml`](.github/workflows/destroy.yml)) foi disponibilizado neste repositório **apenas por se tratar de um projeto acadêmico e de estudo**, visando facilitar a limpeza e evitar custos desnecessários com recursos de nuvem ativos.
+
+Em uma aplicação real corporativa, pipelines ou scripts com a capacidade de destruição total do ambiente de produção **não estariam presentes** no repositório de código por motivos de segurança e prevenção de desastres.
+
 ---
 
 ## Autores
