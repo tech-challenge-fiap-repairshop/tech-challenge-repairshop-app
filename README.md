@@ -115,7 +115,7 @@ Para rodar e provisionar os recursos na AWS, siga os passos abaixo:
 1. **Pré-requisitos e Credenciais:** Certifique-se de ter o [Terraform](https://developer.hashicorp.com/terraform/downloads) e o [AWS CLI](https://aws.amazon.com/pt/cli/) instalados em sua máquina. É essencial manter o arquivo de credenciais local (no diretório `~/.aws/credentials`) sempre atualizado — seja via comando `aws configure` ou colando as chaves temporárias de sessão (como no caso do AWS Academy/SSO) —, pois o Terraform o utiliza para se autenticar.
 2. **Criar o Bucket S3 (Pré-requisito):** Como o Terraform utilizará o S3 como backend remoto (`backend.tf`), é necessário criar o bucket manualmente **antes** de iniciar os comandos. O Terraform não consegue se inicializar em um bucket que ainda não existe. Para criar via CLI:
    ```bash
-   aws s3 mb s3://fiap-repairshop --region us-east-1
+   aws s3 mb s3://fiap-repairshop2 --region us-east-1
    ```
 3. **Acessar o Diretório:** Navegue até a pasta onde estão os scripts em nuvem:
    ```bash
