@@ -667,3 +667,5 @@ Em uma aplicação real corporativa, pipelines ou scripts com a capacidade de de
 |----------------|--------|----------------------|
 | Alexandre      | 374016 | [Alexandre-AGAMIN](https://github.com/Alexandre-AGAMIN) |
 | Otávio Luiz    | 370552 | [otaviolms](https://github.com/otaviolms) |
+
+
