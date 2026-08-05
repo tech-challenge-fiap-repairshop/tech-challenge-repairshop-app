@@ -41,6 +41,7 @@ object ErrorMessages {
 
     object User {
         const val DUPLICATE_EMAIL = "User with this email already exists."
+        const val DUPLICATE_CPF = "User with this CPF already exists."
         const val INVALID_CREDENTIALS = "Invalid credentials."
         const val PASSWORD_ENCODING_FAILED = "Password encoding failed."
     }

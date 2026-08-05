@@ -18,6 +18,9 @@ class UserEntity(
     @Column(name = "function", nullable = false, length = 50)
     var function: UserRole,
 
+    @Column(nullable = false, unique = true, length = 14)
+    var cpf: String,
+
     @Column(nullable = false, unique = true, length = 255)
     var email: String,
 

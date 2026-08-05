@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS tb_user (
     id_tb_user UUID PRIMARY KEY,
     name       VARCHAR(150) NOT NULL,
     function   VARCHAR(50)  NOT NULL,
+    cpf        VARCHAR(14)  NOT NULL UNIQUE,
     email      VARCHAR(255) NOT NULL UNIQUE,
     phone      VARCHAR(20),
     password   VARCHAR(255) NOT NULL

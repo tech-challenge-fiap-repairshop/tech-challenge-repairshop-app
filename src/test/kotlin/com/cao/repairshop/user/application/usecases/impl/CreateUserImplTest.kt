@@ -32,6 +32,7 @@ class CreateUserImplTest {
     fun `should create user successfully`() {
         val request = CreateUserRequest(
             name = "Test User",
+            cpf = "52998224725",
             email = "test@example.com",
             function = "ATTENDANT",
             password = "password",
@@ -40,12 +41,14 @@ class CreateUserImplTest {
 
         val user = User(
             name = "Test User",
+            cpf = "52998224725",
             email = "test@example.com",
             function = UserRole.ATTENDANT,
             password = "encodedPassword",
             phone = "11999999999"
         )
 
+        every { userGateway.findByCpf(request.cpf) } returns null
         every { userGateway.findByEmail(request.email) } returns null
         every { passwordEncoder.encode(request.password) } returns "encodedPassword"
         every { userGateway.save(any()) } returns user
@@ -53,9 +56,11 @@ class CreateUserImplTest {
         val response = createUserImpl.execute(request)
 
         assertEquals("Test User", response.name)
+        assertEquals("52998224725", response.cpf)
         assertEquals("test@example.com", response.email)
         assertEquals(UserRole.ATTENDANT, response.function)
         
+        verify { userGateway.findByCpf(request.cpf) }
         verify { userGateway.findByEmail(request.email) }
         verify { passwordEncoder.encode(request.password) }
         verify { userGateway.save(any()) }
@@ -65,6 +70,7 @@ class CreateUserImplTest {
     fun `should throw error when email already exists`() {
         val request = CreateUserRequest(
             name = "Test User",
+            cpf = "52998224725",
             email = "test@example.com",
             function = "ATTENDANT",
             password = "password",
@@ -73,12 +79,14 @@ class CreateUserImplTest {
 
         val existingUser = User(
             name = "Existing User",
+            cpf = "52998224725",
             email = "test@example.com",
             function = UserRole.ATTENDANT,
             password = "encodedPassword",
             phone = "11888888888"
         )
 
+        every { userGateway.findByCpf(request.cpf) } returns null
         every { userGateway.findByEmail(request.email) } returns existingUser
 
         val exception = assertThrows(DuplicateEntityException::class.java) {
@@ -87,6 +95,7 @@ class CreateUserImplTest {
 
         assertEquals(ErrorMessages.User.DUPLICATE_EMAIL, exception.message)
         
+        verify { userGateway.findByCpf(request.cpf) }
         verify { userGateway.findByEmail(request.email) }
     }
 
@@ -94,12 +103,14 @@ class CreateUserImplTest {
     fun `should throw error when password encoding fails`() {
         val request = CreateUserRequest(
             name = "Test User",
+            cpf = "52998224725",
             email = "test@example.com",
             function = "ATTENDANT",
             password = "password",
             phone = "11999999999"
         )
 
+        every { userGateway.findByCpf(request.cpf) } returns null
         every { userGateway.findByEmail(request.email) } returns null
         every { passwordEncoder.encode(request.password) } returns null
 
@@ -109,6 +120,7 @@ class CreateUserImplTest {
 
         assertEquals(ErrorMessages.User.PASSWORD_ENCODING_FAILED, exception.message)
         
+        verify { userGateway.findByCpf(request.cpf) }
         verify { userGateway.findByEmail(request.email) }
         verify { passwordEncoder.encode(request.password) }
     }
