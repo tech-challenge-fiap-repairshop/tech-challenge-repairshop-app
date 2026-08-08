@@ -453,6 +453,11 @@ jobs:
           echo "Applying Kubernetes manifests..."
           kubectl apply -f k8s/
 
+      - name: Apply Observability Stack
+        run: |
+          echo "Applying Observability stack..."
+          kubectl apply -k k8s/observability/
+
       - name: Wait for Deployment Rollout
         run: |
           echo "Aguardando a inicialização e prontidão dos novos pods..."

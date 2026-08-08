@@ -38,6 +38,19 @@ spec:
                 - ALL
           ports:
             - containerPort: 8080
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: "repairshop-app"
+            - name: OTEL_TRACES_EXPORTER
+              value: "otlp"
+            - name: OTEL_METRICS_EXPORTER
+              value: "otlp"
+            - name: OTEL_LOGS_EXPORTER
+              value: "otlp"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector:4317"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "grpc"
           envFrom:
             - configMapRef:
                 name: repairshop-config
