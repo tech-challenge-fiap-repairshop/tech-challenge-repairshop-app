@@ -1,123 +1,52 @@
 name: 🚀 Application CI/CD Pipeline
 
 # =================================================================================================================================
-# PIPELINE — Ciclo de Vida da Aplicação e Deploy no EKS (Nativo)
+# PIPELINE — Ciclo de Vida da Aplicação e Deploy no EKS via GitOps / Kustomize
 #   ┌────────────────┐     ┌──────────┐     ┌──────────────┐     ┌──────────────┐     ┌───────────┐     ┌──────────┐
 #   │ Build & Smoke  │────▶│  Test    │────▶│   Quality    │────▶│  Container,  │────▶│  Approve  │────▶│  Deploy  │
-#   │   (Compile)    │     │ Unit+IT  │     │ Gate (Sonar) │     │ Sec & Smoke  │     │ (Manual)  │     │  (Prod)  │
+#   │   (Compile)    │     │ Unit+IT  │     │ Gate (Sonar) │     │ Sec & Smoke  │     │ (Manual)  │     │ (K8s/Env)│
 #   └────────────────┘     └──────────┘     └──────────────┘     └──────────────┘     └───────────┘     └──────────┘
 # =================================================================================================================================
 
 on:
   push:
-    branches: [ 'main', 'develop' ]
+    branches: [ 'main', 'homolog', 'develop' ]
     paths:
-      - 'infra/**'
       - 'src/**'
       - 'pom.xml'
       - 'Dockerfile'
       - 'k8s/**'
       - '.github/workflows/ci.yml'
   pull_request:
-    branches: [ 'main', 'develop' ]
+    branches: [ 'main', 'homolog', 'develop' ]
     paths:
-      - 'infra/**'
       - 'src/**'
       - 'pom.xml'
       - 'Dockerfile'
       - 'k8s/**'
       - '.github/workflows/ci.yml'
   workflow_dispatch:
+    inputs:
+      target_env:
+        description: 'Ambiente de Deploy (dev, hml, prd)'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - hml
+          - prd
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-
 env:
   JAVA_VERSION: '24'
   JAVA_DISTRIBUTION: 'temurin'
+  AWS_REGION: 'us-east-1'
 
 jobs:
-  # =====================================================================================================================
-  # STAGE 0 — INFRASTRUCTURE: Provisionamento de Infraestrutura AWS via Terraform (Nativo)
-  # =====================================================================================================================
-  terraform:
-    name: "🛠️ Provision Infrastructure (Terraform)"
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
-    env:
-      TF_VAR_db_username: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
-      TF_VAR_db_password: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: us-east-1
-
-      - name: Ensure S3 Bucket for Terraform State exists
-        run: |
-          BUCKET_NAME="fiap-repairshop2"
-          AWS_REGION="us-east-1"
-          
-          # Verifica se o bucket existe na conta AWS
-          if aws s3api head-bucket --bucket "$BUCKET_NAME" 2>/dev/null; then
-            echo "Bucket $BUCKET_NAME já existe."
-          else
-            echo "Bucket $BUCKET_NAME não existe. Criando..."
-            aws s3api create-bucket --bucket "$BUCKET_NAME" --region "$AWS_REGION"
-            
-            # Habilita versionamento (essencial para histórico do tfstate)
-            aws s3api put-bucket-versioning --bucket "$BUCKET_NAME" --versioning-configuration Status=Enabled
-            
-            # Habilita criptografia AES256 no bucket
-            aws s3api put-bucket-encryption --bucket "$BUCKET_NAME" --server-side-encryption-configuration '{
-              "Rules": [
-                {
-                  "ApplyServerSideEncryptionByDefault": {
-                    "SSEAlgorithm": "AES256"
-                  }
-                }
-              ]
-            }'
-            
-            # Bloqueia todos os acessos públicos ao bucket (Segurança)
-            aws s3api put-public-access-block --bucket "$BUCKET_NAME" --public-access-block-configuration '{
-              "BlockPublicAcls": true,
-              "IgnorePublicAcls": true,
-              "BlockPublicPolicy": true,
-              "RestrictPublicBuckets": true
-            }'
-          fi
-
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e
-        with:
-          terraform_version: "1.8.5"
-
-      - name: Terraform Init
-        run: |
-          cd infra/terraform/cloud && terraform init
-
-      - name: Terraform Plan
-        run: |
-          cd infra/terraform/cloud && terraform plan
-
-      - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-        run: |
-          cd infra/terraform/cloud && terraform apply -auto-approve
-
   # ==========================================================================
   # STAGE 1 — BUILD: Compila o projeto, empacota e realiza teste de fumaça
   # ==========================================================================
@@ -146,7 +75,6 @@ jobs:
 
       - name: Start dependencies (Postgres & Mailpit)
         run: docker compose up -d postgres mailpit
-
 
       - name: Run Application JAR
         env:
@@ -241,7 +169,7 @@ jobs:
     needs: test
     if: |
       needs.test.result == 'success' &&
-      ((github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') ||
+      ((github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/homolog') ||
        (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
     runs-on: ubuntu-latest
     permissions:
@@ -290,7 +218,7 @@ jobs:
           -Dsonar.kotlin.binaries=target/classes
 
   # ==========================================================================
-  # STAGE 4 — CONTAINER & SECURITY: Build Docker, Scan Trivy e Push (GHCR)
+  # STAGE 4 — CONTAINER & SECURITY: Build Docker, Scan Trivy e Push (ECR)
   # ==========================================================================
   docker-build-push:
     name: "🐳 Docker Build & Trivy Scan"
@@ -310,7 +238,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: us-east-1
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Log in to Amazon ECR
         id: login-ecr
@@ -322,7 +250,9 @@ jobs:
           context: .
           push: false
           load: true
-          tags: ${{ steps.login-ecr.outputs.registry }}/repairshop:latest
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/repairshop:latest
+            ${{ steps.login-ecr.outputs.registry }}/repairshop:${{ github.sha }}
 
       - name: Cache Trivy Vulnerability Database
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
@@ -344,7 +274,6 @@ jobs:
 
       - name: Start dependencies (Postgres & Mailpit)
         run: docker compose -p repairshop up -d postgres mailpit
-
 
       - name: Run Smoke Test (Start application container)
         env:
@@ -386,24 +315,25 @@ jobs:
           exit 1
 
       - name: Push Docker image to Amazon ECR
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/homolog' || github.event_name == 'workflow_dispatch'
         run: |
-          # Push para o Amazon ECR (Nativo AWS)
           docker push ${{ steps.login-ecr.outputs.registry }}/repairshop:latest
+          docker push ${{ steps.login-ecr.outputs.registry }}/repairshop:${{ github.sha }}
 
   # ==========================================================================
-  # STAGE 5 — APPROVAL: Aprovação Manual para Deploy em Produção
+  # STAGE 5 — APPROVAL: Aprovação Manual para Deploy em Produção (Main)
   # ==========================================================================
   approve-deploy:
     name: "⏳ Approve Deployment"
-    needs: [docker-build-push, terraform]
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    needs: [docker-build-push]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/homolog' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       issues: write
       contents: read
     steps:
-      - name: Manual Approval
+      - name: Manual Approval (Produção apenas)
+        if: github.ref == 'refs/heads/main'
         uses: trstringer/manual-approval@74d99dff7380e3e4b122d4ededcbca2b6ce59367
         with:
           secret: ${{ secrets.GITHUB_TOKEN }}
@@ -413,12 +343,11 @@ jobs:
           issue-body: "Please approve or deny the deployment of version ${{ github.sha }} to AWS EKS."
 
   # ==========================================================================
-  # STAGE 6 — DEPLOY: Deploy final no Kubernetes EKS (Sincronizado)
+  # STAGE 6 — DEPLOY: Deploy no Kubernetes EKS via Kustomize
   # ==========================================================================
   deploy:
-    name: "🚀 Continuous Deployment to EKS"
+    name: "🚀 Deploy to EKS (Kustomize)"
     needs: approve-deploy
-    if: needs.approve-deploy.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -426,41 +355,94 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
+      - name: Determine Target Environment
+        id: env-target
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TARGET="${{ github.event.inputs.target_env }}"
+          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            TARGET="prd"
+          elif [ "${{ github.ref }}" = "refs/heads/homolog" ]; then
+            TARGET="hml"
+          else
+            TARGET="dev"
+          fi
+          echo "environment=${TARGET}" >> $GITHUB_OUTPUT
+          echo "cluster_name=repairshop-eks-${TARGET}" >> $GITHUB_OUTPUT
+          echo "Target Environment: ${TARGET}"
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: us-east-1
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Set up Kubeconfig from EKS
         run: |
-          echo "Setting up Kubernetes credentials using AWS EKS CLI..."
-          aws eks update-kubeconfig --region us-east-1 --name repairshop-eks
+          CLUSTER="${{ steps.env-target.outputs.cluster_name }}"
+          echo "Configuring Kubeconfig for cluster: $CLUSTER..."
+          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name "$CLUSTER"
 
-      - name: Prepare Deployment Manifests
+      - name: Prepare Deployment & Secrets
+        env:
+          DB_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+          DB_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: |
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.us-east-1.amazonaws.com"
+          ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
           echo "Using ECR Registry: $ECR_REGISTRY"
+          
+          # Injeta ECR Registry na imagem do deployment
           sed -i "s|ECR_REGISTRY|${ECR_REGISTRY}|g" k8s/deployment.yaml
-          sed -i "s|DB_USERNAME|${{ secrets.SPRING_DATASOURCE_USERNAME }}|g" k8s/secret.yaml
-          sed -i "s|DB_PASSWORD|${{ secrets.SPRING_DATASOURCE_PASSWORD }}|g" k8s/secret.yaml
 
-      - name: Apply Manifests
+          # Busca dinamicamente o endpoint do RDS PostgreSQL
+          ENV_NAME="${{ steps.env-target.outputs.environment }}"
+          CLUSTER_NAME="${{ steps.env-target.outputs.cluster_name }}"
+          RDS_IDENTIFIER="${CLUSTER_NAME}-postgres"
+          
+          echo "Buscando endpoint do RDS para ${RDS_IDENTIFIER}..."
+          RDS_HOST=$(aws rds describe-db-instances --db-instance-identifier "${RDS_IDENTIFIER}" --region "${{ env.AWS_REGION }}" --query "DBInstances[0].Endpoint.Address" --output text 2>/dev/null || echo "")
+          
+          if [ -n "$RDS_HOST" ] && [ "$RDS_HOST" != "None" ]; then
+            echo "✅ RDS Host encontrado: $RDS_HOST"
+            sed -i "s|localhost:5432|${RDS_HOST}:5432|g" "k8s/configmap/configmap-${ENV_NAME}.yaml"
+          else
+            echo "⚠️ RDS Host não encontrado dinamicamente para '${RDS_IDENTIFIER}'. Mantendo configuração padrão."
+          fi
+          
+          # Injeta credenciais seguras no secret se fornecidas nas Secrets do repositório
+          if [ -n "$DB_USERNAME" ]; then
+            sed -i "s|SPRING_DATASOURCE_USERNAME: .*|SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}|g" k8s/secret.yaml
+            sed -i "s|POSTGRES_USER: .*|POSTGRES_USER: ${DB_USERNAME}|g" k8s/secret.yaml
+          fi
+          if [ -n "$DB_PASSWORD" ]; then
+            sed -i "s|SPRING_DATASOURCE_PASSWORD: .*|SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}|g" k8s/secret.yaml
+            sed -i "s|POSTGRES_PASSWORD: .*|POSTGRES_PASSWORD: ${DB_PASSWORD}|g" k8s/secret.yaml
+          fi
+          if [ -n "$JWT_SECRET" ]; then
+            sed -i "s|JWT_SECRET: .*|JWT_SECRET: ${JWT_SECRET}|g" k8s/secret.yaml
+          fi
+
+      - name: Deploy Kubernetes Manifests
         run: |
-          echo "Applying Kubernetes manifests..."
+          ENV_NAME="${{ steps.env-target.outputs.environment }}"
+          
+          echo "Garantindo criação do namespace 'repairshop'..."
+          kubectl apply -f k8s/namespace.yaml
+          
+          echo "Aplicando configurações específicas de observabilidade (k8s/configs/)..."
+          kubectl apply -f k8s/configs/
+          
+          echo "Aplicando manifestos principais da aplicação e serviços (k8s/)..."
           kubectl apply -f k8s/
-
-      - name: Apply Observability Stack
-        run: |
-          echo "Applying Observability stack..."
-          kubectl apply -k k8s/observability/
+          
+          echo "Aplicando ConfigMap do ambiente: ${ENV_NAME}..."
+          kubectl apply -f "k8s/configmap/configmap-${ENV_NAME}.yaml"
 
       - name: Wait for Deployment Rollout
         run: |
           echo "Aguardando a inicialização e prontidão dos novos pods..."
           kubectl rollout status deployment/repairshop-app -n repairshop --timeout=5m
-
-

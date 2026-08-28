@@ -38,6 +38,7 @@ spec:
                 - ALL
           ports:
             - containerPort: 8080
+              name: http
           env:
             - name: OTEL_SERVICE_NAME
               value: "repairshop-app"
@@ -51,11 +52,11 @@ spec:
               value: "http://otel-collector:4317"
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
               value: "grpc"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "service.name=repairshop-app,deployment.environment=production"
           envFrom:
             - configMapRef:
                 name: repairshop-config
-            - configMapRef:
-                name: repairshop-db-config
             - secretRef:
                 name: repairshop-db-credentials
           resources:

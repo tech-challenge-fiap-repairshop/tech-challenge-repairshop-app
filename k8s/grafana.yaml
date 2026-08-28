@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: repairshop
+  labels:
+    app: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 472
+        fsGroup: 472
+      containers:
+        - name: grafana
+          image: grafana/grafana:11.0.0
+          env:
+            - name: GF_SECURITY_ADMIN_USER
+              value: "admin"
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: "admin"
+            - name: GF_USERS_ALLOW_SIGN_UP
+              value: "false"
+            - name: GF_AUTH_ANONYMOUS_ENABLED
+              value: "true"
+            - name: GF_AUTH_ANONYMOUS_ORG_ROLE
+              value: "Admin"
+          ports:
+            - containerPort: 3000
+              name: http
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 300m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 15
+          volumeMounts:
+            - name: datasources-config
+              mountPath: /etc/grafana/provisioning/datasources
+            - name: dashboards-provider-config
+              mountPath: /etc/grafana/provisioning/dashboards
+            - name: dashboards-config
+              mountPath: /var/lib/grafana/dashboards
+            - name: grafana-storage
+              mountPath: /var/lib/grafana
+      volumes:
+        - name: datasources-config
+          configMap:
+            name: grafana-datasources-config
+        - name: dashboards-provider-config
+          configMap:
+            name: grafana-dashboards-provider-config
+        - name: dashboards-config
+          configMap:
+            name: grafana-dashboards-config
+        - name: grafana-storage
+          emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: repairshop
+  labels:
+    app: grafana
+spec:
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    app: grafana

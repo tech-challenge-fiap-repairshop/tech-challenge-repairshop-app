@@ -4,4 +4,3 @@ metadata:
   name: repairshop
   labels:
     app: repairshop
-    env: local
