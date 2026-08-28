@@ -78,11 +78,11 @@ jobs:
 
       - name: Run Application JAR
         env:
-          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
-          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
-          SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST }}
-          SPRING_MAIL_PORT: ${{ secrets.SPRING_MAIL_PORT }}
+          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL || 'jdbc:postgresql://localhost:5432/repairshop' }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME || 'repairshop' }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD || 'repairshop' }}
+          SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST || 'localhost' }}
+          SPRING_MAIL_PORT: ${{ secrets.SPRING_MAIL_PORT || '1025' }}
           JAVA_TOOL_OPTIONS: "-Djava.net.preferIPv4Stack=true"
         run: |
           docker run -d --name smoke-jar --network host --add-host mailpit:127.0.0.1 \
@@ -277,11 +277,11 @@ jobs:
 
       - name: Run Smoke Test (Start application container)
         env:
-          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
-          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
-          SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST }}
-          SPRING_MAIL_PORT: ${{ secrets.SPRING_MAIL_PORT }}
+          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL || 'jdbc:postgresql://localhost:5432/repairshop' }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME || 'repairshop' }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD || 'repairshop' }}
+          SPRING_MAIL_HOST: ${{ secrets.SPRING_MAIL_HOST || 'localhost' }}
+          SPRING_MAIL_PORT: ${{ secrets.SPRING_MAIL_PORT || '1025' }}
           JAVA_TOOL_OPTIONS: "-Djava.net.preferIPv4Stack=true"
         run: |
           docker run -d --name smoke-app --network host --add-host mailpit:127.0.0.1 \
