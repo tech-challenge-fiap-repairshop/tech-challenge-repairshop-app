@@ -19,6 +19,12 @@ class CreateUserImpl(
     private val passwordEncoder: PasswordEncoder
 ) : CreateUser {
     override fun execute(request: CreateUserRequest): UserResponse {
+        val normalizedCpf = request.cpf.replace(Regex("\\D"), "")
+
+        userGateway.findByCpf(normalizedCpf)?.let {
+            throw DuplicateEntityException(ErrorMessages.User.DUPLICATE_CPF)
+        }
+
         userGateway.findByEmail(request.email)?.let {
             throw DuplicateEntityException(ErrorMessages.User.DUPLICATE_EMAIL)
         }
@@ -26,6 +32,7 @@ class CreateUserImpl(
         val user = User(
             name = request.name,
             function = UserRole.valueOf(request.function.uppercase()),
+            cpf = normalizedCpf,
             email = request.email,
             phone = request.phone,
             password = passwordEncoder.encode(request.password)

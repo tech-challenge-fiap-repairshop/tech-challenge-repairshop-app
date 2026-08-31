@@ -16,7 +16,7 @@ class AuthenticateUserImpl(
     private val jwtService: JwtService
 ) : AuthenticateUser {
     override fun execute(request: LoginRequest): TokenResponse {
-        val user = userGateway.findByEmail(request.email)
+        val user = userGateway.findByCpf(request.cpf)
             ?.takeIf { passwordEncoder.matches(request.password, it.password) }
             ?: throw IllegalArgumentException(ErrorMessages.User.INVALID_CREDENTIALS)
 

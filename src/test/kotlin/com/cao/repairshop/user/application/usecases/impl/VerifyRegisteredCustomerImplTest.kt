@@ -29,6 +29,7 @@ class VerifyRegisteredCustomerImplTest {
         val email = "test@example.com"
         val user = User(
             name = "Test User",
+            cpf = "52998224725",
             email = email,
             function = UserRole.CUSTOMER,
             password = "encodedPassword",

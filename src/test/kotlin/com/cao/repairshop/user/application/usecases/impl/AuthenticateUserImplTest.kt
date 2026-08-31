@@ -33,19 +33,20 @@ class AuthenticateUserImplTest {
     @Test
     fun `should authenticate user successfully`() {
         val request = LoginRequest(
-            email = "test@example.com",
+            cpf = "52998224725",
             password = "password"
         )
 
         val user = User(
             name = "Test User",
+            cpf = "52998224725",
             email = "test@example.com",
             function = UserRole.ATTENDANT,
             password = "encodedPassword",
             phone = "11999999999"
         )
 
-        every { userGateway.findByEmail(request.email) } returns user
+        every { userGateway.findByCpf(request.cpf) } returns user
         every { passwordEncoder.matches(request.password, user.password) } returns true
         every { jwtService.generateToken(user.id, user.function) } returns "generatedToken"
 
@@ -53,7 +54,7 @@ class AuthenticateUserImplTest {
 
         assertEquals("generatedToken", response.token)
         
-        verify { userGateway.findByEmail(request.email) }
+        verify { userGateway.findByCpf(request.cpf) }
         verify { passwordEncoder.matches(request.password, user.password) }
         verify { jwtService.generateToken(user.id, user.function) }
     }
@@ -61,11 +62,11 @@ class AuthenticateUserImplTest {
     @Test
     fun `should throw error when user not found`() {
         val request = LoginRequest(
-            email = "test@example.com",
+            cpf = "52998224725",
             password = "password"
         )
 
-        every { userGateway.findByEmail(request.email) } returns null
+        every { userGateway.findByCpf(request.cpf) } returns null
 
         val exception = assertThrows(IllegalArgumentException::class.java) {
             authenticateUserImpl.execute(request)
@@ -73,25 +74,26 @@ class AuthenticateUserImplTest {
 
         assertEquals(ErrorMessages.User.INVALID_CREDENTIALS, exception.message)
         
-        verify { userGateway.findByEmail(request.email) }
+        verify { userGateway.findByCpf(request.cpf) }
     }
     
     @Test
     fun `should throw error when password does not match`() {
         val request = LoginRequest(
-            email = "test@example.com",
+            cpf = "52998224725",
             password = "wrongpassword"
         )
 
         val user = User(
             name = "Test User",
+            cpf = "52998224725",
             email = "test@example.com",
             function = UserRole.ATTENDANT,
             password = "encodedPassword",
             phone = "11999999999"
         )
 
-        every { userGateway.findByEmail(request.email) } returns user
+        every { userGateway.findByCpf(request.cpf) } returns user
         every { passwordEncoder.matches(request.password, user.password) } returns false
 
         val exception = assertThrows(IllegalArgumentException::class.java) {
@@ -100,7 +102,7 @@ class AuthenticateUserImplTest {
 
         assertEquals(ErrorMessages.User.INVALID_CREDENTIALS, exception.message)
         
-        verify { userGateway.findByEmail(request.email) }
+        verify { userGateway.findByCpf(request.cpf) }
         verify { passwordEncoder.matches(request.password, user.password) }
     }
 }

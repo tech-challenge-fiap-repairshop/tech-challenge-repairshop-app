@@ -17,6 +17,12 @@ class UserGatewayImplJPA(
         return dataModel?.toEntity()
     }
 
+    override fun findByCpf(cpf: String): User? {
+        val cleanCpf = cpf.replace(Regex("\\D"), "")
+        val dataModel = userRepository.findByCpf(cleanCpf) ?: userRepository.findByCpf(cpf)
+        return dataModel?.toEntity()
+    }
+
     override fun save(user: User): User {
         val dataModel = user.toDataModel()
         val savedDataModel = userRepository.save(dataModel)
@@ -33,6 +39,7 @@ class UserGatewayImplJPA(
             id = this.id,
             name = this.name,
             function = this.function,
+            cpf = this.cpf,
             email = this.email,
             phone = this.phone,
             password = this.password
@@ -44,6 +51,7 @@ class UserGatewayImplJPA(
             id = this.id,
             name = this.name,
             function = this.function,
+            cpf = this.cpf,
             email = this.email,
             phone = this.phone,
             password = this.password
