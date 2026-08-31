@@ -25,7 +25,9 @@
 		<sonar.projectKey>alexandre-agamin_tech-challenge-fiap</sonar.projectKey>
 		<sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 		<tomcat.version>11.0.22</tomcat.version>
-		<postgresql.version>42.7.11</postgresql.version>
+		<postgresql.version>42.7.12</postgresql.version>
+		<spring-framework.version>7.0.8</spring-framework.version>
+		<micrometer.version>1.16.6</micrometer.version>
 		<sonar.exclusions>
 			**/config/**,
 			**/dto/**,
@@ -42,6 +44,12 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<!-- Jackson Core & Databind fixes (GHSA-r7wm-3cxj-wff9) -->
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-core</artifactId>
+				<version>2.21.4</version>
+			</dependency>
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
@@ -49,8 +57,24 @@
 			</dependency>
 			<dependency>
 				<groupId>tools.jackson.core</groupId>
+				<artifactId>jackson-core</artifactId>
+				<version>3.1.4</version>
+			</dependency>
+			<dependency>
+				<groupId>tools.jackson.core</groupId>
 				<artifactId>jackson-databind</artifactId>
 				<version>3.1.4</version>
+			</dependency>
+			<!-- Spring Data Commons fix (CVE-2026-41695, CVE-2026-41716) -->
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-commons</artifactId>
+				<version>4.0.6</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-jpa</artifactId>
+				<version>4.0.6</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

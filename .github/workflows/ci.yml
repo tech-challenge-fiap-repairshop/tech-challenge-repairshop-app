@@ -256,6 +256,31 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2 # v2.0.1
 
+      - name: Determine Target Environment & ECR Repository
+        id: ecr-target
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TARGET="${{ github.event.inputs.target_env }}"
+          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            TARGET="prd"
+          elif [ "${{ github.ref }}" = "refs/heads/homolog" ]; then
+            TARGET="hml"
+          else
+            TARGET="dev"
+          fi
+          
+          REPO_NAME=$(aws ecr describe-repositories --region ${{ env.AWS_REGION }} --query "repositories[?contains(repositoryName, '${TARGET}')].repositoryName" --output text 2>/dev/null | tr '\t' '\n' | head -n 1)
+          if [ -z "$REPO_NAME" ] || [ "$REPO_NAME" = "None" ]; then
+            REPO_NAME=$(aws ecr describe-repositories --region ${{ env.AWS_REGION }} --query "repositories[?contains(repositoryName, 'repairshop')].repositoryName" --output text 2>/dev/null | tr '\t' '\n' | head -n 1)
+          fi
+          if [ -z "$REPO_NAME" ] || [ "$REPO_NAME" = "None" ]; then
+            REPO_NAME="repairshop-repairshop-eks-${TARGET}"
+          fi
+          echo "target_env=${TARGET}" >> $GITHUB_OUTPUT
+          echo "repository_name=${REPO_NAME}" >> $GITHUB_OUTPUT
+          echo "Target Environment: ${TARGET}"
+          echo "ECR Repository Name: ${REPO_NAME}"
+
       - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
@@ -263,8 +288,8 @@ jobs:
           push: false
           load: true
           tags: |
-            ${{ steps.login-ecr.outputs.registry }}/repairshop:latest
-            ${{ steps.login-ecr.outputs.registry }}/repairshop:${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ steps.ecr-target.outputs.repository_name }}:latest
+            ${{ steps.login-ecr.outputs.registry }}/${{ steps.ecr-target.outputs.repository_name }}:${{ github.sha }}
 
       - name: Cache Trivy Vulnerability Database
         uses: actions/cache@v4
@@ -277,7 +302,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: '${{ steps.login-ecr.outputs.registry }}/repairshop:latest'
+          image-ref: '${{ steps.login-ecr.outputs.registry }}/${{ steps.ecr-target.outputs.repository_name }}:latest'
           format: 'table'
           exit-code: '0'
           ignore-unfixed: true
@@ -303,7 +328,7 @@ jobs:
             -e SPRING_MAIL_HOST="$SPRING_MAIL_HOST" \
             -e SPRING_MAIL_PORT="$SPRING_MAIL_PORT" \
             -e JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS" \
-            ${{ steps.login-ecr.outputs.registry }}/repairshop:latest
+            ${{ steps.login-ecr.outputs.registry }}/${{ steps.ecr-target.outputs.repository_name }}:latest
 
       - name: Verify application startup (Actuator Health Check)
         run: |
@@ -329,8 +354,8 @@ jobs:
       - name: Push Docker image to Amazon ECR
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/homolog' || github.event_name == 'workflow_dispatch'
         run: |
-          docker push ${{ steps.login-ecr.outputs.registry }}/repairshop:latest
-          docker push ${{ steps.login-ecr.outputs.registry }}/repairshop:${{ github.sha }}
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ steps.ecr-target.outputs.repository_name }}:latest
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ steps.ecr-target.outputs.repository_name }}:${{ github.sha }}
 
   # ==========================================================================
   # STAGE 5 — APPROVAL: Aprovação Manual para Deploy em Produção (Main)
@@ -407,8 +432,19 @@ jobs:
           ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com"
           echo "Using ECR Registry: $ECR_REGISTRY"
           
-          # Injeta ECR Registry na imagem do deployment
-          sed -i "s|ECR_REGISTRY|${ECR_REGISTRY}|g" k8s/deployment.yaml
+          # Busca dinamicamente o repositório ECR correspondente
+          ENV_NAME="${{ steps.env-target.outputs.environment }}"
+          ECR_REPO=$(aws ecr describe-repositories --region ${{ env.AWS_REGION }} --query "repositories[?contains(repositoryName, '${ENV_NAME}')].repositoryName" --output text 2>/dev/null | tr '\t' '\n' | head -n 1)
+          if [ -z "$ECR_REPO" ] || [ "$ECR_REPO" = "None" ]; then
+            ECR_REPO=$(aws ecr describe-repositories --region ${{ env.AWS_REGION }} --query "repositories[?contains(repositoryName, 'repairshop')].repositoryName" --output text 2>/dev/null | tr '\t' '\n' | head -n 1)
+          fi
+          if [ -z "$ECR_REPO" ] || [ "$ECR_REPO" = "None" ]; then
+            ECR_REPO="repairshop-repairshop-eks-${ENV_NAME}"
+          fi
+          echo "Using ECR Repository: $ECR_REPO"
+          
+          # Injeta ECR Registry e nome da imagem no deployment
+          sed -i "s|image: .*|image: ${ECR_REGISTRY}/${ECR_REPO}:latest|g" k8s/deployment.yaml
 
           # Busca dinamicamente o endpoint do RDS PostgreSQL
           ENV_NAME="${{ steps.env-target.outputs.environment }}"
