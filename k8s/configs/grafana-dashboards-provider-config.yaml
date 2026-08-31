@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards-provider-config
+  namespace: repairshop
+  labels:
+    app: grafana
+data:
+  dashboards.yaml: |
+    apiVersion: 1
+
+    providers:
+      - name: 'RepairShop Dashboards'
+        orgId: 1
+        folder: 'RepairShop'
+        type: file
+        disableDeletion: false
+        updateIntervalSeconds: 10
+        allowUiUpdates: true
+        options:
+          path: /var/lib/grafana/dashboards
+          foldersFromFilesStructure: true

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: repairshop-config
+  namespace: repairshop
+  labels:
+    app: repairshop
+    env: dev
+data:
+  SPRING_APPLICATION_NAME: repairshop
+  SPRING_PROFILES_ACTIVE: dev
+  SPRING_MAIL_HOST: mailpit
+  SPRING_MAIL_PORT: "1025"
+  SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/repairshop
+  LOGGING_LEVEL_COM_CAO_REPAIRSHOP: DEBUG

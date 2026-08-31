@@ -88,54 +88,64 @@ Isso resulta em um sistema altamente testável, manutenível e fracamente acopla
 
 ![diagrama_arquitetura.png](docs/delivery/fase2/diagrama_arquitetura.png)
 
-### Provisionamento Terraform
+### ☸️ Orquestração de Contêineres no Kubernetes (`k8s/`)
 
-Toda a infraestrutura de nuvem é provisionada via **Terraform** (diretório `/infra/terraform/cloud`), seguindo a cultura de IaC. A estrutura na provedora **AWS** foi escolhida pelos seguintes motivos:
-- **AWS EKS (Elastic Kubernetes Service):** Reduz o overhead operacional gerenciando o Control Plane, sendo usado especificamente para hospedar a aplicação de forma orquestrada.
-  - *Arquivo:* [`eks.tf`](infra/terraform/cloud/eks.tf)
-- **AWS RDS (Relational Database Service):** Banco de dados PostgreSQL gerenciado, escolhido para garantir persistência e consistência dos dados, evitando a característica efêmera e o risco de rodar o banco de dados dentro de um pod do Kubernetes.
-  - *Arquivo:* [`rds.tf`](infra/terraform/cloud/rds.tf)
-- **AWS ECR (Elastic Container Registry):** Armazenamento privado das imagens Docker do back-end. A escolha do ECR garante que o repositório de imagens esteja no mesmo ambiente de nuvem do cluster, otimizando o download e aumentando a segurança.
-  - *Arquivo:* [`ecr.tf`](infra/terraform/cloud/ecr.tf)
-- **AWS S3 (Simple Storage Service):** Utilizado como *backend* do Terraform para armazenar e proteger o arquivo de estado remoto (`tfstate`). Isso garante o gerenciamento centralizado da infraestrutura, bloqueio de estado (state locking) e trabalho em equipe de forma segura.
-  - *Arquivo:* [`backend.tf`](infra/terraform/cloud/backend.tf)
-- **VPC, Subnets e Internet Gateway:** Rede virtual dedicada criada do zero. Mapeia sub-redes públicas e privadas configuradas com IPs públicos e rota direta via **Internet Gateway (IGW)** para permitir que os nós acessem a internet de forma direta. O IGW nas subnets públicas também permite o roteamento do acesso externo à interface web do Mailpit.
-  - *Arquivo:* [`vpc.tf`](infra/terraform/cloud/vpc.tf)
-- **Metrics Server (Helm):** Instalação automática do Metrics Server no EKS via Helm, necessária para a coleta de métricas de recursos e o funcionamento do Horizontal Pod Autoscaler (HPA).
-  - *Arquivo:* [`metrics_server.tf`](infra/terraform/cloud/metrics_server.tf)
+Os manifestos Kubernetes da aplicação e observabilidade residem diretamente na raiz de [`k8s/`](k8s/), com as configurações específicas em [`k8s/configs/`](k8s/configs/) e a separação dos ConfigMaps por ambiente em [`k8s/configmap/`](k8s/configmap/):
 
-> [!IMPORTANT]
-> **Uso da `LabRole` (Ambiente AWS Academy):**
-> Devido às restrições de permissão do laboratório da **AWS Academy** (onde a criação de novas roles de IAM é bloqueada para os estudantes), os scripts Terraform foram parametrizados para utilizar a **`LabRole`** pré-criada na conta AWS (declarada na variável `lab_role_arn` no arquivo [`variables.tf`](infra/terraform/cloud/variables.tf)). Essa role é associada automaticamente ao Cluster EKS e ao Node Group, evitando falhas de permissão e garantindo o provisionamento sem atritos.
+```
+k8s/
+├── namespace.yaml              # Namespace 'repairshop'
+├── deployment.yaml             # Deployment do Spring Boot com Probes, Recursos e Agente OTel
+├── service.yaml                # Service LoadBalancer (Porta 8080)
+├── hpa.yaml                    # HPA com escalonamento automático por CPU
+├── secret.yaml                 # Secret com credenciais e JWT
+├── mailpit.yaml                # Pod e Service do Mailpit para testes de e-mail
+├── otel-collector.yaml         # OpenTelemetry Collector Gateway (4317/4318)
+├── prometheus.yaml             # Prometheus Server (9090)
+├── jaeger.yaml                 # Jaeger Tracing UI (16686)
+├── loki.yaml                   # Loki Log Ingestion (3100)
+│
+├── configs/                    # 📄 Configurações específicas de observabilidade
+│   ├── otel-collector-config.yaml
+│   ├── prometheus-config.yaml
+│   └── loki-config.yaml
+│
+└── configmap/                  # ⚙️ ConfigMaps separados por ambiente
+    ├── configmap-dev.yaml      # ConfigMap DEV (Mailpit ativo, log DEBUG)
+    ├── configmap-hml.yaml      # ConfigMap HML (log INFO)
+    ├── configmap-prd.yaml      # ConfigMap PRD (SMTP real, log INFO)
+    ├── configmap-local.yaml    # ConfigMap Local
+    └── postgres-local.yaml     # Pod Postgres para testes locais (Kind / Docker Desktop)
+```
 
-#### Como Aplicar a Infraestrutura
+> [!NOTE]
+> **Infraestrutura em Nuvem Desacoplada (Fase 3):**
+> Toda a infraestrutura AWS de nuvem (VPC, RDS PostgreSQL, Cluster EKS, Lambda Auth e API Gateway) é provisionada e gerenciada de forma desacoplada em repositórios dedicados de infraestrutura da organização. Para detalhes de subida e documentação completa, consulte a [Wiki da Organização](https://github.com/fiap-postech-repairshop/tech-challenge-wiki-docs).
 
-Para rodar e provisionar os recursos na AWS, siga os passos abaixo:
+#### Como Aplicar os Manifestos no Cluster EKS
 
-1. **Pré-requisitos e Credenciais:** Certifique-se de ter o [Terraform](https://developer.hashicorp.com/terraform/downloads) e o [AWS CLI](https://aws.amazon.com/pt/cli/) instalados em sua máquina. É essencial manter o arquivo de credenciais local (no diretório `~/.aws/credentials`) sempre atualizado — seja via comando `aws configure` ou colando as chaves temporárias de sessão (como no caso do AWS Academy/SSO) —, pois o Terraform o utiliza para se autenticar.
-2. **Criar o Bucket S3 (Pré-requisito):** Como o Terraform utilizará o S3 como backend remoto (`backend.tf`), é necessário criar o bucket manualmente **antes** de iniciar os comandos. O Terraform não consegue se inicializar em um bucket que ainda não existe. Para criar via CLI:
+1. **Configurar Acesso ao Cluster EKS:**
    ```bash
-   aws s3 mb s3://fiap-repairshop2 --region us-east-1
+   aws eks update-kubeconfig --region us-east-1 --name repairshop-eks-dev
    ```
-3. **Acessar o Diretório:** Navegue até a pasta onde estão os scripts em nuvem:
+
+2. **Aplicar as Configurações de Observabilidade e Manifestos Principais:**
    ```bash
-   cd infra/terraform/cloud
+   kubectl apply -f k8s/configs/
+   kubectl apply -f k8s/
    ```
-4. **Inicializar o Terraform:** Baixa os plugins (providers) necessários e inicializa o *backend* no S3:
+
+3. **Aplicar o ConfigMap do Ambiente Desejado (ex: Dev):**
    ```bash
-   terraform init
+   kubectl apply -f k8s/configmap/configmap-dev.yaml
    ```
-5. **Verificar o Plano:** Exibe o plano de execução, mostrando exatamente o que será criado/modificado na AWS:
+
+4. **Para Execução Local (Kind / Minikube / Docker Desktop):**
    ```bash
-   terraform plan
-   ```
-6. **Aplicar as Mudanças:** Provisiona os recursos na AWS de fato (confirme com `yes` ou passe a flag `-auto-approve`):
-   ```bash
-   terraform apply -auto-approve
-   ```
-7. **Configurar Acesso ao Kubernetes (EKS):** Após a criação do cluster, atualize seu `kubeconfig` local para interagir com o EKS recém-criado:
-   ```bash
-   aws eks update-kubeconfig --region us-east-1 --name repairshop-eks
+   kubectl apply -f k8s/configs/
+   kubectl apply -f k8s/
+   kubectl apply -f k8s/configmap/configmap-local.yaml
+   kubectl apply -f k8s/configmap/postgres-local.yaml
    ```
 
 <div align="center">
@@ -447,13 +457,18 @@ docker compose logs -f app
 # Procure pela mensagem: "Started RepairshopApplication"
 ```
 
-O `docker-compose.yml` provisiona **quatro serviços** simultaneamente:
+O `docker-compose.yml` provisiona a aplicação juntamente com a **stack completa de observabilidade e suporte**:
 
 | Serviço | Porta | Descrição |
 |---------|-------|-----------|
 | `postgres` | 5432 | PostgreSQL 16 com healthcheck |
-| `app` | 8080 | Aplicação Spring Boot (aguarda o banco ficar healthy) |
+| `app` | 8080 | Aplicação Spring Boot instrumentada com OpenTelemetry Agent |
 | `mailpit` | 8025 / 1025 | Interceptador de e-mails locais (Dashboard web em 8025) |
+| `otel-collector` | 4317 / 4318 / 8889 | OpenTelemetry Collector (recebe OTLP e distribui traces, métricas e logs) |
+| `prometheus` | 9090 | Prometheus (coleta métricas do OTel Collector e Actuator) |
+| `jaeger` | 16686 | Jaeger UI (Distributed Tracing OTLP) |
+| `loki` | 3100 | Grafana Loki (Agregação de logs estruturados) |
+| `grafana` | 3000 | Grafana com Dashboards e Datasources (Prometheus, Jaeger, Loki) provisionados |
 | `sonarqube` | 9000 | Plataforma de análise contínua de qualidade de código |
 
 > Na primeira execução, o **Flyway** da aplicação aplica automaticamente todas as migrations no banco de dados (criação de tabelas, indexes e seed de insumos).
@@ -462,12 +477,15 @@ O `docker-compose.yml` provisiona **quatro serviços** simultaneamente:
 
 Com os containers rodando, as interfaces estão disponíveis nos seguintes endereços:
 
-| Recurso | URL |
-|---------|-----|
-| Swagger UI (Recomendado) | http://localhost:8080/swagger-ui/index.html |
-| API REST (Base) | http://localhost:8080 |
-| Caixa de E-mails (Mailpit) | http://localhost:8025 |
-| Dashboard SonarQube | http://localhost:9000 |
+| Recurso | URL | Credenciais Padrão |
+|---------|-----|--------------------|
+| Swagger UI (Recomendado) | http://localhost:8080/swagger-ui/index.html | - |
+| API REST (Base) | http://localhost:8080 | - |
+| **Grafana (Observabilidade)** | http://localhost:3000 | `admin` / `admin` (Anonymous auto-login ativo) |
+| **Jaeger Tracing** | http://localhost:16686 | - |
+| **Prometheus UI** | http://localhost:9090 | - |
+| Caixa de E-mails (Mailpit) | http://localhost:8025 | - |
+| Dashboard SonarQube | http://localhost:9000 | `admin` / `admin` |
 
 ### 🚀 Primeiro uso (Via Swagger UI ou Postman)
 

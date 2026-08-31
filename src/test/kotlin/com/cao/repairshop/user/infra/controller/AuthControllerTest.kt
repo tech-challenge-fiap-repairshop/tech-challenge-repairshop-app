@@ -43,7 +43,7 @@ class AuthControllerTest {
 
     @Test
     fun `POST auth login should return 200 with valid credentials`() {
-        val request = LoginRequest(email = "user@test.com", password = "secret123")
+        val request = LoginRequest(cpf = "52998224725", password = "secret123")
         every { authenticateUser.execute(any()) } returns TokenResponse(token = "jwt-token-here")
 
         mockMvc.perform(
@@ -56,8 +56,8 @@ class AuthControllerTest {
     }
 
     @Test
-    fun `POST auth login should return 400 with blank email`() {
-        val request = mapOf("email" to "", "password" to "secret123")
+    fun `POST auth login should return 400 with blank cpf`() {
+        val request = mapOf("cpf" to "", "password" to "secret123")
 
         mockMvc.perform(
             post("/auth/login")
@@ -72,6 +72,7 @@ class AuthControllerTest {
         val request = CreateUserRequest(
             name = "John Doe",
             function = "ATTENDANT",
+            cpf = "52998224725",
             email = "john@test.com",
             phone = "+55 11 98888-7777",
             password = "pass1234"
@@ -80,6 +81,7 @@ class AuthControllerTest {
             id = UUID.randomUUID(),
             name = "John Doe",
             function = UserRole.ATTENDANT,
+            cpf = "52998224725",
             email = "john@test.com",
             phone = "+55 11 98888-7777"
         )
@@ -92,6 +94,7 @@ class AuthControllerTest {
         )
             .andExpect(status().isCreated)
             .andExpect(jsonPath("$.name").value("John Doe"))
+            .andExpect(jsonPath("$.cpf").value("52998224725"))
             .andExpect(jsonPath("$.email").value("john@test.com"))
             .andExpect(jsonPath("$.function").value("ATTENDANT"))
     }

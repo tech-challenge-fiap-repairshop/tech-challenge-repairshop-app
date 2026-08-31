@@ -7,6 +7,7 @@ fun User.toResponse() = UserResponse(
     id = id,
     name = name,
     function = function,
+    cpf = cpf,
     email = email,
     phone = phone
 )
