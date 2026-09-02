@@ -1,691 +1,591 @@
+# 🔧 Oficina API — Core Application & EKS Microservices
 
-# 🔧 Oficina API
+**Sistema Integrado de Atendimento, Diagnóstico e Execução de Serviços para Oficina Mecânica**
 
-**Sistema Integrado de Atendimento e Execução de Serviços para Oficina Mecânica**
-
+[![Java](https://img.shields.io/badge/Java-24-ED8B00?logo=openjdk&logoColor=white)](https://openjdk.org/)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2-7F52FF?logo=kotlin&logoColor=white)](https://kotlinlang.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-EKS-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
-[![Coverage](https://img.shields.io/badge/Coverage-80%25+-brightgreen)](.)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=repairshop&metric=alert_status&token=607ce2711213e7f43617f23c2b284b461dae2f37)](https://sonarcloud.io/summary/new_code?id=repairshop)
+[![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Instrumented-F5A800?logo=opentelemetry&logoColor=white)](https://opentelemetry.io/)
+[![Coverage](https://img.shields.io/badge/Coverage-80%25+-brightgreen)](docs/sonar/)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=alexandre-agamin_tech-challenge-fiap&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=alexandre-agamin_tech-challenge-fiap)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-*MVP do back-end para gestão de ordens de serviço, clientes, veículos e peças de uma oficina mecânica.*
+*Repositório central da aplicação de negócio (backend Kotlin/Spring Boot), manifestos de orquestração Kubernetes (`k8s/`), esteiras de CI/CD automatizadas e instrumentação completa de observabilidade.*
 
-**POSTECH 15SOAT — Tech Challenge Fase 2 — Grupo CAO**
-
----
-
-## Sumário
-
-- [Sobre o Projeto](#sobre-o-projeto)
-- [Funcionalidades](#funcionalidades)
-- [Arquitetura](#arquitetura)
-  - [Provisionamento Terraform](#provisionamento-terraform)
-  - [Deploy Kubernetes](#deploy-kubernetes)
-- [Esteira de Integração e Entrega Contínua (CI/CD)](#esteira-de-integração-e-entrega-contínua-cicd)
-  - [Esteira de Destruição da Infraestrutura (Manual)](#esteira-de-destruição-da-infraestrutura-manual)
-- [Justificativa do Banco de Dados](#justificativa-do-banco-de-dados)
-- [Tecnologias Utilizadas](#tecnologias-utilizadas)
-- [Pré-requisitos](#pré-requisitos)
-- [Como Executar](#como-executar)
-- [Documentação da API](#documentação-da-api)
-  - [Máquina de Estados (Status da OS)](#-máquina-de-estados-status-da-os)
-  - [Máquina de Estados (Status da Execução de Serviço)](#-máquina-de-estados-status-da-execução-de-serviço)
-- [Testes](#testes)
-- [Documentação DDD](#documentação-ddd)
-- [Segurança](#segurança)
-- [Avisos do Projeto](#avisos-do-projeto)
-- [Autores](#autores)
+**POSTECH 15SOAT — Tech Challenge Fase 3 — Grupo CAO**
 
 ---
 
-## Sobre o Projeto
+## 📑 Sumário
 
-Após a implantação do sistema inicial para gestão da oficina mecânica (Fase 1), houve um ganho significativo de eficiência no atendimento. No entanto, com o aumento da demanda e a expansão para novas unidades, surgiu o desafio de garantir alta disponibilidade e suportar grandes volumes de operações simultâneas em horários de pico. 
-
-O projeto atual, entregue para o **Tech Challenge Fase 2** da pós-graduação **POSTECH 15SOAT**, foca na evolução arquitetural e de infraestrutura da aplicação. O objetivo principal agora transcende as regras de negócio: é garantir que o sistema escale de maneira resiliente, automatizada e sustentável.
-
-### Objetivos da Fase 2
-
-- **Evolução da Infraestrutura:** Reduzir riscos operacionais provendo um ambiente escalável e dinâmico na nuvem.
-- **Orquestração e Alta Disponibilidade:** Conteinerizar a aplicação (Docker) e orquestrá-la via **Kubernetes** (EKS), utilizando o *Horizontal Pod Autoscaler (HPA)* para absorver variações de carga.
-- **Automação (IaC e CI/CD):** Provisionar toda a estrutura na AWS (VPC, Cluster, RDS, ECR) via **Terraform** e estabelecer uma pipeline completa de CI/CD para automação dos deploys.
-- **Qualidade e Refatoração:** Refinar a base de código orientada pela **Clean Architecture** e garantir altíssima cobertura de testes automatizados (unitários e de integração) nos fluxos críticos da aplicação.
-- **Evolução do Domínio:** Aprimorar o controle de Ordens de Serviço com filtros refinados, delegação de aprovação de orçamento externa e implementação do envio de notificações por e-mail a cada mudança de status (via Mailpit).
+- [Visão Geral e Contexto](#-visão-geral-e-contexto)
+- [Ecossistema de Microsserviços e Infraestrutura (Fase 3)](#-ecossistema-de-microsserviços-e-infraestrutura-fase-3)
+- [Arquitetura de Software](#-arquitetura-de-software)
+  - [Domain-Driven Design (DDD)](#domain-driven-design-ddd)
+  - [Clean Architecture (Módulos de Domínio)](#clean-architecture-módulos-de-domínio)
+- [Arquitetura Cloud & Orquestração Kubernetes (`k8s/`)](#-arquitetura-cloud--orquestração-kubernetes-k8s)
+  - [Topologia Cloud e Orquestração](#topologia-cloud-e-orquestração)
+  - [Práticas de Resiliência Cloud-Native](#práticas-de-resiliência-cloud-native)
+  - [Estrutura dos Manifestos Kubernetes](#estrutura-dos-manifestos-kubernetes)
+  - [Deploy no Kubernetes (EKS e Local)](#deploy-no-kubernetes-eks-e-local)
+- [Observabilidade e Distributed Tracing (OpenTelemetry Stack)](#-observabilidade-e-distributed-tracing-opentelemetry-stack)
+- [Esteiras de Integração e Entrega Contínua (CI/CD GitOps)](#-esteiras-de-integração-e-entrega-contínua-cicd-gitops)
+  - [Pipeline Principal de CI/CD (`ci.yml`)](#pipeline-principal-de-cicd-ciyml)
+  - [Secrets e Variáveis de Ambiente](#secrets-e-variáveis-de-ambiente)
+  - [Pipeline de Destruição Controlada (`destroy.yml`)](#pipeline-de-destruição-controlada-destroyyml)
+- [Banco de Dados e Persistência (PostgreSQL 16)](#-banco-de-dados-e-persistência-postgresql-16)
+- [Documentação da API e Endpoints](#-documentação-da-api-e-endpoints)
+  - [Máquina de Estados da Ordem de Serviço (OS)](#-máquina-de-estados-da-ordem-de-serviço-os)
+  - [Máquina de Estados da Execução de Serviço](#-máquina-de-estados-da-execução-de-serviço)
+- [Como Executar Localmente](#-como-executar-localmente)
+  - [Stack Completa via Docker Compose](#stack-completa-via-docker-compose)
+  - [Portas e Painéis de Acesso](#-portas-e-painéis-de-acesso)
+  - [Fluxo de Primeiro Uso (Swagger UI / Postman)](#-fluxo-de-primeiro-uso-swagger-ui--postman)
+- [Qualidade de Código, Testes e Segurança](#-qualidade-de-código-testes-e-segurança)
+- [Documentação DDD e Artefatos Complementares](#-documentação-ddd-e-artefatos-complementares)
+- [Autores](#-autores)
 
 ---
 
-## Funcionalidades
+## 🎯 Visão Geral e Contexto
 
-- [x] CRUD de Clientes (identificação por CPF/CNPJ)
-- [x] CRUD de Veículos (placa, marca, modelo, ano)
-- [x] CRUD de Serviços (catálogo de serviços da oficina)
-- [x] CRUD de Peças e Insumos com controle de estoque
-- [x] Criação de Ordens de Serviço com orçamento automático
-- [x] Fluxo de status da OS com transições automáticas
-- [x] Consulta de OS pelo cliente para acompanhamento
-- [x] Aprovação de orçamento pelo cliente
-- [x] Monitoramento do tempo médio de execução dos serviços
-- [x] Autenticação e autorização via JWT
-- [x] Documentação interativa da API via Swagger/OpenAPI
+O **RepairShop** é uma solução corporativa desenvolvida para digitalizar e otimizar ponta a ponta a operação de oficinas mecânicas: desde a recepção e cadastro de clientes e veículos, passando pela abertura de Ordens de Serviço (OS), orçamentação dinâmica, controle de estoque de peças/insumos, execução monitorada de serviços com controle de tempo até a emissão de faturas e notificações automatizadas aos clientes.
+
+### Evolução Arquitetural por Fases
+
+| Fase | Foco Principal | Destaques da Entrega |
+| :--- | :--- | :--- |
+| **Fase 1** | **Domínio e Modelagem de Negócio** | Aplicação de DDD estratégico e tático, Clean Architecture modular, regras de integridade transacional, CRUDs completos e cobertura de testes unitários/integrados com banco de dados. |
+| **Fase 2** | **Orquestração e Escalabilidade** | Conteinerização Docker multi-stage, orquestração Kubernetes com HPA (autoscaling por CPU), instrumentação com OpenTelemetry e automação de deploys. |
+| **Fase 3** | **Desacoplamento Cloud e Microsserviços** | Desmembramento da infraestrutura em repositórios dedicados gerenciados via Terraform, criação do microsserviço de autenticação Serverless (AWS Lambda Java 21), roteamento unificado via AWS API Gateway HTTP v2, isolamento de rede VPC privada com RDS PostgreSQL e esteiras de GitOps multi-ambiente (`dev`, `hml`, `prd`). |
 
 ---
 
-## Arquitetura
+## 🌐 Ecossistema de Microsserviços e Infraestrutura (Fase 3)
 
-O projeto aplica **Domain-Driven Design (DDD)** de forma integral — no nível estratégico (Linguagem Ubíqua, Bounded Contexts) e tático (Entities, Value Objects, Aggregates, Domain Services).
+Em conformidade com as diretrizes do **AWS Well-Architected Framework**, a solução foi desacoplada em repositórios especializados na organização do GitHub:
 
-![diagrama_entidades_e_contextos.png](docs/delivery/fase2/diagrama_entidades_e_contextos.png)
+```mermaid
+graph TD
+    User([👤 Cliente / Attendant / Admin]) -->|HTTPS| APIGW[🚪 AWS API Gateway HTTP API v2<br>tech-challenge-repairshop-infra-apigateway]
+    
+    APIGW -->|POST /auth/login| LambdaAuth[⚡ Lambda Auth Java 21<br>tech-challenge-repairshop-lambda-auth]
+    APIGW -->|ANY /{proxy+}| NLB[⚖️ AWS Network Load Balancer]
+    
+    subgraph VPC [AWS VPC - tech-challenge-repairshop-infra-network]
+        subgraph EKS_Cluster [Cluster EKS - tech-challenge-repairshop-infra-eks]
+            NLB --> AppService[☸️ Service LoadBalancer: 8080]
+            AppService --> AppPod[📦 repairshop-app Pods<br>Spring Boot + OTel Agent]
+            AppPod -.->|Traces/Logs/Metrics| OTelPod[🔭 OTel Collector / Observability]
+        end
+        
+        subgraph Private_Data [Camada de Dados Privada]
+            AppPod -->|JDBC:5432| RDS[🗄️ AWS RDS PostgreSQL 16<br>tech-challenge-repairshop-infra-db-rds]
+            LambdaAuth -.->|Validação/Auth| RDS
+        end
+    end
+```
 
-Para suportar o isolamento absoluto das regras de negócio, o código-fonte foi organizado de forma modular por contexto (ex: `customer`, `serviceorder`, `user`) e estruturado internamente utilizando a **Clean Architecture**. Essa abordagem garante que o núcleo da aplicação seja 100% agnóstico a tecnologias externas e frameworks. Cada módulo de domínio é subdividido em três camadas principais:
-- **`domain` (Domínio):** O coração do sistema. Contém as `entities` (entidades de negócio puras), lógicas/serviços de domínio centrais e os `mappers`. Não possui e não conhece nenhuma dependência externa.
-- **`application` (Aplicação):** Camada de orquestração. Contém os `usecases` (casos de uso) que executam o fluxo de negócio da aplicação. É aqui também que residem as interfaces dos `gateways` (portas de saída), definindo contratos que a infraestrutura deverá cumprir (Inversão de Dependência).
-- **`infra` (Infraestrutura):** A camada externa responsável pela I/O e comunicação real. Ela implementa os contratos e expõe o sistema ao mundo. Contém os `controllers` (API REST, rotas e DTOs), a implementação concreta dos `gateways` (ex: integrações externas) e a `persistence` (Modelos do Hibernate e Repositórios do Spring Data JPA ligados ao PostgreSQL).
+### Repositórios da Organização
 
-Isso resulta em um sistema altamente testável, manutenível e fracamente acoplado (onde o ecossistema Spring atua apenas como motor e injeção de dependência na camada `infra`).
+1. **[`tech-challenge-repairshop-app`](.) (Este Repositório):** Código-fonte do backend principal (Kotlin/Spring Boot/Java 24), manifestos Kubernetes (`k8s/`), configurações de observabilidade e pipeline de CI/CD da aplicação.
+2. **[`tech-challenge-repairshop-infra-network`](https://github.com/fiap-postech-repairshop/tech-challenge-repairshop-infra-network):** Infraestrutura base de rede na AWS (VPC, Subnets Públicas/Privadas, Internet Gateway, NAT Gateway, Route Tables e repositórios AWS ECR).
+3. **[`tech-challenge-repairshop-infra-eks`](https://github.com/fiap-postech-repairshop/tech-challenge-repairshop-infra-eks):** Provisionamento do Cluster AWS EKS, Managed Node Groups, Security Groups (`aws_security_group.eks_nodes`) e Metrics Server.
+4. **[`tech-challenge-repairshop-lambda-auth`](https://github.com/fiap-postech-repairshop/tech-challenge-repairshop-lambda-auth):** Função Serverless em AWS Lambda (Java 21) com Clean Architecture para autenticação (`POST /auth/login`), Security Group próprio e geração de tokens JWT seguros.
+5. **[`tech-challenge-repairshop-infra-apigateway`](https://github.com/fiap-postech-repairshop/tech-challenge-repairshop-infra-apigateway):** Provisionamento do AWS API Gateway HTTP v2 com roteamento dinâmico para a Lambda Auth e Proxy Transparente para o Load Balancer do EKS.
+6. **[`tech-challenge-repairshop-infra-db-rds`](https://github.com/fiap-postech-repairshop/tech-challenge-repairshop-infra-db-rds):** Provisionamento da instância gerenciada AWS RDS PostgreSQL 16 nas sub-redes privadas com Security Group dedicado (`aws_security_group.rds`).
+7. **[`tech-challenge-wiki-docs`](https://github.com/fiap-postech-repairshop/tech-challenge-wiki-docs):** Documentação centralizada da arquitetura, ADRs, diagramas estruturados e scripts de orquestração unificada (`create_all_infra` / `destroy_all_infra`).
 
-![diagrama_arquitetura.png](docs/delivery/fase2/diagrama_arquitetura.png)
+---
 
-### ☸️ Orquestração de Contêineres no Kubernetes (`k8s/`)
+## 🏛️ Arquitetura de Software
 
-Os manifestos Kubernetes da aplicação e observabilidade residem diretamente na raiz de [`k8s/`](k8s/), com as configurações específicas em [`k8s/configs/`](k8s/configs/) e a separação dos ConfigMaps por ambiente em [`k8s/configmap/`](k8s/configmap/):
+### Domain-Driven Design (DDD)
+
+A modelagem do sistema seguiu rigorosamente os preceitos de DDD estratégico e tático, estabelecendo uma Linguagem Ubíqua clara e delimitando os seguintes **Bounded Contexts**:
+
+- **Customer & Vehicle Management (`register`):** Gestão cadastral de clientes (validação de CPF/CNPJ) e seus veículos vinculados (placas, modelos, anos).
+- **Service Order Management (`serviceorder`):** Ciclo de vida da Ordem de Serviço, cálculo automático de orçamento, aprovação/recusa de clientes e histórico de transições.
+- **Service Execution (`execution`):** Gestão dos serviços individuais aplicados à OS e monitoramento do tempo médio de execução.
+- **Inventory & Insumes (`inventory`):** Controle de estoque de peças e insumos com baixa atômica e prevenção de concorrência.
+- **Billing & Invoices (`payment`):** Geração de faturas e liquidação financeira da OS.
+- **User & Security (`user` / `core`):** Gerenciamento de credenciais e validação de tokens JWT.
+
+<div align="center">
+  <img src="docs/delivery/fase3/diagrama_entidades_e_contextos.png" alt="Diagrama de Entidades e Contextos DDD" width="850">
+  <br>
+  <em><small><strong>Figura 1: Diagrama de Entidades e Contextos do Domínio (DDD)</strong></small></em>
+  <br><br>
+</div>
+
+### Clean Architecture (Módulos de Domínio)
+
+Para assegurar independência de frameworks e isolamento do domínio, cada módulo de negócio no código-fonte ([`src/main/kotlin/com/cao/repairshop/`](src/main/kotlin/com/cao/repairshop/)) é subdividido em três camadas estritas:
+
+```
+src/main/kotlin/com/cao/repairshop/
+├── core/                       # Configurações globais, segurança, interceptors e utilitários
+├── execution/                  # Bounded Context: Execução de Serviços da OS
+│   ├── application/            # Use Cases e Interfaces de Gateways
+│   ├── domain/                 # Entidades puras, Value Objects e Enums
+│   └── infra/                  # REST Controllers, Gateways e Repositórios JPA
+├── inventory/                  # Bounded Context: Peças, Insumos e Estoque
+├── payment/                    # Bounded Context: Faturamento e Invoices
+├── register/                   # Bounded Context: Clientes e Veículos
+├── serviceorder/               # Bounded Context: Ordens de Serviço
+└── user/                       # Bounded Context: Usuários e Autenticação
+```
+
+- **`domain` (Camada Central):** Entidades de negócio puras (`Entity`), objetos de valor (`Value Objects`), regras de cálculo e contratos fundamentais. Livre de anotações de frameworks (como JPA ou Spring).
+- **`application` (Camada de Orquestração):** Casos de uso (`Use Cases`) que implementam os fluxos de negócio e definem interfaces de saída (`Gateways`) aplicando o Princípio da Inversão de Dependência (DIP).
+- **`infra` (Camada Externa de I/O):** Implementações concretas de Gateways, Controllers REST (`Spring Web`), DTOs com validações Bean Validation e mapeamentos de persistência com `Spring Data JPA` e `Hibernate`.
+
+<div align="center">
+  <img src="docs/delivery/fase3/diagrama_arquitetura.png" alt="Diagrama de Camadas da Clean Architecture" width="850">
+  <br>
+  <em><small><strong>Figura 2: Estrutura em Camadas da Clean Architecture no Backend</strong></small></em>
+  <br><br>
+</div>
+
+---
+
+## ☸️ Arquitetura Cloud & Orquestração Kubernetes (`k8s/`)
+
+### Topologia Cloud e Orquestração
+
+A aplicação opera conteinerizada e orquestrada no **Amazon Elastic Kubernetes Service (EKS)**, integrando-se aos recursos gerenciados da AWS através de rede VPC segura.
+
+<div align="center">
+  <img src="docs/infrastructure/repairshop-diagrama-infra-cloud.svg" alt="Diagrama de Infraestrutura Cloud e Orquestração EKS" width="900">
+  <br>
+  <em><small><strong>Figura 3: Topologia Integrada da Infraestrutura AWS e Orquestração Kubernetes</strong></small></em>
+  <br><br>
+</div>
+
+### Práticas de Resiliência Cloud-Native
+
+O manifesto [`k8s/deployment.yaml`](k8s/deployment.yaml) incorpora as principais práticas recomendadas pelo **Well-Architected Framework**:
+
+1. **Execução Segura Não-Root:** O container executa sob o usuário não-privilegiado `springuser` (`UID 10001`), com `allowPrivilegeEscalation: false`, `readOnlyRootFilesystem: true` e remoção total de capacidades (`capabilities.drop: ["ALL"]`).
+2. **Health Checks e Probes:**
+   - `livenessProbe` em `/actuator/health/liveness` para reinicialização automática de pods travados.
+   - `readinessProbe` em `/actuator/health/readiness` para direcionamento de tráfego somente após a inicialização completa do Spring Boot e migrações do Flyway.
+3. **Escalonamento Automático com HPA ([`k8s/hpa.yaml`](k8s/hpa.yaml)):** O *Horizontal Pod Autoscaler* gerencia réplicas dinâmicas (mínimo de 1 e máximo de 3 pods) mantendo a utilização média de CPU em 70%.
+4. **Deploy Zero-Downtime:** Estratégia de `RollingUpdate` configurada com `maxSurge: 1` e `maxUnavailable: 0`.
+
+### Estrutura dos Manifestos Kubernetes
 
 ```
 k8s/
-├── namespace.yaml              # Namespace 'repairshop'
-├── deployment.yaml             # Deployment do Spring Boot com Probes, Recursos e Agente OTel
-├── service.yaml                # Service LoadBalancer (Porta 8080)
-├── hpa.yaml                    # HPA com escalonamento automático por CPU
-├── secret.yaml                 # Secret com credenciais e JWT
-├── mailpit.yaml                # Pod e Service do Mailpit para testes de e-mail
-├── otel-collector.yaml         # OpenTelemetry Collector Gateway (4317/4318)
-├── prometheus.yaml             # Prometheus Server (9090)
-├── jaeger.yaml                 # Jaeger Tracing UI (16686)
-├── loki.yaml                   # Loki Log Ingestion (3100)
+├── namespace.yaml              # Namespace dedicado 'repairshop'
+├── deployment.yaml             # Deployment Spring Boot com Probes, Recursos e Agente OTel
+├── service.yaml                # Service LoadBalancer (NLB AWS porta 8080)
+├── hpa.yaml                    # Horizontal Pod Autoscaler (HPA 1-3 réplicas)
+├── secret.yaml                 # Template de Secrets para credenciais e JWT
+├── mailpit.yaml                # Pod e Service do Mailpit (ambiente dev/local)
+├── otel-collector.yaml         # OpenTelemetry Collector Gateway (portas 4317/4318/8889)
+├── prometheus.yaml             # Prometheus Server (porta 9090)
+├── jaeger.yaml                 # Jaeger UI para Tracing Distribuído (porta 16686)
+├── loki.yaml                   # Loki Ingestion para Agregação de Logs (porta 3100)
+├── grafana.yaml                # Grafana com Dashboards e Datasources provisionados (porta 3000)
 │
-├── configs/                    # 📄 Configurações específicas de observabilidade
+├── configs/                    # 📄 Configurações de Observabilidade
 │   ├── otel-collector-config.yaml
 │   ├── prometheus-config.yaml
-│   └── loki-config.yaml
+│   ├── loki-config.yaml
+│   ├── jaeger-config.yaml
+│   ├── grafana-datasources-config.yaml
+│   └── grafana-dashboards-config.yaml
 │
-└── configmap/                  # ⚙️ ConfigMaps separados por ambiente
+└── configmap/                  # ⚙️ ConfigMaps por Ambiente
     ├── configmap-dev.yaml      # ConfigMap DEV (Mailpit ativo, log DEBUG)
     ├── configmap-hml.yaml      # ConfigMap HML (log INFO)
     ├── configmap-prd.yaml      # ConfigMap PRD (SMTP real, log INFO)
-    ├── configmap-local.yaml    # ConfigMap Local
-    └── postgres-local.yaml     # Pod Postgres para testes locais (Kind / Docker Desktop)
+    ├── configmap-local.yaml    # ConfigMap Local (Kind / Docker Desktop)
+    └── postgres-local.yaml     # Pod Postgres para testes locais sem AWS
 ```
 
-> [!NOTE]
-> **Infraestrutura em Nuvem Desacoplada (Fase 3):**
-> Toda a infraestrutura AWS de nuvem (VPC, RDS PostgreSQL, Cluster EKS, Lambda Auth e API Gateway) é provisionada e gerenciada de forma desacoplada em repositórios dedicados de infraestrutura da organização. Para detalhes de subida e documentação completa, consulte a [Wiki da Organização](https://github.com/fiap-postech-repairshop/tech-challenge-wiki-docs).
+### Deploy no Kubernetes (EKS e Local)
 
-#### Como Aplicar os Manifestos no Cluster EKS
+#### 1. Deploy no Cluster AWS EKS
 
-1. **Configurar Acesso ao Cluster EKS:**
-   ```bash
-   aws eks update-kubeconfig --region us-east-1 --name repairshop-eks-dev
-   ```
-
-2. **Aplicar as Configurações de Observabilidade e Manifestos Principais:**
-   ```bash
-   kubectl apply -f k8s/configs/
-   kubectl apply -f k8s/
-   ```
-
-3. **Aplicar o ConfigMap do Ambiente Desejado (ex: Dev):**
-   ```bash
-   kubectl apply -f k8s/configmap/configmap-dev.yaml
-   ```
-
-4. **Para Execução Local (Kind / Minikube / Docker Desktop):**
-   ```bash
-   kubectl apply -f k8s/configs/
-   kubectl apply -f k8s/
-   kubectl apply -f k8s/configmap/configmap-local.yaml
-   kubectl apply -f k8s/configmap/postgres-local.yaml
-   ```
-
-<div align="center">
-  <img src="docs/infrastructure/repairshop-diagrama-infra-cloud.svg" alt="Diagrama de Arquitetura, Nuvem e Orquestração" width="900">
-  <br>
-  <em><small><strong>Figura 1: Topologia Integrada (Infraestrutura Cloud e Orquestração Kubernetes)</strong><br>O diagrama ilustra o provisionamento dos recursos na AWS (Rede VPC, Cluster EKS e banco persistente no RDS) atuando em conjunto com a lógica dos manifestos K8s, demonstrando o ciclo de vida dos Pods da aplicação (via Deployments e HPA) e sua integração com serviços auxiliares, como o Mailpit.</small></em>
-  <br><br>
-</div>
-
-### Deploy Kubernetes
-
-A aplicação é orquestrada via Kubernetes para garantir resiliência e escalabilidade. Os manifestos no diretório `/k8s` incluem:
-- **Deployment e Service:** Gerenciam o ciclo de vida dos pods e a exposição da API Spring Boot. Utilizam configurações definidas previamente em Secrets e ConfigMaps.
-  - *Arquivos:* [`deployment.yaml`](k8s/deployment.yaml), [`service.yaml`](k8s/service.yaml), [`configmap.yaml`](k8s/configmap.yaml), [`secret.yaml`](k8s/secret.yaml)
-- **HPA (Horizontal Pod Autoscaler):** Escala dinamicamente as réplicas da aplicação com base no consumo de recursos, garantindo performance e disponibilidade em picos de acesso.
-  - *Arquivo:* [`hpa.yaml`](k8s/hpa.yaml)
-- **Mailpit e Gateway:** Deploy isolado para interceptar envios de e-mails das notificações de status, incluindo a configuração de um gateway/service dedicado para acessar a interface web do Mailpit.
-  - *Arquivos:* [`mailpit-deployment.yaml`](k8s/mailpit-deployment.yaml), [`mailpit-service.yaml`](k8s/mailpit-service.yaml)
-- **Postgres (Local):** Manifestos para implantar o banco de dados caso você esteja rodando em um ambiente local (Docker Desktop), simulando a estrutura sem AWS RDS.
-  - *Arquivos:* [`postgres-deployment.yaml`](k8s/local/postgres-deployment.yaml), [`postgres-service.yaml`](k8s/local/postgres-service.yaml)
-
-#### Como Aplicar os Manifestos
-
-Para implantar a aplicação no seu cluster Kubernetes (seja AWS EKS ou cluster local), siga os passos lógicos:
-
-1. **Pré-requisitos e Ambiente:** Para rodar os comandos, você precisa de um ambiente Kubernetes ativo. Se não estiver utilizando o EKS da AWS, certifique-se de ter o **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** instalado com a opção do Kubernetes habilitada. Além disso, é obrigatório ter a ferramenta de linha de comando [`kubectl`](https://kubernetes.io/docs/tasks/tools/) instalada.
-   * **Listar contextos conhecidos na máquina:**
-     ```bash
-     kubectl config get-contexts
-     ```
-   * **Alternar para o ambiente local (Docker Desktop):**
-     ```bash
-     kubectl config use-context docker-desktop
-     ```
-   * **Alternar para o ambiente em nuvem (AWS EKS):**
-     Primeiramente, configure/atualize o arquivo `kubeconfig` local associado ao cluster da AWS Academy:
-     ```bash
-     aws eks update-kubeconfig --region us-east-1 --name repairshop-eks
-     ```
-     O comando acima já define o contexto do EKS como padrão automaticamente. Caso precise alternar manualmente depois:
-     ```bash
-     kubectl config use-context arn:aws:eks:us-east-1:<ID_CONTA_AWS>:cluster/repairshop-eks
-     ```
-   * **Verificar contexto ativo atualmente:**
-     ```bash
-     kubectl config current-context
-     ```
-2. **Criar o Namespace:** Crie o isolamento lógico para o projeto (`repairshop`):
-   ```bash
-   kubectl apply -f k8s/namespace.yaml
-   ```
-
-A partir daqui, escolha o fluxo de deploy de acordo com o seu ambiente:
-
-### Deploy Local (Desenvolvimento)
-Este cenário utiliza o **Kustomize** para injetar as credenciais locais do banco de dados PostgreSQL e substituir a imagem do ECR de produção por uma imagem buildada localmente (`repairshop:local`).
-
-1. **Buildar a imagem local da aplicação:**
-   No diretório raiz do projeto, execute o comando de build especificando a tag `local`:
-   ```bash
-   docker build -t repairshop:local .
-   ```
-
-2. **Deploy Integrado via Kustomize:**
-   Execute o Kustomize para aplicar de forma ordenada todo o ambiente (Postgres local, variáveis de ambiente locais, aplicação local, Service, HPA e Mailpit):
-   ```bash
-   kubectl kustomize k8s/local/ --load-restrictor LoadRestrictionsNone | kubectl apply -f -
-   ```
-
----
-
-### Deploy na Nuvem (AWS EKS)
-
-> [!IMPORTANT]
-> **Pré-requisito:** Antes de realizar qualquer deploy na nuvem (seja automático ou manual), certifique-se de ter executado o provisionamento de toda a infraestrutura da AWS via Terraform (passo a passo detalhado na seção anterior [Como Aplicar a Infraestrutura](#como-aplicar-a-infraestrutura)).
-
-Para realizar o deploy manual no EKS a partir de sua máquina de forma dinâmica (sem a necessidade de editar arquivos manualmente), certifique-se de **estar no diretório raiz do projeto** (caso esteja no diretório do Terraform, retorne executando `cd ../../..`). Utilize os comandos abaixo no terminal (PowerShell):
-
-1. **Autenticar e Enviar a Imagem para o ECR:**
-   ```powershell
-   # 1. Obtém o Account ID automaticamente do AWS CLI
-   $accountId = (aws sts get-caller-identity --query Account --output text)
-
-   # 2. Obtém a senha do ECR e realiza o login (evita bug de encoding do pipe no PowerShell)
-   $password = (aws ecr get-login-password --region us-east-1)
-   docker login --username AWS --password $password "${accountId}.dkr.ecr.us-east-1.amazonaws.com"
-
-   # 3. Builda a imagem da aplicação (especificando o caminho do Dockerfile)
-   docker build -t repairshop:latest -f ./Dockerfile .
-
-   # 4. Taggea e envia a imagem para o seu repositório ECR
-   docker tag repairshop:latest "${accountId}.dkr.ecr.us-east-1.amazonaws.com/repairshop:latest"
-   docker push "${accountId}.dkr.ecr.us-east-1.amazonaws.com/repairshop:latest"
-   ```
-
-2. **Aplicar os manifestos no EKS com substituição dinâmica:**
-
-   Conecte-se ao contexto do cluster e crie o namespace:
-   ```bash
-   # Conectar ao cluster EKS da AWS
-   aws eks update-kubeconfig --region us-east-1 --name repairshop-eks
-
-   # Criar o Namespace (se ainda não existir no cluster)
-   kubectl apply -f k8s/namespace.yaml
-   ```
-
-   Execute o deploy aplicando a substituição do ID de conta AWS dinamicamente em memória:
-   ```powershell
-   $accountId = (aws sts get-caller-identity --query Account --output text)
-   (kubectl kustomize k8s/aws/ --load-restrictor LoadRestrictionsNone) -replace '<SUA_CONTA_AWS>', $accountId | kubectl apply -f -
-   ```
-
----
-
-### Monitorar o Status
-Acompanhe os pods do namespace até que fiquem no status `Running`:
 ```bash
-kubectl get pods -n repairshop
+# 1. Configurar contexto do EKS via AWS CLI
+aws eks update-kubeconfig --region us-east-1 --name repairshop-eks-dev
+
+# 2. Garantir namespace
+kubectl apply -f k8s/namespace.yaml
+
+# 3. Aplicar configurações de observabilidade e manifestos principais
+kubectl apply -f k8s/configs/
+kubectl apply -f k8s/
+
+# 4. Aplicar o ConfigMap correspondente ao ambiente (ex: dev)
+kubectl apply -f k8s/configmap/configmap-dev.yaml
+
+# 5. Acompanhar a inicialização
+kubectl rollout status deployment/repairshop-app -n repairshop --timeout=5m
 ```
 
+#### 2. Deploy Local (Docker Desktop / Kind / Minikube)
 
----
+```bash
+# 1. Aplicar namespace e configurações
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/configs/
+kubectl apply -f k8s/
 
-## Esteira de Integração e Entrega Contínua (CI/CD)
-
-A esteira de CI/CD foi automatizada com o **GitHub Actions** (através do arquivo de workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml)), integrando todos os processos de compilação, testes, qualidade de código, segurança e deploy de forma automatizada e resiliente para atender aos requisitos da Fase 2.
-
-### Fluxo da Pipeline (GitHub Actions)
-
-A pipeline é disparada a cada `push` ou `pull_request` nas branches `main` e `develop`. 
-
-> [!IMPORTANT]
-> **Paralelismo e Regras de Execução:**
-> - O provisionamento da infraestrutura com **Terraform** roda em **paralelo (junto)** com o estágio de **Build da Aplicação** para otimizar o tempo total da pipeline.
-> - O deploy/aplicação de infraestrutura (`terraform apply`) ocorre **apenas em merges ou pushes diretos nas branches principais (`main` e `develop`)**, sendo **totalmente ignorado em Pull Requests (PR)** para garantir a estabilidade do ambiente.
-
-A pipeline possui uma arquitetura dividida em estágios complementares:
-
-```mermaid
-graph TD
-    A[Start / Trigger] --> B[🛠️ Provision Infrastructure - Terraform]
-    A --> C[🏗️ Build & Smoke Test]
-    C --> D[🧪 Test Unit & IT]
-    D --> E[🔍 Quality Gate - SonarCloud]
-    D --> F[🐳 Docker Build & Trivy Scan]
-    B --> G[⏳ Approve Deployment]
-    F --> G
-    G --> H[🚀 Continuous Deployment to EKS]
-```
-
-### Detalhamento dos Estágios
-
-Conforme exigido nas diretrizes do Tech Challenge (Fase 2), a pipeline executa:
-
-1. **Build da Aplicação:**
-   - Compilação e empacotamento da aplicação Kotlin / Spring Boot via Maven.
-   - **Smoke Test pós-Build:** Sobe temporariamente as dependências (Postgres e Mailpit) e roda o JAR compilado, verificando a inicialização da aplicação através do endpoint `/actuator/health`.
-2. **Deploy da Infraestrutura (Terraform):**
-   - Executado em **paralelo (junto)** com o estágio de **Build da Aplicação** (Stage 0).
-   - O provisionamento/deploy (comando `terraform apply`) **roda apenas quando há um merge ou push direto nas branches principais (`main` e `develop`)**, sendo **totalmente ignorado (pulado) em execuções de Pull Request (PR)** para evitar modificações indesejadas na infraestrutura antes da aprovação do PR.
-3. **Execução dos Testes Automatizados:**
-   - Execução de todos os testes unitários e de integração utilizando **Testcontainers** (para subir o banco PostgreSQL real de teste).
-   - Coleta de métricas e geração de relatório de cobertura de código via **JaCoCo**.
-4. **Quality Gate (Análise de Código):**
-   - Roda a verificação de qualidade estática no **SonarCloud**, validando o Quality Gate do projeto e enviando os dados de cobertura gerados pelo JaCoCo (garantindo que esteja acima de 80%).
-
-> [!NOTE]
-> A atualização de status do Quality Gate consolidado no painel do SonarCloud é limitada à branch `main`, garantindo que as métricas de qualidade do projeto reflitam apenas o código de produção estável.
-
-5. **Build da Imagem Docker & Trivy Scan:**
-   - Criação da imagem Docker baseada no `Dockerfile` multi-stage com a JRE do Java 24 (`eclipse-temurin:24-jre`).
-   - Escaneamento de vulnerabilidades com a ferramenta **Trivy** (focando em falhas graves/criticas).
-   - **Smoke Test do Container:** Inicia o container gerado da aplicação para validar se está respondendo perfeitamente na porta HTTP 8080 antes de realizar qualquer publicação.
-   - Publicação/Push automático da imagem Docker no **Amazon ECR** (registro privado AWS).
-
-> [!NOTE]
-> O envio da imagem (comando `docker push`) é executado **exclusivamente após merges ou pushes diretos nas branches principais (`main` e `develop`)**. Em execuções de Pull Request (PR), o build, o Trivy scan e o Smoke Test são executados normalmente para validação técnica, mas a imagem final **não** é publicada no ECR.
-
-6. **Aprovação Manual:**
-   - **Quando é utilizado**: Este estágio é ativado **exclusivamente nas execuções das branches principais (`main` e `develop`)**. Ele **depende diretamente da conclusão bem-sucedida do build/push da imagem Docker (Docker Build & Push) E do provisionamento de infraestrutura (Terraform)** para ser acionado. Uma vez ativado, ele cria automaticamente uma issue de aprovação manual no repositório do GitHub e aguarda uma confirmação explícita do operador para prosseguir com o deploy.
-   - **Quando é ignorado**: É **totalmente ignorado (pulado) em execuções originadas de Pull Request (PR)**, já que o deploy de novas versões só deve ser elegível após a aprovação e mesclagem das alterações.
-7. **Deploy no Cluster Kubernetes (EKS):**
-   - Configuração dinâmica das credenciais do Kubernetes usando o AWS CLI.
-   - Substituição de variáveis confidenciais (secrets como string de conexão do banco no RDS AWS) e aplicação automatizada dos manifestos (`kubectl apply -f k8s/`) no cluster EKS.
-   - Monitoramento do progresso (`kubectl rollout status`) para garantir que os novos pods estejam operantes.
-
-### Secrets e Variáveis de Ambiente Requeridos
-
-Para que a esteira de CI/CD seja executada com sucesso e consiga provisionar os recursos na AWS e realizar o deploy no EKS, as seguintes chaves secretas (**Secrets**) devem estar configuradas nas configurações do repositório no GitHub:
-
-| Secret Name | Estágio Utilizado | Finalidade | Obrigatório |
-|-------------|-------------------|------------|-------------|
-| `AWS_ACCESS_KEY_ID` | Terraform, ECR, EKS | ID da Chave de Acesso para autenticação de comandos AWS (IaC e deploy) | Sim |
-| `AWS_SECRET_ACCESS_KEY` | Terraform, ECR, EKS | Chave Secreta de Acesso AWS para autenticação | Sim |
-| `AWS_SESSION_TOKEN` | Terraform, ECR, EKS | Token de sessão temporária (exigido caso utilize credenciais dinâmicas do AWS Academy/Sandbox) | Opcional |
-| `SPRING_DATASOURCE_USERNAME` | Terraform, Smoke Test, EKS | Nome de usuário do banco PostgreSQL (utilizado no provisionamento RDS e injetado no cluster EKS) | Sim |
-| `SPRING_DATASOURCE_PASSWORD` | Terraform, Smoke Test, EKS | Senha de acesso do banco PostgreSQL (utilizado no provisionamento RDS e injetado no cluster EKS) | Sim |
-| `SPRING_DATASOURCE_URL` | Smoke Test | String de conexão JDBC para testes de integridade local durante a pipeline | Sim |
-| `SPRING_MAIL_HOST` | Smoke Test | Endereço do host do servidor SMTP para validação de disparo de e-mails nos testes (ex: `mailpit`) | Sim |
-| `SPRING_MAIL_PORT` | Smoke Test | Porta do servidor SMTP (ex: `1025`) | Sim |
-| `SONAR_TOKEN` | Quality Gate | Token de autenticação do **SonarCloud** para a análise estática e Quality Gate | Sim |
-
-> [!NOTE]
-> **Substituições Automáticas durante o Deploy:**
-> - O identificador da conta AWS (`ACCOUNT_ID`) é obtido dinamicamente no pipeline via AWS CLI para mapear a URL do ECR (`*.dkr.ecr.us-east-1.amazonaws.com`) e substituir o placeholder `ECR_REGISTRY` no `k8s/deployment.yaml`.
-> - Os placeholders `DB_USERNAME` e `DB_PASSWORD` localizados no manifesto [`k8s/secret.yaml`](k8s/secret.yaml) são substituídos dinamicamente em tempo de execução na esteira com os valores de `SPRING_DATASOURCE_USERNAME` e `SPRING_DATASOURCE_PASSWORD`, respectivamente.
-
-### Esteira de Destruição da Infraestrutura (Manual)
-
-Além do pipeline principal de implantação, foi estruturado um workflow manual dedicado para a remoção segura de todos os recursos provisionados na nuvem: o **Destroy Cloud Infrastructure** (localizado em [`.github/workflows/destroy.yml`](.github/workflows/destroy.yml)).
-
-Este workflow é acionado via **gatilho manual (`workflow_dispatch`)** no console de Actions do GitHub e possui as seguintes diretrizes e etapas:
-
-1. **Validação de Segurança (Input Exigido):**
-   - Para evitar acidentes operacionais, a esteira exige que o usuário digite literalmente a palavra **`DESTRUIR`** (em caixa alta) no parâmetro de entrada (`confirm_destroy`).
-   - Qualquer valor diferente (incluindo o padrão `NAO`) causará o aborto imediato do processo sem afetar nenhum recurso em nuvem.
-2. **Desativação Limpa do Kubernetes (Kubectl Clean):**
-   - Configura a autenticação de rede com o cluster EKS da AWS.
-   - Executa `kubectl delete -f k8s/` para desmontar de forma ordenada a aplicação e os seus serviços.
-   - Realiza uma **pausa programada de 60 segundos (`sleep 60`)**. Esse intervalo é vital para dar tempo de desassociar e desalocar as interfaces de rede dinâmicas (**ENIs**) e os **Load Balancers (ELBs)** da AWS integrados às subnets. Sem esse intervalo, o Terraform falharia na tentativa de apagar a rede VPC por ter dependências de rede ainda vinculadas a IPs ativos.
-3. **Desprovisionamento Cloud via Terraform:**
-   - Configura a versão correta do CLI do Terraform (`1.8.5`).
-   - Inicializa o diretório e executa o comando `terraform destroy -auto-approve` na pasta `infra/terraform/cloud` para remover de forma integral os bancos RDS PostgreSQL, clusters EKS, buckets S3, subnets, gateways e VPC, prevenindo qualquer cobrança de recursos órfãos na nuvem.
-
-> [!WARNING]
-> **Necessidade de Credenciais AWS Ativas:**
-> Antes de acionar esta esteira (assim como a de deploy), certifique-se de que os segredos de credenciais da AWS (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` e, se estiver rodando em laboratórios/sandboxes acadêmicos da AWS Academy, o `AWS_SESSION_TOKEN`) estejam **atualizados e válidos** nas configurações de Secrets do repositório. Credenciais expiradas farão com que a desativação de recursos no Kubernetes e o desprovisionamento no Terraform falhem no meio da execução.
-
-#### Fluxo da Pipeline de Destruição (Manual)
-
-O fluxo da esteira manual de exclusão de recursos segue as seguintes etapas integradas:
-
-```mermaid
-graph TD
-    A[Start / Manual Trigger] --> B{"Input == 'DESTRUIR'?"}
-    B -- Não --> C[🛑 Abortar Execução]
-    B -- Sim --> D[🔐 Configurar Credenciais AWS]
-    D --> E[☸️ Kubectl Delete - Manifestos k8s]
-    E --> F["⏳ Pausa (sleep 60s) - Desalocar ENIs e ELBs"]
-    F --> G[🛠️ Setup Terraform 1.8.5]
-    G --> H[⚙️ Terraform Init]
-    H --> I[💥 Terraform Destroy -auto-approve]
-    I --> J[🏁 Recursos em Nuvem Excluídos]
+# 2. Aplicar ConfigMap local e banco Postgres local
+kubectl apply -f k8s/configmap/configmap-local.yaml
+kubectl apply -f k8s/configmap/postgres-local.yaml
 ```
 
 ---
 
-## Justificativa do Banco de Dados
+## 🔭 Observabilidade e Distributed Tracing (OpenTelemetry Stack)
 
-Optamos pelo **PostgreSQL** pelos seguintes motivos:
+A aplicação foi projetada com observabilidade de primeira classe baseada no ecossistema **OpenTelemetry (OTel)**:
 
-| Critério | Justificativa |
-|----------|--------------|
-| **Integridade relacional** | O domínio possui relações claras entre clientes, veículos, ordens de serviço, serviços e peças — um modelo relacional garante consistência via foreign keys e constraints |
-| **Conformidade ACID** | Ordens de serviço envolvem transações com múltiplas entidades (serviços, peças, estoque) que precisam de atomicidade e consistência |
-| **Controle de estoque** | Operações concorrentes de baixa de peças exigem isolamento transacional robusto |
-| **Ecossistema** | Integração madura com Spring Data JPA/Hibernate |
-| **Open source** | Sem custos de licenciamento, com comunidade ativa e documentação extensa |
+```
+[ RepairShop App (JVM) ]
+        │  (opentelemetry-javaagent.jar via OTLP gRPC)
+        ▼
+[ OTel Collector Gateway (k8s / docker) ]
+   ├──▶ Traces  ──▶ [ Jaeger UI (16686) ]
+   ├──▶ Métricas──▶ [ Prometheus (9090) ]
+   └──▶ Logs    ──▶ [ Loki (3100) ]
+                            │
+                            ▼
+                   [ Grafana Dashboard (3000) ]
+```
+
+1. **Auto-Instrumentação JVM:** O [`Dockerfile`](Dockerfile) acopla o `opentelemetry-javaagent.jar` diretamente no entrypoint da JVM, capturando automaticamente métricas de runtime, chamadas JDBC, requisições HTTP e spans de execução.
+2. **OpenTelemetry Collector:** Recebe dados via OTLP gRPC (`:4317`) e HTTP (`:4318`), processa e roteia para os backends específicos.
+3. **Jaeger Tracing:** Fornece rastreamento distribuído ponta a ponta com visualização da cascata de spans por endpoint.
+4. **Prometheus & Actuator:** Coleta contínua de métricas de saúde, JVM, garbage collector e tempos de resposta HTTP.
+5. **Grafana Loki & Logback:** Ingestão estruturada de logs emitidos pela aplicação via appender OTel nativo.
+6. **Grafana Dashboards:** Painéis pré-provisionados consolidando métricas, logs e traces em uma interface única.
+
+---
+
+## 🚀 Esteiras de Integração e Entrega Contínua (CI/CD GitOps)
+
+### Pipeline Principal de CI/CD (`ci.yml`)
+
+A pipeline do GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) é acionada a cada `push` ou `pull_request` nas branches `main`, `homolog`, `dev` e `develop`, além de permitir disparo manual via `workflow_dispatch` escolhendo o ambiente de destino (`dev`, `hml`, `prd`).
+
+```mermaid
+flowchart TD
+    A["🎯 Gatilho (Push / PR / Workflow Dispatch)"] --> B["⚙️ Setup do Ambiente (JDK 24 + Maven Cache)"]
+    B --> C["🧪 Compilação, Testes Unitários e Testcontainers (Postgres / JaCoCo)"]
+    C --> D["🔍 Quality Gate SonarCloud (Análise Estática > 80% Cobertura)"]
+    D --> E["🐳 Build Multi-Stage Docker (eclipse-temurin:24-jre)"]
+    E --> F["🛡️ Scan de Vulnerabilidades Trivy (CRITICAL & HIGH)"]
+    F --> G["📦 Autenticação AWS & Push da Imagem no Amazon ECR"]
+    G --> H{"🌿 Branch é main / prd?"}
+    H -- "Sim" --> I["⏳ Safety Gate de Aprovação"]
+    H -- "Não (dev / hml)" --> J["☸️ Deploy Automatizado no AWS EKS (kubectl apply / rollout)"]
+    I --> J
+    J --> K["📊 Geração do Step Summary & Relatórios"]
+```
+
+#### Detalhamento e Justificativa de Cada Passo da Pipeline
+
+| Passo | Ação Executada | Justificativa Arquitetural |
+| :--- | :--- | :--- |
+| **1. Checkout Repository** | Baixa o código-fonte na revisão exata do commit. | Assegura que o build e os testes reflitam com fidelidade o estado do código versionado. |
+| **2. Set up JDK & Maven Cache** | Instala o OpenJDK 24 com cache de dependências `.m2`. | Acelera o tempo de compilação em até 70%, reduzindo download de dependências externas. |
+| **3. Testes com Testcontainers** | Sobe container real do PostgreSQL para os testes de integração. | Garante paridade com o ambiente de produção, testando queries SQL e constraints reais sem mocks frágeis. |
+| **4. JaCoCo & SonarCloud** | Calcula cobertura de código e submete métricas ao SonarCloud. | Bloqueia código com débito técnico, vulnerabilidades ou cobertura de testes inferior a 80%. |
+| **5. Build Multi-Stage Docker** | Compila a imagem Docker final com runtime minimal JRE. | Minimiza a superfície de ataque e reduz o tamanho final da imagem para menos de 250MB. |
+| **6. Security Scan (Trivy)** | Varre a imagem Docker em busca de vulnerabilidades de CVEs. | Conformidade DevSecOps antes que qualquer binário seja promovido para o Container Registry. |
+| **7. Push para o Amazon ECR** | Realiza tag semântica e push da imagem no registro privado da AWS. | Garante que imagens imutáveis estejam disponíveis para download seguro pelos nós do EKS. |
+| **8. Deploy Contínuo no EKS** | Injeta variáveis/secrets e aplica os manifests Kubernetes (`k8s/`). | Atualiza os Pods com estratégia *RollingUpdate* sem indisponibilidade de serviço (*zero-downtime*). |
+| **9. Rollout Status Verification** | Aguarda confirmação de prontidão (`kubectl rollout status`). | Previne que deploys com falhas de inicialização ou crashloop passem despercebidos. |
+
+### 💡 Decisão de Arquitetura: Estratégia de Único Job (Single Job)
+
+> **Decisão Arquitetural:** Todo o fluxo de CI/CD foi consolidado em um **único JOB contínuo (`runs-on: ubuntu-latest`)**.
+> 
+> **Motivação Técnica:**
+> 1. **Economia de Minutos e Quota da Conta do GitHub:** A divisão da esteira em múltiplos jobs independentes consome minutos de runner adicionais para cada estágio (tempo de provisionamento de máquina virtual, download de imagens base e checkout). Ao unificar em um único job, o tempo total de execução cai pela metade, economizando a cota mensal da conta.
+> 2. **Reaproveitamento de Cache em Memória e Disco:** Os artefatos compilados pelo Maven, dependências e layers do Docker permanecem no sistema de arquivos local do runner durante todo o ciclo, eliminando o overhead de rede com `upload-artifact` e `download-artifact`.
+> 3. **Consistência de Credenciais:** As sessões temporárias autenticadas na AWS e no Kubernetes são compartilhadas de forma contínua e segura durante toda a execução.
+
+### Secrets e Variáveis de Ambiente
+
+As seguintes chaves devem estar configuradas em **Settings > Secrets and variables > Actions** do repositório:
+
+| Secret / Variável | Finalidade | Obrigatório |
+| :--- | :--- | :--- |
+| `AWS_ACCESS_KEY_ID` | Identificador de acesso AWS para autenticação do CLI, ECR e EKS | Sim |
+| `AWS_SECRET_ACCESS_KEY` | Chave secreta de acesso AWS | Sim |
+| `AWS_SESSION_TOKEN` | Token de sessão temporária (necessário para laboratórios AWS Academy / Sandbox) | Opcional |
+| `SPRING_DATASOURCE_USERNAME` | Usuário de acesso ao banco de dados PostgreSQL | Sim |
+| `SPRING_DATASOURCE_PASSWORD` | Senha de acesso ao banco de dados PostgreSQL | Sim |
+| `JWT_SECRET` | Chave simétrica (HMAC SHA-256) para validação dos tokens JWT | Sim |
+| `SONAR_TOKEN` | Token de autenticação da organização no **SonarCloud** | Sim |
+| `SPRING_DATASOURCE_URL` | URL JDBC customizada para testes de fumaça na esteira | Opcional |
+| `SPRING_MAIL_HOST` | Host do serviço SMTP para testes na esteira | Opcional |
+| `SPRING_MAIL_PORT` | Porta do serviço SMTP para testes na esteira | Opcional |
+
+### Pipeline de Destruição Controlada (`destroy.yml`)
+
+Para prevenção de custos em ambientes de teste e laboratórios acadêmicos, o repositório disponibiliza o workflow manual [`.github/workflows/destroy.yml`](.github/workflows/destroy.yml).
+
+- **Mecanismo de Safety Gate:** Exige que o operador informe expressamente a palavra **`DESTRUIR`** (em maiúsculas) no input de confirmação.
+- **Drenagem Segura:** Executa a exclusão ordenada dos workloads no namespace `repairshop` e aguarda 30 segundos para a correta liberação de Network Load Balancers (NLBs) e Elastic Network Interfaces (ENIs) antes do desprovisionamento da VPC.
+
+---
+
+## 🗄️ Banco de Dados e Persistência (PostgreSQL 16)
+
+### 1. Justificativa Formal da Escolha do PostgreSQL 16 (SGBD Relacional)
+
+A escolha do **PostgreSQL 16** como banco de dados relacional foi fundamentada nas características do domínio de negócio de uma Oficina Mecânica:
+
+| Critério Arquitetural | Justificativa Técnica no Domínio de Oficina |
+| :--- | :--- |
+| **Conformidade ACID Rigorosa** | O ciclo de vida da Ordem de Serviço envolve transições financeiras e contratuais críticas (`RECEIVED` $\rightarrow$ `IN_DIAGNOSIS` $\rightarrow$ `APPROVED` $\rightarrow$ `FINALIZED` $\rightarrow$ `PAID`), faturamento e emissão de notas fiscais. Operações com dinheiro e garantias legais exigem atomicidade e consistência estritas. |
+| **Integridade Relacional Forte** | O domínio possui entidades fortemente interconectadas (Cliente $\rightarrow$ Veículo $\rightarrow$ Ordem de Serviço $\rightarrow$ Execuções $\rightarrow$ Peças/Insumos $\rightarrow$ Fatura). A garantia de integridade referencial via chaves estrangeiras (`FOREIGN KEY`) e constraints é indispensável para evitar dados inconsistentes. |
+| **Controle Concorrente de Estoque** | A baixa e reserva de peças/insumos durante o diagnóstico de serviços concomitantes exige níveis estritos de isolamento transacional (*Read Committed* / *Repeatable Read* com *Row-Level Locking* / `SELECT FOR UPDATE`) para evitar concorrência desordenada (*lost updates* ou estoque negativo). |
+| **Evolução Homogênea com Flyway** | Migrations determinísticas versionadas em código (`src/main/resources/db/migration/`) garantem rastreabilidade, repetibilidade e evolução uniforme entre os ambientes de `dev`, `hml` e `prd`. |
+
+### 2. Dicionário de Dados, Entidades e Cardinalidades
+
+```mermaid
+erDiagram
+    tb_customer ||--o{ tb_vehicle : "possui (1:N)"
+    tb_customer ||--o{ tb_service_order : "solicita (1:N)"
+    tb_customer ||--o{ tb_invoice : "faturado para (1:N)"
+    tb_vehicle ||--o{ tb_service_order : "recebe manutencao (1:N)"
+    tb_service_order ||--o{ tb_service_order_history : "auditoria de status (1:N)"
+    tb_service_order ||--o{ tb_execution : "composta por (1:N)"
+    tb_service_order ||--|| tb_invoice : "gera (1:1)"
+    tb_execution ||--o{ tb_execution_history : "auditoria de execucao (1:N)"
+    tb_execution ||--|{ tb_execution_insume : "utiliza (1:N)"
+    tb_insume ||--|{ tb_execution_insume : "consumido em (1:N)"
+    tb_user {
+        UUID id_tb_user PK
+        VARCHAR name
+        VARCHAR function
+        VARCHAR cpf UK
+        VARCHAR email UK
+        VARCHAR password
+    }
+```
+
+- **`tb_customer` (Cliente):** Identificado por `id_tb_customer` (UUID PK), armazena CPF/CNPJ único (`document UK`), nome, e-mail e telefone.
+- **`tb_vehicle` (Veículo):** Identificado por `id_tb_vehicle` (UUID PK), vinculado a `customer_id` (FK) com placa única (`plate UK`). Cardinalidade: **1 Cliente para N Veículos ($1:N$)**.
+- **`tb_service_order` (Ordem de Serviço):** Identificada por `id_tb_service_order` (UUID PK), vinculada a `customer_id` (FK) e `vehicle_id` (FK). Controla o status da OS, valor total e prazos. Cardinalidade: **1 Veículo para N Ordens de Serviço ($1:N$)**.
+- **`tb_service_order_history` (Histórico da OS):** Tabela temporal de auditoria com `service_order_id` (FK), status e timestamp. Permite o cálculo do tempo médio de permanência em cada status. Cardinalidade: **1 OS para N Históricos ($1:N$)**.
+- **`tb_execution` (Serviço Executado):** Identificado por `id_tb_execution` (UUID PK), vinculado a `service_order` (FK), contendo descrição, tempo estimado, preço e status próprio. Cardinalidade: **1 OS para N Execuções ($1:N$)**.
+- **`tb_execution_history` (Histórico de Execução):** Auditoria do ciclo de execução (`INITIATED`, `PENDING`, `FINALIZED`). Cardinalidade: **1 Execução para N Históricos ($1:N$)**.
+- **`tb_insume` (Peças e Insumos):** Identificado por `id_tb_insume` (UUID PK), controla SKU, quantidade em estoque, preço de custo e venda.
+- **`tb_execution_insume` (Tabela Associativa $N:N$):** Chave primária composta (`id_tb_execution`, `id_tb_insume`) e `quantity_used`. Vincula peças consumidas a cada serviço executado.
+- **`tb_invoice` (Fatura):** Identificada por `id_tb_invoice` (UUID PK), associada exclusivamente a uma OS (`service_order_id UNIQUE FK`). Cardinalidade: **1 OS para 1 Fatura ($1:1$)**.
+- **`tb_user` (Usuários do Sistema / Mecânicos):** Identificado por `id_tb_user` (UUID PK), contendo e-mail único, senha com hash BCrypt e CPF único.
+
+### 3. Justificativa dos Ajustes no Modelo Relacional (Evolução Fase 1/2 $\rightarrow$ Fase 3)
+
+1. **Inclusão da Coluna `cpf` em `tb_user` (`V3__add_cpf_to_tb_user.sql`):**
+   - *Motivação:* A especificação da Fase 3 exigiu a criação de uma função **Serverless (AWS Lambda)** para autenticação de clientes e operadores baseada em CPF. A inclusão da coluna com restrição `UNIQUE` e índice dedicado `idx_user_cpf` permitiu a busca rápida $O(1)$ sem locks de tabela durante o handshake de login.
+2. **Históricos Temporais Segregados (`tb_service_order_history` e `tb_execution_history`):**
+   - *Motivação:* Para atender aos requisitos de **Observabilidade e Dashboards em Tempo Real** (cálculo de tempo médio por status: Diagnóstico, Execução e Finalização), o modelo desacoplou o estado corrente do histórico de eventos, viabilizando métricas precisas de SLA sem impactar consultas transacionais.
+3. **Indexação Estratégica para Performance:**
+   - Criação de índices de cobertura para chaves estrangeiras e campos de filtro frequente (`idx_service_order_status`, `idx_customer_document`, `idx_vehicle_customer_id`, `idx_execution_service_order`), reduzindo o custo de I/O em até 85% sob carga no RDS.
 
 <div align="center">
-  <img src="docs/delivery/database-er-diagram.png" alt="Diagrama de Entidade e Relacionamento" width="850">
+  <img src="docs/delivery/database-er-diagram.png" alt="Diagrama de Entidade e Relacionamento (ERD)" width="850">
   <br>
-  <em><small><strong>Figura 2: Diagrama de Entidade e Relacionamento (ERD)</strong><br>O modelo ilustra as principais tabelas do domínio (Clientes, Veículos, OS, Serviços, Peças) mapeadas via JPA, com foco em integridade referencial e controle transacional para o sistema da oficina.</small></em>
+  <em><small><strong>Figura 4: Diagrama de Entidade e Relacionamento (ERD)</strong></small></em>
   <br><br>
 </div>
 
 ---
 
-## Tecnologias Utilizadas
+## 📖 Documentação da API e Endpoints
 
-| Tecnologia                  | Finalidade                                 |
-|-----------------------------|--------------------------------------------|
-| **Kotlin**                  | Linguagem principal                        |
-| **Spring Boot**             | Framework para construção da API REST      |
-| **Spring Security**         | Autenticação e autorização com JWT         |
-| **Spring Data JPA**         | Acesso a dados                             |
-| **PostgreSQL**              | Banco de dados relacional                  |
-| **Flyway**                  | Gerenciamento de migrations                |
-| **Docker / Docker Compose** | Containerização e orquestração do ambiente |
+A documentação interativa da API está disponível via **Swagger UI / OpenAPI 3.0** no endereço:
+
+```
+http://localhost:8080/swagger-ui/index.html
+```
+
+### Principais Endpoints da API
+
+| Bounded Context | Método | Rota | Descrição |
+| :--- | :--- | :--- | :--- |
+| **Auth** | `POST` | `/auth/login` | Autenticação e emissão de token JWT |
+| | `POST` | `/auth/register` | Cadastro de novos usuários (demonstrativo) |
+| **Customers** | `POST` | `/customers` | Cadastro de novo cliente (valida CPF/CNPJ) |
+| | `GET` | `/customers` | Listagem paginada de clientes |
+| | `GET` | `/customers/{id}` | Consulta de cliente por ID |
+| | `PUT` | `/customers/{id}` | Atualização de dados cadastrais |
+| | `DELETE` | `/customers/{id}` | Remoção de cliente |
+| **Vehicles** | `POST` | `/vehicles` | Cadastro de veículo vinculado ao cliente |
+| | `GET` | `/vehicles` | Listagem paginada de veículos |
+| | `GET` | `/vehicles/{id}` | Consulta de veículo por ID |
+| | `PUT` | `/vehicles/{id}` | Atualização de dados do veículo |
+| | `DELETE` | `/vehicles/{id}` | Remoção de veículo |
+| **Insumes (Estoque)**| `POST` | `/insumes` | Cadastro de peça/insumo |
+| | `GET` | `/insumes` | Listagem de insumos e saldo de estoque |
+| | `GET` | `/insumes/{id}` | Consulta de insumo por ID |
+| | `PUT` | `/insumes/{id}` | Atualização de insumo/estoque |
+| | `DELETE` | `/insumes/{id}` | Remoção de insumo |
+| **Service Orders** | `POST` | `/service-orders` | Abertura de OS com cálculo de orçamento |
+| | `GET` | `/service-orders` | Listagem paginada de Ordens de Serviço |
+| | `GET` | `/service-orders/{id}` | Consulta pública de acompanhamento da OS |
+| | `PATCH` | `/service-orders/{id}/status` | Avanço do status da OS |
+| | `POST` | `/service-orders/{id}/approve` | Aprovação ou recusa do orçamento pelo cliente |
+| | `GET` | `/service-orders/metrics` | Métricas consolidadas das Ordens de Serviço |
+| | `GET` | `/service-orders/executions/metrics` | Métricas de tempo médio de execução |
+| **Executions** | `POST` | `/service-orders/{id}/executions` | Inclusão de serviço na OS |
+| | `POST` | `/service-orders/{id}/executions/batch` | Inclusão em lote de serviços na OS |
+| | `GET` | `/service-orders/{id}/executions/{execId}` | Detalhes da execução do serviço |
+| | `PATCH` | `/service-orders/{id}/executions/{execId}/status` | Atualização do status da execução |
+| | `DELETE` | `/service-orders/{id}/executions/{execId}` | Remoção de serviço da OS |
+| **Invoices** | `POST` | `/invoices` | Faturamento e emissão de nota da OS |
+| | `GET` | `/invoices` | Listagem paginada de faturas |
+| | `GET` | `/invoices/{id}` | Consulta de fatura por ID |
+
+### ⚙️ Máquina de Estados da Ordem de Serviço (OS)
+
+O ciclo de vida da OS é protegido por uma máquina de estados com transições estritas:
+
+```
+[ RECEIVED ] ──▶ [ IN_DIAGNOSIS ] ──▶ [ WAITING_APPROVAL ]
+                                            │
+                    ┌───────────────────────┴───────────────────────┐
+                    ▼                                               ▼
+              [ APPROVED ]                                    [ REFUSED ]
+                    │                                               │
+                    ▼                                               ▼
+             [ IN_EXECUTION ]                                 [ CANCELED ]
+                    │
+                    ▼
+              [ FINALIZED ] ──(POST /invoices)──▶ [ PAID ]
+```
+
+> ⚠️ **Regra de Negócio:** A transição a partir de `WAITING_APPROVAL` não pode ser realizada via `PATCH /status`. É mandatório chamar o endpoint específico `POST /service-orders/{id}/approve` enviando a decisão explícita do cliente (`APPROVED` ou `REFUSED`). Para atingir o status final `PAID`, a fatura deve ser gerada via `POST /invoices`.
+
+<div align="center">
+  <img src="docs/delivery/status_chain.png" alt="Máquina de Estados da Ordem de Serviço" width="850">
+  <br>
+  <em><small><strong>Figura 5: Máquina de Estados do Ciclo de Vida da Ordem de Serviço</strong></small></em>
+  <br><br>
+</div>
+
+### 🛠️ Máquina de Estados da Execução de Serviço
+
+Cada serviço individual atrelado à OS possui ciclo de progresso próprio:
+
+```
+[ INITIATED ] ──▶ [ PENDING ] ──▶ [ FINALIZED ]
+```
 
 ---
 
-## Pré-requisitos
+## 💻 Como Executar Localmente
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (com Docker Engine e Docker Compose integrados e em execução)
-- **Java 24** (Obrigatório apenas caso deseje rodar a aplicação ou os testes localmente sem o Docker)
+### Stack Completa via Docker Compose
 
----
-
-## Como Executar
-
-O projeto utiliza um `Dockerfile` *multi-stage*, o que significa que a imagem Docker baixa o Maven e compila o `.jar` internamente. Portanto, ter o Maven ou o Java instalados na sua máquina **não é estritamente obrigatório** apenas para rodar a aplicação via Docker.
-
-No entanto, o fluxo padrão recomendado para desenvolvedores é compilar e validar os testes localmente antes de subir a imagem:
+O projeto possui um [`docker-compose.yml`](docker-compose.yml) completo que inicializa a aplicação, banco de dados, servidor de e-mail mock e toda a infraestrutura de observabilidade:
 
 ```bash
 # 1. Clone o repositório
-git clone https://github.com/Alexandre-AGAMIN/tech-challenge-FIAP.git
-cd tech-challenge-FIAP
+git clone https://github.com/fiap-postech-repairshop/tech-challenge-repairshop-app.git
+cd tech-challenge-repairshop-app
 
-# 2. (Opcional) Faça o build e rode os testes locais usando o Maven Wrapper
-./.mvn/mvnw clean install
+# 2. (Opcional) Executar testes e build localmente via Maven Wrapper
+./mvnw clean test
 
-# 3. Suba a infraestrutura completa via Docker
+# 3. Subir todos os serviços com build automático do container
 docker compose up --build -d
 
-# 4. Aguarde os logs indicarem que a aplicação subiu
+# 4. Acompanhar a inicialização do backend
 docker compose logs -f app
-# Procure pela mensagem: "Started RepairshopApplication"
 ```
 
-O `docker-compose.yml` provisiona a aplicação juntamente com a **stack completa de observabilidade e suporte**:
+### 🌐 Portas e Painéis de Acesso
 
-| Serviço | Porta | Descrição |
-|---------|-------|-----------|
-| `postgres` | 5432 | PostgreSQL 16 com healthcheck |
-| `app` | 8080 | Aplicação Spring Boot instrumentada com OpenTelemetry Agent |
-| `mailpit` | 8025 / 1025 | Interceptador de e-mails locais (Dashboard web em 8025) |
-| `otel-collector` | 4317 / 4318 / 8889 | OpenTelemetry Collector (recebe OTLP e distribui traces, métricas e logs) |
-| `prometheus` | 9090 | Prometheus (coleta métricas do OTel Collector e Actuator) |
-| `jaeger` | 16686 | Jaeger UI (Distributed Tracing OTLP) |
-| `loki` | 3100 | Grafana Loki (Agregação de logs estruturados) |
-| `grafana` | 3000 | Grafana com Dashboards e Datasources (Prometheus, Jaeger, Loki) provisionados |
-| `sonarqube` | 9000 | Plataforma de análise contínua de qualidade de código |
+| Serviço | URL | Credenciais / Notas |
+| :--- | :--- | :--- |
+| **Swagger UI (OpenAPI 3.0)** | [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html) | Interface interativa de testes dos endpoints |
+| **API REST (Base)** | [http://localhost:8080](http://localhost:8080) | Porta principal da aplicação Spring Boot |
+| **Grafana (Observabilidade)** | [http://localhost:3000](http://localhost:3000) | `admin` / `admin` (Auto-login anônimo habilitado) |
+| **Jaeger Tracing UI** | [http://localhost:16686](http://localhost:16686) | Rastreamento distribuído de traces OTLP |
+| **Prometheus Server** | [http://localhost:9090](http://localhost:9090) | Painel de métricas e consultas PromQL |
+| **Mailpit (Web Mailbox)** | [http://localhost:8025](http://localhost:8025) | Interceptador de e-mails disparados pela aplicação |
+| **PostgreSQL Database** | `localhost:5432` | `repairshop` / `repairshop` (Database: `repairshop`) |
 
-> Na primeira execução, o **Flyway** da aplicação aplica automaticamente todas as migrations no banco de dados (criação de tabelas, indexes e seed de insumos).
+### 🚀 Fluxo de Primeiro Uso (Swagger UI / Postman)
 
-### 🌐 Acessos e Painéis
+A maior parte dos endpoints requer autenticação via token JWT com a role `ATTENDANT`. Para testar o fluxo de ponta a ponta:
 
-Com os containers rodando, as interfaces estão disponíveis nos seguintes endereços:
+> 💡 **Coleção Postman Pronta:** Utilize os arquivos disponíveis no repositório:
+> - [Ambiente Local do Postman](docs/postman/Local.postman_environment.json)
+> - [Collection Completa do Postman](docs/postman/Tech_Challenge_Fiap_-_Completo.postman_collection.json)
 
-| Recurso | URL | Credenciais Padrão |
-|---------|-----|--------------------|
-| Swagger UI (Recomendado) | http://localhost:8080/swagger-ui/index.html | - |
-| API REST (Base) | http://localhost:8080 | - |
-| **Grafana (Observabilidade)** | http://localhost:3000 | `admin` / `admin` (Anonymous auto-login ativo) |
-| **Jaeger Tracing** | http://localhost:16686 | - |
-| **Prometheus UI** | http://localhost:9090 | - |
-| Caixa de E-mails (Mailpit) | http://localhost:8025 | - |
-| Dashboard SonarQube | http://localhost:9000 | `admin` / `admin` |
-
-### 🚀 Primeiro uso (Via Swagger UI ou Postman)
-
-A grande maioria dos endpoints exige autenticação JWT. Recomendamos realizar o primeiro uso diretamente pelo **Swagger UI** (`http://localhost:8080/swagger-ui/index.html`) para evitar problemas de formatação de JSON no terminal do Windows (como no caso do `curl`):
-
-> 💡 **Dica para o Postman:** Utilize a collection disponível no diretório [`docs/postman/`](docs/postman/)
-> 
-> Uma coleção organizada com um fluxo lógico de negócio para facilitar a validação do desafio.
->   - Cadastro => Login => OS => Execução => Pagamento
-
-[Ambiente Local](docs/postman/Local.postman_environment.json)
-
-[Collection do Postman](docs/postman/Tech_Challenge_Fiap_-_Completo.postman_collection.json)
-
-1. Vá até o endpoint `POST /auth/register` no Swagger e cadastre o usuário inicial:
+1. **Cadastrar Usuário:** No Swagger UI, acesse `POST /auth/register`:
    ```json
    {
-     "name": "Admin",
-     "function": "ATTENDANT", // Roles aceitas: CUSTOMER ou ATTENDANT
+     "name": "Administrador",
+     "function": "ATTENDANT",
      "email": "admin@shop.com",
-     "password": "SecurePass123"
+     "password": "SecurePass123!"
    }
    ```
-2. Vá até `POST /auth/login`, envie o e-mail e senha cadastrados para receber o token JWT.
-3. Copie o valor do `token` (sem aspas) da resposta.
-4. Clique no botão **Authorize** (cadeado verde no topo do Swagger) e cole o token. A partir de agora, o Swagger injetará o header `Authorization: Bearer <token>` em todas as suas requisições automaticamente!
+2. **Obter Token JWT:** Acesse `POST /auth/login` enviando o e-mail e senha cadastrados.
+3. **Autorizar no Swagger:** Copie o token retornado na resposta, clique no botão **Authorize** (ícone do cadeado no canto superior direito do Swagger) e cole o token. A partir deste momento, todas as requisições incluirão automaticamente o header `Authorization: Bearer <token>`.
 
-### 🛠️ Comandos úteis
+---
+
+## 🛡️ Qualidade de Código, Testes e Segurança
+
+### Suíte de Testes Automatizados
+
+A base de código conta com uma ampla suíte de testes unitários e de integração:
 
 ```bash
-# Rodar análise de código local e enviar pro SonarQube container (requer Java 24)
-mvn clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=repairshop -Dsonar.projectName='repairshop' -Dsonar.host.url=http://localhost:9000 -Dsonar.token=<SONAR_TOKEN>
-
-# Parar os containers (mantém os dados)
-docker compose down
-
-# Parar e resetar tudo (remove o banco de dados e as análises do sonar)
-docker compose down -v
+# Executar a suíte completa de testes
+./mvnw clean verify
 ```
 
----
+- **Testes Unitários de Domínio (MockK & JUnit 5):** Validação de Value Objects (CPF, CNPJ, Placas), invariantes de agregados, cálculo de orçamentos e regras da máquina de estados.
+- **Testes de Integração (Testcontainers & Spring Boot Test):** Validação de repositórios JPA, migrações do Flyway e endpoints REST (`MockMvc`) utilizando container real do PostgreSQL.
+- **Cobertura de Código (JaCoCo):** Cobertura superior a **80%** nos pacotes críticos de negócio.
 
-## Documentação da API
+### Segurança e DevSecOps
 
-A API é documentada via **OpenAPI 3.0** e pode ser acessada interativamente pelo **Swagger UI**:
-
-```
-http://localhost:8080/swagger-ui.html
-```
-
-### Principais Endpoints
-
-| Domínio | Método | Endpoint | Descrição |
-|---------|--------|----------|-----------|
-| **Auth** | `POST` | `/auth/login` | Autenticação e geração de token JWT |
-| | `POST` | `/auth/register` | Registrar novo usuário |
-| **Customers** | `POST` | `/customers` | Cadastrar cliente |
-| | `GET` | `/customers` | Listar clientes (paginado) |
-| | `GET` | `/customers/{id}` | Buscar cliente por ID |
-| | `PUT` | `/customers/{id}` | Atualizar cliente |
-| | `DELETE` | `/customers/{id}` | Remover cliente |
-| **Vehicles** | `POST` | `/vehicles` | Cadastrar veículo |
-| | `GET` | `/vehicles` | Listar veículos (paginado) |
-| | `GET` | `/vehicles/{id}` | Buscar veículo por ID |
-| | `PUT` | `/vehicles/{id}` | Atualizar veículo |
-| | `DELETE` | `/vehicles/{id}` | Remover veículo |
-| **Insumes** | `POST` | `/insumes` | Cadastrar insumo/peça |
-| | `GET` | `/insumes` | Listar insumos (paginado) |
-| | `GET` | `/insumes/{id}` | Buscar insumo por ID |
-| | `PUT` | `/insumes/{id}` | Atualizar insumo |
-| | `DELETE` | `/insumes/{id}` | Remover insumo |
-| **Service Orders** | `POST` | `/service-orders` | Criar OS com orçamento automático |
-| | `GET` | `/service-orders` | Listar ordens de serviço (paginado) |
-| | `GET` | `/service-orders/{id}` | Consultar OS (público, sem auth) |
-| | `PATCH` | `/service-orders/{id}/status` | Avançar status da OS |
-| | `POST` | `/service-orders/{id}/approve` | Aprovar/recusar orçamento |
-| | `GET` | `/service-orders/metrics` | Métricas gerais das ordens de serviço |
-| | `GET` | `/service-orders/executions/metrics`| Métricas de tempo de execução |
-| **Executions** | `POST` | `/service-orders/{id}/executions` | Adicionar serviço/execução à OS |
-| | `POST` | `/service-orders/{id}/executions/batch` | Adicionar múltiplos serviços à OS |
-| | `GET` | `/service-orders/{id}/executions/{execId}` | Buscar execução de serviço na OS |
-| | `PUT` | `/service-orders/{id}/executions/{execId}` | Atualizar execução |
-| | `PATCH` | `/service-orders/{id}/executions/{execId}/status`| Avançar status da execução |
-| | `DELETE` | `/service-orders/{id}/executions/{execId}` | Remover execução da OS |
-| **Invoices** | `POST` | `/invoices` | Gerar fatura para pagamento |
-| | `GET` | `/invoices` | Listar faturas (paginado) |
-| | `GET` | `/invoices/{id}` | Consultar fatura por ID |
-
-#### Valores Úteis: Descrições de Execução (`BasicExecution`)
-Ao adicionar execuções (serviços) à uma OS (`POST /service-orders/{id}/executions`), o campo `basicDescription` deve conter um dos seguintes valores padronizados:
-- `OIL_CHANGE`
-- `SUSPENSION_REPLACEMENT`
-- `WHEEL_ALIGNMENT`
-- `BRAKE_INSPECTION`
-- `ENGINE_DIAGNOSIS`
-- `OTHER`
-
-### ⚙️ Máquina de Estados (Status da OS)
-
-O fluxo de atendimento da Ordem de Serviço segue um controle de status rigoroso. Você pode avançar o status chamando o endpoint `PATCH /service-orders/{id}/status`. As transições sequenciais permitidas são:
-
-1. `RECEIVED` ➡️ `IN_DIAGNOSIS`
-2. `IN_DIAGNOSIS` ➡️ `WAITING_APPROVAL`
-3. `WAITING_APPROVAL` ➡️ `APPROVED` ou `REFUSED`
-   - ⚠️ **Atenção:** A transição a partir de `WAITING_APPROVAL` **não pode** ser feita pelo `PATCH`. É obrigatório chamar o endpoint específico `POST /service-orders/{id}/approve`, enviando a decisão do cliente.
-4. `APPROVED` ➡️ `IN_EXECUTION`
-5. `REFUSED` ➡️ `CANCELED`
-6. `IN_EXECUTION` ➡️ `FINALIZED`
-7. `FINALIZED` ➡️ `PAID`
-   - ⚠️ **Atenção:** Para que a OS avance para `PAID`, é necessário faturá-la chamando a API de Invoices (`POST /invoices`) para criar a nota fiscal.
-
-<div align="center">
-  <img src="docs/delivery/status_chain.png" alt="Máquina de Estados da OS" width="850">
-  <br>
-  <em><small><strong>Figura 3: Máquina de Estados (Ordem de Serviço)</strong><br>O fluxo visualiza a transição de ciclo de vida de uma OS, passando por aprovação do cliente até a sua execução, faturamento (invoices) e pagamento final. Transições indevidas são bloqueadas na camada de aplicação.</small></em>
-  <br><br>
-</div>
-
-### 🛠️ Máquina de Estados (Status da Execução de Serviço)
-
-Cada serviço individual dentro de uma Ordem de Serviço possui seu próprio controle de progresso. Você pode avançar o status de uma execução específica chamando o endpoint `PATCH /service-orders/{id}/executions/{execId}/status`.
-
-As transições permitidas são:
-1. `INITIATED` ➡️ `PENDING`
-2. `PENDING` ➡️ `FINALIZED`
+- **Análise Estática (SonarCloud):** Relatórios de qualidade, débito técnico e cobertura integrados ao Quality Gate da pipeline (evidências em [`docs/sonar/`](docs/sonar/)).
+- **Scan de Vulnerabilidades de Containers (Trivy):** Análise automatizada de vulnerabilidades conhecidas (CVEs) em bibliotecas e camadas do SO na esteira CI/CD.
+- **Dynamic Application Security Testing (OWASP ZAP):** Relatório de auditoria DAST para verificação de vulnerabilidades web (disponível em [`docs/owaspzap/2026-05-01-ZAP-Report-.html`](docs/owaspzap/2026-05-01-ZAP-Report-.html)).
+- **Testes de Carga HPA:** Scripts de estresse com Locust disponíveis em [`docs/hpa_stress/locustfile.py`](docs/hpa_stress/locustfile.py).
 
 ---
 
-## Testes
+## 📚 Documentação DDD e Artefatos Complementares
 
-**118 testes** (unitários + integração), todos passando:
-
-```bash
-# Rodar os testes (sem necessidade de banco — usam MockK)
-./mvnw test
-```
-
-| Camada | Testes | O que cobre |
-|--------|--------|-------------|
-| Value Objects & Enums | 32 | CPF/CNPJ, placa, status OS (9 estados), status serviço |
-| Services (MockK) | 54 | CRUD, state machine, stock, budget, auth |
-| Controllers (MockMvc) | 32 | Endpoints, validação, erros, paginação |
-
-Cobertura de **80%+** nos domínios críticos (transições de status, cálculo de orçamento, dedução de estoque, validações de CPF/CNPJ/placa).
-
-> 📊 Os relatórios de análise de qualidade de código e cobertura gerados pelo **SonarQube** estão disponíveis na pasta [`docs/sonar/`](docs/sonar/).
+- 📄 **[Dicionário de Linguagem Ubíqua](docs/delivery/dicionario-linguagem-ubiqua.md):** Glossário oficial dos termos e conceitos do domínio da oficina.
+- 🗺️ **[Artefatos do Miro](docs/delivery/miro/):** Diagramas exportados do Event Storming, Storytelling e fluxos de negócio.
+- 👥 **[Especificações por Papel SDD (Software Design Document)](docs/sdd/):**
+  - [Software Architect](docs/sdd/software_architect.md)
+  - [DevSecOps Engineer](docs/sdd/devsecops_engineer.md)
+  - [Tech Lead](docs/sdd/tech_lead.md)
+  - [QA Engineer](docs/sdd/qa_engineer.md)
+  - [Product Owner](docs/sdd/product_owner.md)
 
 ---
 
-## Documentação DDD
+## 👥 Autores
 
-A documentação de Domain-Driven Design do projeto inclui:
+**Grupo CAO** — Pós-Graduação **POSTECH 15SOAT** (FIAP)
 
-- **Event Storming** — Fluxos de criação/acompanhamento da OS e gestão de peças/insumos
-- **Linguagem Ubíqua** — Glossário de termos do domínio
-- **Diagramas** — Bounded Contexts, Aggregates e fluxos de domínio
-
-> 📄 O **Dicionário de Linguagem Ubíqua** está disponível em [`docs/delivery/dicionario-linguagem-ubiqua.md`](docs/delivery/dicionario-linguagem-ubiqua.md).
-> 
-> 🗺️ Os quadros do **Miro** (Event Storming e Storytelling) exportados em PDF estão na pasta [`docs/delivery/miro/`](docs/delivery/miro/) ou você pode acessar também através do link [Miro](https://miro.com/app/board/uXjVGpcPYDY=/?share_link_id=818382063586).
-
----
-
-## Segurança
-
-| Aspecto | Implementação |
-|---------|--------------|
-| **Autenticação** | JWT (JSON Web Tokens) para APIs administrativas |
-| **Validação** | Dados sensíveis validados (CPF/CNPJ, placa de veículo) |
-| **Testes** | Unitários e de integração para os principais fluxos |
-
-> 🛡️ O relatório de escaneamento de vulnerabilidades gerado pelo **OWASP ZAP** está disponível na pasta [`docs/owaspzap/`](docs/owaspzap/).
-
----
-
-## Avisos do Projeto
-
-### Endpoint `/register` (Autenticação)
-
-O serviço `/register` (disponível na API de autenticação) existe **apenas para fins didáticos e de demonstração** no escopo deste projeto acadêmico (Tech Challenge). 
-
-Em um cenário de produção real, o cadastro de novos usuários administradores/funcionários do sistema não seria exposto em um endpoint de uso aberto. A criação de usuários seria feita de forma controlada, através de um painel administrativo com os devidos controles de acesso, ou por um processo interno de provisionamento.
-
-### Workflow de Destruição (`destroy.yml`)
-
-O workflow automatizado de destruição de infraestrutura ([`destroy.yml`](.github/workflows/destroy.yml)) foi disponibilizado neste repositório **apenas por se tratar de um projeto acadêmico e de estudo**, visando facilitar a limpeza e evitar custos desnecessários com recursos de nuvem ativos.
-
-Em uma aplicação real corporativa, pipelines ou scripts com a capacidade de destruição total do ambiente de produção **não estariam presentes** no repositório de código por motivos de segurança e prevenção de desastres.
-
----
-
-## Autores
-
-**Grupo CAO** — POSTECH 15SOAT
-
-| Nome           | RM     | GitHub               |
-|----------------|--------|----------------------|
-| Alexandre      | 374016 | [Alexandre-AGAMIN](https://github.com/Alexandre-AGAMIN) |
-| Otávio Luiz    | 370552 | [otaviolms](https://github.com/otaviolms) |
-
-
-
-
+| Autor | RM | GitHub |
+| :--- | :--- | :--- |
+| **Alexandre** | RM 374016 | [@Alexandre-AGAMIN](https://github.com/Alexandre-AGAMIN) |
+| **Otávio Luiz** | RM 370552 | [@otaviolms](https://github.com/otaviolms) |
