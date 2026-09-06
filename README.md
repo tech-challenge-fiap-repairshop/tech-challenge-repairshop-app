@@ -69,24 +69,39 @@ O **RepairShop** é uma solução corporativa desenvolvida para digitalizar e ot
 Em conformidade com as diretrizes do **AWS Well-Architected Framework**, a solução foi desacoplada em repositórios especializados na organização do GitHub:
 
 ```mermaid
-graph TD
-    User([👤 Cliente / Attendant / Admin]) -->|HTTPS| APIGW[🚪 AWS API Gateway HTTP API v2<br>tech-challenge-repairshop-infra-apigateway]
+flowchart TD
+    %% Definições de Estilo
+    classDef clientStyle fill:#ECEFF1,stroke:#607D8B,stroke-width:2px,color:#263238
+    classDef apigwStyle fill:#FCE4EC,stroke:#C2185B,stroke-width:2px,color:#880E4F
+    classDef lambdaStyle fill:#FFF3E0,stroke:#E65100,stroke-width:2px,color:#BF360C
+    classDef vpcStyle fill:#F5F7FA,stroke:#0277BD,stroke-width:2px,color:#01579B,stroke-dasharray: 4 4
+    classDef eksStyle fill:#E8EAF6,stroke:#3F51B5,stroke-width:2px,color:#1A237E
+    classDef podStyle fill:#FFFFFF,stroke:#00ACC1,stroke-width:1.5px,color:#006064
+    classDef otelStyle fill:#F3E5F5,stroke:#8E24AA,stroke-width:1.5px,color:#4A148C
+    classDef rdsStyle fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px,color:#1B5E20
+    classDef nlbStyle fill:#E1F5FE,stroke:#0288D1,stroke-width:2px,color:#01579B
+
+    User([👤 Cliente / Atendente / Admin]):::clientStyle -->|"HTTPS (Porta 443)"| APIGW["🚪 AWS API Gateway HTTP API v2\n(tech-challenge-repairshop-infra-apigateway)"]:::apigwStyle
     
-    APIGW -->|POST /auth/login| LambdaAuth[⚡ Lambda Auth Java 21<br>tech-challenge-repairshop-lambda-auth]
-    APIGW -->|ANY /{proxy+}| NLB[⚖️ AWS Network Load Balancer]
+    APIGW -->|"POST /auth/login (JWT)"| LambdaAuth["⚡ Lambda Auth Java 21\n(tech-challenge-repairshop-lambda-auth)"]:::lambdaStyle
+    APIGW -->|"ANY /{proxy+} (Catch-all)"| NLB["⚖️ AWS Network Load Balancer (NLB)"]:::nlbStyle
     
-    subgraph VPC [AWS VPC - tech-challenge-repairshop-infra-network]
-        subgraph EKS_Cluster [Cluster EKS - tech-challenge-repairshop-infra-eks]
-            NLB --> AppService[☸️ Service LoadBalancer: 8080]
-            AppService --> AppPod[📦 repairshop-app Pods<br>Spring Boot + OTel Agent]
-            AppPod -.->|Traces/Logs/Metrics| OTelPod[🔭 OTel Collector / Observability]
+    subgraph VPC["🏢 AWS VPC Privada — tech-challenge-repairshop-infra-network"]
+        subgraph EKS_Cluster["☸️ Cluster EKS Gerenciado — tech-challenge-repairshop-infra-eks"]
+            NLB --> AppService["☸️ Service LoadBalancer (Porta 8080)"]:::nlbStyle
+            AppService --> AppPod["📦 repairshop-app Pods (Spring Boot + OTel Agent)\nNamespace: repairshop"]:::podStyle
+            AppPod -.->|"Traces / Logs / Metrics"| OTelPod["🔭 OpenTelemetry Collector & Observability Stack"]:::otelStyle
         end
         
-        subgraph Private_Data [Camada de Dados Privada]
-            AppPod -->|JDBC:5432| RDS[🗄️ AWS RDS PostgreSQL 16<br>tech-challenge-repairshop-infra-db-rds]
-            LambdaAuth -.->|Validação/Auth| RDS
+        subgraph Private_Data["🔒 Camada de Dados Privada (RDS PostgreSQL 16)"]
+            RDS["🗄️ AWS RDS PostgreSQL 16\n(tech-challenge-repairshop-infra-db-rds)"]:::rdsStyle
+            AppPod ==>|"TCP:5432 (JPA / Flyway)"| RDS
+            LambdaAuth -.->|"TCP:5432 (Validação de CPF)"| RDS
         end
     end
+    class VPC vpcStyle
+    class EKS_Cluster eksStyle
+    class Private_Data rdsStyle
 ```
 
 ### Repositórios da Organização
@@ -279,17 +294,26 @@ A pipeline do GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.
 
 ```mermaid
 flowchart TD
-    A["🎯 Gatilho (Push / PR / Workflow Dispatch)"] --> B["⚙️ Setup do Ambiente (JDK 24 + Maven Cache)"]
-    B --> C["🧪 Compilação, Testes Unitários e Testcontainers (Postgres / JaCoCo)"]
-    C --> D["🔍 Quality Gate SonarCloud (Análise Estática > 80% Cobertura)"]
-    D --> E["🐳 Build Multi-Stage Docker (eclipse-temurin:24-jre)"]
-    E --> F["🛡️ Scan de Vulnerabilidades Trivy (CRITICAL & HIGH)"]
-    F --> G["📦 Autenticação AWS & Push da Imagem no Amazon ECR"]
-    G --> H{"🌿 Branch é main / prd?"}
-    H -- "Sim" --> I["⏳ Safety Gate de Aprovação"]
-    H -- "Não (dev / hml)" --> J["☸️ Deploy Automatizado no AWS EKS (kubectl apply / rollout)"]
-    I --> J
-    J --> K["📊 Geração do Step Summary & Relatórios"]
+    classDef triggerStyle fill:#E1F5FE,stroke:#0288D1,stroke-width:2px,color:#01579B
+    classDef stepStyle fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px,color:#4A148C
+    classDef gateStyle fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px,color:#F57F17
+    classDef deployStyle fill:#E8F5E9,stroke:#388E3C,stroke-width:2px,color:#1B5E20
+    classDef reportStyle fill:#ECEFF1,stroke:#455A64,stroke-width:2px,color:#263238
+
+    A["🎯 Gatilho / Trigger\n• Push ou PR (main, homolog, dev)\n• Workflow Dispatch Manual"]:::triggerStyle
+    A --> B["⚙️ Setup do Ambiente\n(JDK 24 Temurin + Cache Maven)"]:::stepStyle
+    B --> C["🧪 Testes Unitários & Integração\n(Testcontainers Postgres + JaCoCo Coverage)"]:::stepStyle
+    C --> D["🔍 Quality Gate SonarCloud\n(Análise Estática > 80% Cobertura)"]:::stepStyle
+    D --> E["🐳 Build Docker Multi-Stage\n(eclipse-temurin:24-jre Minimal Image)"]:::stepStyle
+    E --> F["🛡️ Security Scan DevSecOps\n(Trivy Vulnerability Scanner)"]:::stepStyle
+    F --> G["📦 Autenticação AWS & Push ECR\n(Amazon ECR Private Registry)"]:::stepStyle
+    G --> H{"🌿 Branch é 'main' com Push\nou Dispatch Manual?"}:::gateStyle
+    
+    H -- "✅ Sim (Deploy Produção)" --> I["☸️ Deploy Automatizado AWS EKS\n(kubectl apply / RollingUpdate)"]:::deployStyle
+    H -- "🛡️ Não (PR ou Homologação)" --> J["📋 Validação & Simulação\n(Testes e Build Aprovados)"]:::reportStyle
+    
+    I --> K["📊 GitHub Step Summary & Relatórios"]:::reportStyle
+    J --> K
 ```
 
 #### Detalhamento e Justificativa de Cada Passo da Pipeline
@@ -314,6 +338,35 @@ flowchart TD
 > 1. **Economia de Minutos e Quota da Conta do GitHub:** A divisão da esteira em múltiplos jobs independentes consome minutos de runner adicionais para cada estágio (tempo de provisionamento de máquina virtual, download de imagens base e checkout). Ao unificar em um único job, o tempo total de execução cai pela metade, economizando a cota mensal da conta.
 > 2. **Reaproveitamento de Cache em Memória e Disco:** Os artefatos compilados pelo Maven, dependências e layers do Docker permanecem no sistema de arquivos local do runner durante todo o ciclo, eliminando o overhead de rede com `upload-artifact` e `download-artifact`.
 > 3. **Consistência de Credenciais:** As sessões temporárias autenticadas na AWS e no Kubernetes são compartilhadas de forma contínua e segura durante toda a execução.
+
+---
+
+## 🔀 Governança de Branches e Ciclo de Promoção (Git Flow)
+
+A governança do repositório segue isolamento estrito com aprovação controlada para promoção de ambientes:
+
+```mermaid
+flowchart LR
+    classDef branchDev fill:#E3F2FD,stroke:#1E88E5,stroke-width:2px,color:#0D47A1
+    classDef branchHml fill:#FFF3E0,stroke:#FB8C00,stroke-width:2px,color:#E65100
+    classDef branchMain fill:#E8F5E9,stroke:#43A047,stroke-width:2px,color:#1B5E20
+    classDef gateStyle fill:#FFEBEE,stroke:#E53935,stroke-width:2px,color:#B71C1C
+
+    Dev["🌿 Feature / Fix / Chore\n(feat/*, fix/*, chore/*)"]:::branchDev
+    PR_HML{"Pull Request\npara homolog"}:::gateStyle
+    HML["🛡️ Branch homolog\n(Ambiente hml / Validação)"]:::branchHml
+    PR_MAIN{"Pull Request\npara main"}:::gateStyle
+    Main["🚀 Branch main\n(Deploy em Produção)"]:::branchMain
+
+    Dev -->|"Abertura de PR"| PR_HML
+    PR_HML -->|"Validação & Merge"| HML
+    HML -->|"Abertura de PR de Promoção"| PR_MAIN
+    PR_MAIN -->|"Aprovação Manual Obrigatória"| Main
+```
+
+> ⚠️ **Regra de Governança:** É expressamente proibido commit ou push direto na branch `main`. Toda alteração deve passar pelo pipeline de validação e aprovação formal.
+
+---
 
 ### Secrets e Variáveis de Ambiente
 
@@ -456,18 +509,26 @@ http://localhost:8080/swagger-ui/index.html
 
 O ciclo de vida da OS é protegido por uma máquina de estados com transições estritas:
 
-```
-[ RECEIVED ] ──▶ [ IN_DIAGNOSIS ] ──▶ [ WAITING_APPROVAL ]
-                                            │
-                    ┌───────────────────────┴───────────────────────┐
-                    ▼                                               ▼
-              [ APPROVED ]                                    [ REFUSED ]
-                    │                                               │
-                    ▼                                               ▼
-             [ IN_EXECUTION ]                                 [ CANCELED ]
-                    │
-                    ▼
-              [ FINALIZED ] ──(POST /invoices)──▶ [ PAID ]
+```mermaid
+flowchart TD
+    %% Estilos de Estados
+    classDef initialStyle fill:#ECEFF1,stroke:#607D8B,stroke-width:2px,color:#263238
+    classDef stepStyle fill:#E3F2FD,stroke:#1E88E5,stroke-width:2px,color:#0D47A1
+    classDef gateStyle fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px,color:#F57F17
+    classDef successStyle fill:#E8F5E9,stroke:#43A047,stroke-width:2px,color:#1B5E20
+    classDef cancelStyle fill:#FFEBEE,stroke:#E53935,stroke-width:2px,color:#B71C1C
+
+    RECEIVED["📥 RECEIVED\n(Ordem Aberta)"]:::initialStyle -->|"Início do Diagnóstico"| IN_DIAGNOSIS["🔍 IN_DIAGNOSIS\n(Diagnóstico Técnico)"]:::stepStyle
+    IN_DIAGNOSIS -->|"Envio para Aprovação"| WAITING_APPROVAL{"⏳ WAITING_APPROVAL\n(Decisão do Cliente)"}:::gateStyle
+    
+    WAITING_APPROVAL -->|"POST /service-orders/{id}/approve (APPROVED)"| APPROVED["✅ APPROVED\n(Orçamento Aceito)"]:::successStyle
+    WAITING_APPROVAL -->|"POST /service-orders/{id}/approve (REFUSED)"| REFUSED["❌ REFUSED\n(Cliente Recusou)"]:::cancelStyle
+    
+    APPROVED -->|"Início dos Reparos"| IN_EXECUTION["🛠️ IN_EXECUTION\n(Serviço em Andamento)"]:::stepStyle
+    REFUSED -->|"Sem Reparos"| CANCELED["🚫 CANCELED\n(OS Cancelada)"]:::cancelStyle
+    
+    IN_EXECUTION -->|"Término dos Serviços"| FINALIZED["🏁 FINALIZED\n(Pronto para Faturamento)"]:::stepStyle
+    FINALIZED -->|"POST /invoices (Fatura Gerada)"| PAID["💰 PAID\n(OS Quitada e Entregue)"]:::successStyle
 ```
 
 > ⚠️ **Regra de Negócio:** A transição a partir de `WAITING_APPROVAL` não pode ser realizada via `PATCH /status`. É mandatório chamar o endpoint específico `POST /service-orders/{id}/approve` enviando a decisão explícita do cliente (`APPROVED` ou `REFUSED`). Para atingir o status final `PAID`, a fatura deve ser gerada via `POST /invoices`.
@@ -483,8 +544,15 @@ O ciclo de vida da OS é protegido por uma máquina de estados com transições 
 
 Cada serviço individual atrelado à OS possui ciclo de progresso próprio:
 
-```
-[ INITIATED ] ──▶ [ PENDING ] ──▶ [ FINALIZED ]
+```mermaid
+flowchart LR
+    classDef initStyle fill:#E1F5FE,stroke:#0288D1,stroke-width:2px,color:#01579B
+    classDef pendStyle fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px,color:#F57F17
+    classDef doneStyle fill:#E8F5E9,stroke:#43A047,stroke-width:2px,color:#1B5E20
+
+    INIT["🏁 INITIATED\n(Serviço Iniciado)"]:::initStyle -->|"Aguardando Insumo / Pausa"| PEND["⏸️ PENDING\n(Pendente / Pausado)"]:::pendStyle
+    PEND -->|"Retomada e Conclusão"| DONE["✅ FINALIZED\n(Item Finalizado)"]:::doneStyle
+    INIT -->|"Execução Direta"| DONE
 ```
 
 ---
