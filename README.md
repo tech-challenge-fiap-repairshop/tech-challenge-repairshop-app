@@ -429,32 +429,6 @@ flowchart LR
 
 ---
 
-### Secrets e Variáveis de Ambiente
-
-As seguintes chaves devem estar configuradas em **Settings > Secrets and variables > Actions** do repositório:
-
-| Secret / Variável | Finalidade | Obrigatório |
-| :--- | :--- | :--- |
-| `AWS_ACCESS_KEY_ID` | Identificador de acesso AWS para autenticação do CLI, ECR e EKS | Sim |
-| `AWS_SECRET_ACCESS_KEY` | Chave secreta de acesso AWS | Sim |
-| `AWS_SESSION_TOKEN` | Token de sessão temporária (necessário para laboratórios AWS Academy / Sandbox) | Opcional |
-| `SPRING_DATASOURCE_USERNAME` | Usuário de acesso ao banco de dados PostgreSQL | Sim |
-| `SPRING_DATASOURCE_PASSWORD` | Senha de acesso ao banco de dados PostgreSQL | Sim |
-| `JWT_SECRET` | Chave simétrica (HMAC SHA-256) para validação dos tokens JWT | Sim |
-| `SONAR_TOKEN` | Token de autenticação da organização no **SonarCloud** | Sim |
-| `SPRING_DATASOURCE_URL` | URL JDBC customizada para testes de fumaça na esteira | Opcional |
-| `SPRING_MAIL_HOST` | Host do serviço SMTP para testes na esteira | Opcional |
-| `SPRING_MAIL_PORT` | Porta do serviço SMTP para testes na esteira | Opcional |
-
-### Pipeline de Destruição Controlada (`destroy.yml`)
-
-Para prevenção de custos em ambientes de teste e laboratórios acadêmicos, o repositório disponibiliza o workflow manual [`.github/workflows/destroy.yml`](.github/workflows/destroy.yml).
-
-- **Mecanismo de Safety Gate:** Exige que o operador informe expressamente a palavra **`DESTRUIR`** (em maiúsculas) no input de confirmação.
-- **Drenagem Segura:** Executa a exclusão ordenada dos workloads no namespace `repairshop` e aguarda 30 segundos para a correta liberação de Network Load Balancers (NLBs) e Elastic Network Interfaces (ENIs) antes do desprovisionamento da VPC.
-
----
-
 ## 🗄️ Banco de Dados e Persistência (PostgreSQL 16)
 
 ### 1. Justificativa Formal da Escolha do PostgreSQL 16 (SGBD Relacional)
@@ -513,11 +487,25 @@ erDiagram
    - Criação de índices de cobertura para chaves estrangeiras e campos de filtro frequente (`idx_service_order_status`, `idx_customer_document`, `idx_vehicle_customer_id`, `idx_execution_service_order`), reduzindo o custo de I/O em até 85% sob carga no RDS.
 
 <div align="center">
-  <img src="docs/delivery/database-er-diagram.png" alt="Diagrama de Entidade e Relacionamento (ERD)" width="850">
+  <img src="docs/infrastructure/database-er-diagram.png" alt="Diagrama de Entidade e Relacionamento (ERD)" width="850">
   <br>
-  <em><small><strong>Figura 4: Diagrama de Entidade e Relacionamento (ERD)</strong></small></em>
+  <em><small><strong>Figura 4: Diagrama de Entidade e Relacionamento do Banco PostgreSQL (ERD)</strong></small></em>
   <br><br>
 </div>
+
+---
+
+### 4. Justificativa da Escolha do Flyway para Versionamento do Banco de Dados
+
+A evolução do banco de dados relacional foi implementada via **Flyway Migration** (`src/main/resources/db/migration/`), estabelecendo uma divisão de responsabilidades limpa:
+
+1. **Separação de Responsabilidades com a Infraestrutura (SoC):**
+   - O **Terraform** (`tech-challenge-repairshop-infra-db-rds`) gerencia unicamente a infraestrutura física gerenciada da AWS (instância RDS, discos gp3, sub-redes privadas e Security Groups).
+   - O **Flyway** (`tech-challenge-repairshop-app`) gerencia a evolução lógica do esquema (tabelas, colunas, chaves estrangeiras e índices). Isso previne que modificações de infraestrutura gerem locks ou `DROP TABLE` acidentais na base de produção.
+2. **Ciclo de Vida Acoplado ao Domínio:**
+   - As migrações executam automaticamente na inicialização dos pods da aplicação no EKS, assegurando que o código Kotlin/Spring Boot sempre opere sobre a versão exata do schema requerido pelas entidades e Value Objects.
+3. **Integridade Garantida via Checksums:**
+   - A tabela `flyway_schema_history` audita cada script SQL executado com checksums SHA-256 e timestamps, garantindo idempotência e reprodutibilidade idêntica no Docker Compose (local), nos Testcontainers (CI) e no RDS (AWS).
 
 ---
 
