@@ -330,15 +330,6 @@ flowchart TD
 | **8. Deploy Contínuo no EKS** | Injeta variáveis/secrets e aplica os manifests Kubernetes (`k8s/`). | Atualiza os Pods com estratégia *RollingUpdate* sem indisponibilidade de serviço (*zero-downtime*). |
 | **9. Rollout Status Verification** | Aguarda confirmação de prontidão (`kubectl rollout status`). | Previne que deploys com falhas de inicialização ou crashloop passem despercebidos. |
 
-### 💡 Decisão de Arquitetura: Estratégia de Único Job (Single Job)
-
-> **Decisão Arquitetural:** Todo o fluxo de CI/CD foi consolidado em um **único JOB contínuo (`runs-on: ubuntu-latest`)**.
-> 
-> **Motivação Técnica:**
-> 1. **Economia de Minutos e Quota da Conta do GitHub:** A divisão da esteira em múltiplos jobs independentes consome minutos de runner adicionais para cada estágio (tempo de provisionamento de máquina virtual, download de imagens base e checkout). Ao unificar em um único job, o tempo total de execução cai pela metade, economizando a cota mensal da conta.
-> 2. **Reaproveitamento de Cache em Memória e Disco:** Os artefatos compilados pelo Maven, dependências e layers do Docker permanecem no sistema de arquivos local do runner durante todo o ciclo, eliminando o overhead de rede com `upload-artifact` e `download-artifact`.
-> 3. **Consistência de Credenciais:** As sessões temporárias autenticadas na AWS e no Kubernetes são compartilhadas de forma contínua e segura durante toda a execução.
-
 ---
 
 ### 🔐 Secrets do GitHub Actions (AWS Academy & Aplicação)
