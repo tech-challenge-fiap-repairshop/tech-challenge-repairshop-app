@@ -341,6 +341,67 @@ flowchart TD
 
 ---
 
+### 🔐 Secrets do GitHub Actions (AWS Academy & Aplicação)
+
+Para que as esteiras de CI/CD executem o build, testes, análise de segurança, push no Amazon ECR e deploy no Amazon EKS com sucesso, o repositório requer as seguintes **Actions Secrets** (*Settings > Secrets and variables > Actions*):
+
+#### 1. Credenciais AWS (Obrigatórias para Deploy no ECR / EKS)
+> [!TIP]
+> Em contas de estudantes da **AWS Academy**, as credenciais são temporárias (sessões de 3 a 4 horas). Por essa razão, a inclusão do `AWS_SESSION_TOKEN` é mandatória para evitar falhas de `ExpiredToken`.
+
+| Secret | Obrigatório | Descrição |
+| :--- | :---: | :--- |
+| `AWS_ACCESS_KEY_ID` | **Sim** | Chave de acesso temporária fornecida no painel do AWS Academy. |
+| `AWS_SECRET_ACCESS_KEY` | **Sim** | Chave secreta de acesso correspondente. |
+| `AWS_SESSION_TOKEN` | **Sim** | Token da sessão temporária (necessário para o `LabRole`). |
+
+💡 *Dica de Automação:* Utilize o script [`update_aws_secrets.ps1`](https://github.com/tech-challenge-fiap-repairshop/tech-challenge-wiki-docs/blob/main/update_aws_secrets.ps1) disponível no repositório `tech-challenge-wiki-docs` para atualizar essas credenciais em todos os 7 repositórios da organização simultaneamente via GitHub CLI.
+
+#### 2. Secrets da Aplicação e Banco de Dados (Opcionais com Fallback Seguro)
+
+| Secret | Obrigatório | Padrão / Fallback | Finalidade |
+| :--- | :---: | :--- | :--- |
+| `SPRING_DATASOURCE_USERNAME` | Não | `repairshop` | Usuário de autenticação no PostgreSQL RDS. |
+| `SPRING_DATASOURCE_PASSWORD` | Não | `repairshop` | Senha de autenticação no PostgreSQL RDS. |
+| `JWT_SECRET` | Não | *Chave embutida no secret.yaml* | Chave simétrica HMAC-SHA256 para assinatura e validação de tokens JWT. |
+
+---
+
+### 🌐 Variáveis de Ambiente Necessárias (Pipeline & Kubernetes)
+
+A esteira e os contêineres operam com as seguintes variáveis de configuração:
+
+#### 1. Variáveis de Execução da Pipeline (`env` no `ci.yml`)
+
+| Variável | Valor Padrão | Descrição |
+| :--- | :---: | :--- |
+| `AWS_REGION` | `us-east-1` | Região AWS onde o EKS, ECR e RDS estão provisionados. |
+| `JAVA_VERSION` | `24` | Versão do OpenJDK utilizada na compilação do projeto. |
+| `JAVA_DISTRIBUTION` | `temurin` | Distribuição Eclipse Temurin gerenciada pelo GitHub Actions. |
+
+#### 2. Variáveis de Ambiente do Container (`k8s/configmap/` e `deployment.yaml`)
+
+| Variável | Origem | Descrição |
+| :--- | :--- | :--- |
+| `SPRING_PROFILES_ACTIVE` | `configmap-{env}.yaml` | Perfil de execução Spring Boot ativo (`dev`, `hml`, `prd`). |
+| `SPRING_DATASOURCE_URL` | Injeção dinâmica no deploy | URL JDBC resolvida dinamicamente para o RDS (`jdbc:postgresql://<rds-host>:5432/repairshop`). |
+| `OTEL_SERVICE_NAME` | `k8s/deployment.yaml` | Identificador do serviço na telemetria (`repairshop-app`). |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `k8s/deployment.yaml` | Endpoint do OpenTelemetry Collector interno (`http://otel-collector:4317`). |
+| `OTEL_EXPORTER_OTLP_PROTOCOL` | `k8s/deployment.yaml` | Protocolo de transporte de telemetria (`grpc`). |
+| `OTEL_LOGS_EXPORTER` / `TRACES` / `METRICS` | `k8s/deployment.yaml` | Definidos como `otlp` para despacho unificado de observabilidade. |
+
+---
+
+### 💥 Pipeline de Destruição Controlada (`destroy.yml`)
+
+Para prevenir cobranças desnecessárias na conta AWS e liberar as interfaces de rede (ENIs) associadas aos Load Balancers antes de destruir o cluster ou a VPC, o repositório inclui a esteira de teardown automatizada [`.github/workflows/destroy.yml`](.github/workflows/destroy.yml):
+
+- **Gatilho:** Manual via `workflow_dispatch`.
+- **Safety Gate:** Exige a digitação explícita de `DESTRUIR` na confirmação para evitar exclusões acidentais.
+- **Ação Executada:** Remove de forma limpa os recursos do namespace `repairshop` (Deployments, Services NLB, ConfigMaps e Observabilidade) e aguarda 30 segundos para liberação das ENIs na AWS.
+
+---
+
 ## 🔀 Governança de Branches e Ciclo de Promoção (Git Flow)
 
 A governança do repositório segue isolamento estrito com aprovação controlada para promoção de ambientes:
