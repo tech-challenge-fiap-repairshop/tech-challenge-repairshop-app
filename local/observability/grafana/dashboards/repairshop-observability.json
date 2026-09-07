@@ -950,10 +950,12 @@
       "type": "logs",
       "options": {
         "enableLogDetails": true,
-        "showLabels": true,
+        "showLabels": false,
         "showTime": true,
         "sortOrder": "Descending",
-        "wrapLogMessage": true
+        "wrapLogMessage": true,
+        "showCommonLabels": false,
+        "prettifyLogMessage": true
       },
       "targets": [
         {
@@ -962,7 +964,7 @@
             "uid": "Loki"
           },
           "editorMode": "code",
-          "expr": "{service_name=~\"repairshop.*\"}",
+          "expr": "{job=~\"repairshop.*\"} | json",
           "maxLines": 500,
           "queryType": "range",
           "refId": "A"

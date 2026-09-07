@@ -959,10 +959,12 @@ data:
           "type": "logs",
           "options": {
             "enableLogDetails": true,
-            "showLabels": true,
+            "showLabels": false,
             "showTime": true,
             "sortOrder": "Descending",
-            "wrapLogMessage": true
+            "wrapLogMessage": true,
+            "showCommonLabels": false,
+            "prettifyLogMessage": true
           },
           "targets": [
             {
@@ -971,7 +973,7 @@ data:
                 "uid": "Loki"
               },
               "editorMode": "code",
-              "expr": "{service_name=~\"repairshop.*\"}",
+              "expr": "{job=~\"repairshop.*\"} | json",
               "maxLines": 500,
               "queryType": "range",
               "refId": "A"
@@ -1877,10 +1879,13 @@ data:
           "title": "Lambda Auth Real-Time Execution Logs",
           "type": "logs",
           "options": {
-            "showLabels": true,
-            "wrapLogMessage": true,
             "enableLogDetails": true,
-            "sortOrder": "Descending"
+            "showLabels": false,
+            "showTime": true,
+            "sortOrder": "Descending",
+            "wrapLogMessage": true,
+            "showCommonLabels": false,
+            "prettifyLogMessage": true
           },
           "targets": [
             {
@@ -1889,7 +1894,7 @@ data:
                 "uid": "Loki"
               },
               "editorMode": "code",
-              "expr": "{service_name=~\"repairshop-lambda-auth.*|.*auth.*|repairshop-app\"} |= \"\"",
+              "expr": "{job=~\"repairshop.*|.*auth.*\"} | json",
               "refId": "A"
             }
           ]

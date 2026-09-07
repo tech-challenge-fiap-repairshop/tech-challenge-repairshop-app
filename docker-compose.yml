@@ -39,7 +39,7 @@ services:
     container_name: otel-collector
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
-      - ./observability/configs/otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+      - ./local/observability/configs/otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
     ports:
       - "4317:4317" # OTLP gRPC receiver
       - "4318:4318" # OTLP HTTP receiver
@@ -62,7 +62,7 @@ services:
       SPAN_STORAGE_TYPE: "memory"
       MEMORY_MAX_TRACES: "100000"
     volumes:
-      - ./observability/configs/jaeger-sampling-strategies.json:/etc/jaeger/sampling-strategies.json:ro
+      - ./local/observability/configs/jaeger-sampling-strategies.json:/etc/jaeger/sampling-strategies.json:ro
     ports:
       - "16686:16686" # Web UI
       - "14268:14268" # HTTP Ingest
@@ -77,7 +77,7 @@ services:
       - "--config.file=/etc/prometheus/prometheus.yml"
       - "--web.enable-lifecycle"
     volumes:
-      - ./observability/configs/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./local/observability/configs/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
     ports:
       - "9090:9090"
@@ -92,7 +92,7 @@ services:
     container_name: loki
     command: ["-config.file=/etc/loki/local-config.yaml"]
     volumes:
-      - ./observability/configs/loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - ./local/observability/configs/loki-config.yaml:/etc/loki/local-config.yaml:ro
       - loki_data:/loki
     ports:
       - "3100:3100"
@@ -110,8 +110,8 @@ services:
       GF_AUTH_ANONYMOUS_ENABLED: "true"
       GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
     volumes:
-      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - ./local/observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./local/observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
       - grafana_data:/var/lib/grafana
     ports:
       - "3000:3000"
