@@ -353,7 +353,7 @@ Itens resolvidos marcados com ~~tachado~~ e data de resolucao.
 
 ## ALTA — Fase 2: Requisitos do Tech Challenge
 
-> Itens identificados na análise do PDF `14SOAT - Fase 2 - Tech challenge.pdf` utilizando os especialistas de `docs/sdd/`.
+> Itens identificados na análise do PDF `14SOAT - Fase 2 - Tech challenge.pdf` utilizando as diretrizes dos especialistas de SDD (centralizadas no repositório `tech-challenge-wiki-docs/sdd`).
 > Estes itens são **requisitos obrigatórios** para entrega da Fase 2.
 
 ### ~~BKL-050: Listagem de OS com ordenação por prioridade de status~~ (RESOLVIDO 2026-06-29)
