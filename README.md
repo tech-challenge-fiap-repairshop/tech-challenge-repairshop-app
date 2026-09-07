@@ -9,7 +9,7 @@
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-EKS-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Instrumented-F5A800?logo=opentelemetry&logoColor=white)](https://opentelemetry.io/)
-[![Coverage](https://img.shields.io/badge/Coverage-80%25+-brightgreen)](docs/sonar/)
+[![Coverage](https://img.shields.io/badge/Coverage-80%25+-brightgreen)](docs/delivery/sonar/)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=alexandre-agamin_tech-challenge-fiap&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=alexandre-agamin_tech-challenge-fiap)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -130,7 +130,7 @@ A modelagem do sistema seguiu rigorosamente os preceitos de DDD estratégico e t
 - **User & Security (`user` / `core`):** Gerenciamento de credenciais e validação de tokens JWT.
 
 <div align="center">
-  <img src="docs/delivery/fase3/diagrama_entidades_e_contextos.png" alt="Diagrama de Entidades e Contextos DDD" width="850">
+  <img src="docs/delivery/clean_arquiteture/diagrama_entidades_e_contextos.png" alt="Diagrama de Entidades e Contextos DDD" width="850">
   <br>
   <em><small><strong>Figura 1: Diagrama de Entidades e Contextos do Domínio (DDD)</strong></small></em>
   <br><br>
@@ -159,7 +159,7 @@ src/main/kotlin/com/cao/repairshop/
 - **`infra` (Camada Externa de I/O):** Implementações concretas de Gateways, Controllers REST (`Spring Web`), DTOs com validações Bean Validation e mapeamentos de persistência com `Spring Data JPA` e `Hibernate`.
 
 <div align="center">
-  <img src="docs/delivery/fase3/diagrama_arquitetura.png" alt="Diagrama de Camadas da Clean Architecture" width="850">
+  <img src="docs/delivery/clean_arquiteture/diagrama_arquitetura.png" alt="Diagrama de Camadas da Clean Architecture" width="850">
   <br>
   <em><small><strong>Figura 2: Estrutura em Camadas da Clean Architecture no Backend</strong></small></em>
   <br><br>
@@ -174,7 +174,7 @@ src/main/kotlin/com/cao/repairshop/
 A aplicação opera conteinerizada e orquestrada no **Amazon Elastic Kubernetes Service (EKS)**, integrando-se aos recursos gerenciados da AWS através de rede VPC segura.
 
 <div align="center">
-  <img src="docs/infrastructure/repairshop-diagrama-infra-cloud.svg" alt="Diagrama de Infraestrutura Cloud e Orquestração EKS" width="900">
+  <img src="docs/delivery/infrastructure/repairshop-diagrama-infra-cloud.svg" alt="Diagrama de Infraestrutura Cloud e Orquestração EKS" width="900">
   <br>
   <em><small><strong>Figura 3: Topologia Integrada da Infraestrutura AWS e Orquestração Kubernetes</strong></small></em>
   <br><br>
@@ -213,14 +213,19 @@ k8s/
 │   ├── loki-config.yaml
 │   ├── jaeger-config.yaml
 │   ├── grafana-datasources-config.yaml
+│   ├── grafana-dashboards-provider-config.yaml
 │   └── grafana-dashboards-config.yaml
 │
-└── configmap/                  # ⚙️ ConfigMaps por Ambiente
+└── configmap/                  # ⚙️ ConfigMaps por Ambiente AWS
     ├── configmap-dev.yaml      # ConfigMap DEV (Mailpit ativo, log DEBUG)
     ├── configmap-hml.yaml      # ConfigMap HML (log INFO)
-    ├── configmap-prd.yaml      # ConfigMap PRD (SMTP real, log INFO)
-    ├── configmap-local.yaml    # ConfigMap Local (Kind / Docker Desktop)
-    └── postgres-local.yaml     # Pod Postgres para testes locais sem AWS
+    └── configmap-prd.yaml      # ConfigMap PRD (SMTP real, log INFO)
+
+local/                          # 🚀 Recursos e Configurações Exclusivas do Ambiente Local
+├── kustomization.yaml          # Kustomize para o ambiente local (sem duplicar manifestos)
+├── configmap-local.yaml        # ConfigMap do ambiente local (Kind / Docker Desktop)
+├── postgres-local.yaml         # Pod e Service Postgres para testes locais sem AWS
+└── observability/              # Configurações e dashboards do Docker Compose local
 ```
 
 ### Deploy no Kubernetes (EKS e Local)
@@ -245,18 +250,34 @@ kubectl apply -f k8s/configmap/configmap-dev.yaml
 kubectl rollout status deployment/repairshop-app -n repairshop --timeout=5m
 ```
 
-#### 2. Deploy Local (Docker Desktop / Kind / Minikube)
+#### 2. Deploy Local Unificado via Kustomize (Docker Desktop / Kind / Minikube)
+
+O projeto disponibiliza um overlay declarativo no diretório [`local/`](local/) contendo **apenas** o arquivo [`kustomization.yaml`](local/kustomization.yaml). Ele reutiliza diretamente todos os manifestos originais de `k8s/` sem nenhuma duplicação de arquivos, aplicando dinamicamente a imagem local (`repairshop:latest`), `imagePullPolicy: IfNotPresent` e os recursos locais (`configmap-local.yaml` e `postgres-local.yaml`):
 
 ```bash
-# 1. Aplicar namespace e configurações
-kubectl apply -f k8s/namespace.yaml
-kubectl apply -f k8s/configs/
-kubectl apply -f k8s/
+# 1. Realizar o build da imagem Docker localmente
+docker build -t repairshop:latest .
 
-# 2. Aplicar ConfigMap local e banco Postgres local
-kubectl apply -f k8s/configmap/configmap-local.yaml
-kubectl apply -f k8s/configmap/postgres-local.yaml
+# 2. Subir a stack completa reaproveitando k8s/ sem duplicar nenhum arquivo
+kubectl kustomize --load-restrictor LoadRestrictionsNone local | kubectl apply -f -
+
+# 3. Acompanhar a inicialização e validação das migrações do Flyway
+kubectl rollout status deployment/repairshop-app -n repairshop --timeout=5m
 ```
+
+> 💡 **Acesso aos Painéis Locais via Port-Forward:**
+> ```bash
+> kubectl port-forward svc/repairshop-service 8080:8080 -n repairshop  # API / Swagger UI
+> kubectl port-forward svc/grafana 3000:3000 -n repairshop             # Grafana Dashboards
+> kubectl port-forward svc/jaeger 16686:16686 -n repairshop           # Jaeger Tracing UI
+> kubectl port-forward svc/mailpit 8025:8025 -n repairshop            # Mailpit Webmail
+> ```
+> Para desmontar o ambiente local por completo:
+> ```bash
+> kubectl kustomize --load-restrictor LoadRestrictionsNone local | kubectl delete -f -
+> # ou simplesmente:
+> kubectl delete namespace repairshop
+> ```
 
 ---
 
@@ -478,7 +499,7 @@ erDiagram
    - Criação de índices de cobertura para chaves estrangeiras e campos de filtro frequente (`idx_service_order_status`, `idx_customer_document`, `idx_vehicle_customer_id`, `idx_execution_service_order`), reduzindo o custo de I/O em até 85% sob carga no RDS.
 
 <div align="center">
-  <img src="docs/infrastructure/database-er-diagram.png" alt="Diagrama de Entidade e Relacionamento (ERD)" width="850">
+  <img src="docs/delivery/infrastructure/database-er-diagram.png" alt="Diagrama de Entidade e Relacionamento (ERD)" width="850">
   <br>
   <em><small><strong>Figura 4: Diagrama de Entidade e Relacionamento do Banco PostgreSQL (ERD)</strong></small></em>
   <br><br>
@@ -574,7 +595,7 @@ flowchart TD
 > ⚠️ **Regra de Negócio:** A transição a partir de `WAITING_APPROVAL` não pode ser realizada via `PATCH /status`. É mandatório chamar o endpoint específico `POST /service-orders/{id}/approve` enviando a decisão explícita do cliente (`APPROVED` ou `REFUSED`). Para atingir o status final `PAID`, a fatura deve ser gerada via `POST /invoices`.
 
 <div align="center">
-  <img src="docs/delivery/status_chain.png" alt="Máquina de Estados da Ordem de Serviço" width="850">
+  <img src="docs/delivery/infrastructure/status_chain.png" alt="Máquina de Estados da Ordem de Serviço" width="850">
   <br>
   <em><small><strong>Figura 5: Máquina de Estados do Ciclo de Vida da Ordem de Serviço</strong></small></em>
   <br><br>
@@ -601,7 +622,7 @@ flowchart LR
 
 ### Stack Completa via Docker Compose
 
-O projeto possui um [`docker-compose.yml`](docker-compose.yml) completo que inicializa a aplicação, banco de dados, servidor de e-mail mock e toda a infraestrutura de observabilidade:
+O projeto possui um [`docker-compose.yml`](docker-compose.yml) completo que inicializa a aplicação, banco de dados PostgreSQL 16, servidor de e-mail mock (Mailpit) e toda a infraestrutura de observabilidade (OTel Collector, Prometheus, Jaeger, Loki e Grafana):
 
 ```bash
 # 1. Clone o repositório
@@ -614,9 +635,19 @@ cd tech-challenge-repairshop-app
 # 3. Subir todos os serviços com build automático do container
 docker compose up --build -d
 
-# 4. Acompanhar a inicialização do backend
+# 4. Acompanhar a inicialização e logs do backend
 docker compose logs -f app
+
+# 5. Para parar e desmontar os serviços
+docker compose down
 ```
+
+> [!TIP]
+> **Base Limpa / Migrações do Flyway:** Se você executou versões anteriores localmente e encontrar erro de incompatibilidade de checksum nas migrações do Flyway (`Migration checksum mismatch`), suba com volumes limpos executando:
+> ```bash
+> docker compose down -v
+> docker compose up --build -d
+> ```
 
 ### 🌐 Portas e Painéis de Acesso
 
@@ -632,23 +663,31 @@ docker compose logs -f app
 
 ### 🚀 Fluxo de Primeiro Uso (Swagger UI / Postman)
 
-A maior parte dos endpoints requer autenticação via token JWT com a role `ATTENDANT`. Para testar o fluxo de ponta a ponta:
+A maior parte dos endpoints requer autenticação via token JWT com a role `ATTENDANT`. Na **Fase 3**, a autenticação foi padronizada em torno do **CPF** como credencial de identificação primária (integrada com a função Serverless AWS Lambda).
 
 > 💡 **Coleção Postman Pronta:** Utilize os arquivos disponíveis no repositório:
 > - [Ambiente Local do Postman](docs/postman/Local.postman_environment.json)
 > - [Collection Completa do Postman](docs/postman/Tech_Challenge_Fiap_-_Completo.postman_collection.json)
 
-1. **Cadastrar Usuário:** No Swagger UI, acesse `POST /auth/register`:
+1. **Cadastrar Usuário Atendente:** No Swagger UI ou Postman, acesse `POST /auth/register`:
    ```json
    {
      "name": "Administrador",
      "function": "ATTENDANT",
+     "cpf": "52998224725",
      "email": "admin@shop.com",
+     "phone": "+55 11 99999-9999",
      "password": "SecurePass123!"
    }
    ```
-2. **Obter Token JWT:** Acesse `POST /auth/login` enviando o e-mail e senha cadastrados.
-3. **Autorizar no Swagger:** Copie o token retornado na resposta, clique no botão **Authorize** (ícone do cadeado no canto superior direito do Swagger) e cole o token. A partir deste momento, todas as requisições incluirão automaticamente o header `Authorization: Bearer <token>`.
+2. **Obter Token JWT:** Acesse `POST /auth/login` enviando o CPF e a senha cadastrados:
+   ```json
+   {
+     "cpf": "52998224725",
+     "password": "SecurePass123!"
+   }
+   ```
+3. **Autorizar no Swagger:** Copie o token retornado na propriedade `token`, clique no botão **Authorize** (ícone do cadeado no canto superior direito do Swagger) e cole o token. A partir deste momento, todas as requisições incluirão automaticamente o header `Authorization: Bearer <token>`.
 
 ---
 
@@ -669,23 +708,18 @@ A base de código conta com uma ampla suíte de testes unitários e de integraç
 
 ### Segurança e DevSecOps
 
-- **Análise Estática (SonarCloud):** Relatórios de qualidade, débito técnico e cobertura integrados ao Quality Gate da pipeline (evidências em [`docs/sonar/`](docs/sonar/)).
+- **Análise Estática (SonarCloud):** Relatórios de qualidade, débito técnico e cobertura integrados ao Quality Gate da pipeline (evidências em [`docs/delivery/sonar/`](docs/delivery/sonar/)).
 - **Scan de Vulnerabilidades de Containers (Trivy):** Análise automatizada de vulnerabilidades conhecidas (CVEs) em bibliotecas e camadas do SO na esteira CI/CD.
-- **Dynamic Application Security Testing (OWASP ZAP):** Relatório de auditoria DAST para verificação de vulnerabilidades web (disponível em [`docs/owaspzap/2026-05-01-ZAP-Report-.html`](docs/owaspzap/2026-05-01-ZAP-Report-.html)).
-- **Testes de Carga HPA:** Scripts de estresse com Locust disponíveis em [`docs/hpa_stress/locustfile.py`](docs/hpa_stress/locustfile.py).
+- **Dynamic Application Security Testing (OWASP ZAP):** Relatório de auditoria DAST para verificação de vulnerabilidades web (disponível em [`docs/delivery/owaspzap/2026-05-01-ZAP-Report-.html`](docs/delivery/owaspzap/2026-05-01-ZAP-Report-.html)).
+- **Testes de Carga HPA:** Scripts de estresse com Locust disponíveis em [`docs/delivery/hpa_stress/locustfile.py`](docs/delivery/hpa_stress/locustfile.py).
 
 ---
 
 ## 📚 Documentação DDD e Artefatos Complementares
 
-- 📄 **[Dicionário de Linguagem Ubíqua](docs/delivery/dicionario-linguagem-ubiqua.md):** Glossário oficial dos termos e conceitos do domínio da oficina.
-- 🗺️ **[Artefatos do Miro](docs/delivery/miro/):** Diagramas exportados do Event Storming, Storytelling e fluxos de negócio.
-- 👥 **[Especificações por Papel SDD (Software Design Document)](docs/sdd/):**
-  - [Software Architect](docs/sdd/software_architect.md)
-  - [DevSecOps Engineer](docs/sdd/devsecops_engineer.md)
-  - [Tech Lead](docs/sdd/tech_lead.md)
-  - [QA Engineer](docs/sdd/qa_engineer.md)
-  - [Product Owner](docs/sdd/product_owner.md)
+- 📄 **[Dicionário de Linguagem Ubíqua](docs/delivery/domain_driven_design/dicionario-linguagem-ubiqua.md):** Glossário oficial dos termos e conceitos do domínio da oficina.
+- 🗺️ **[Artefatos de Domain-Driven Design](docs/delivery/domain_driven_design/):** Diagramas exportados do Event Storming, Storytelling e fluxos de negócio.
+- 👥 **[Especificações por Papel SDD (Software Design Document)](https://github.com/fiap-postech-repairshop/tech-challenge-wiki-docs/tree/main/sdd):** Diretrizes, responsabilidades e *Definition of Done* por papel técnico (Arquiteto, DevSecOps, Tech Lead, QA e PO), centralizadas no repositório [`tech-challenge-wiki-docs`](https://github.com/fiap-postech-repairshop/tech-challenge-wiki-docs).
 
 ---
 
