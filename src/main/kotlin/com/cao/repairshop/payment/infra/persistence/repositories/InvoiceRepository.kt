@@ -18,6 +18,12 @@ interface InvoiceRepository : JpaRepository<InvoiceEntity, UUID> {
     fun findByServiceOrderId(serviceOrderId: UUID): InvoiceEntity?
     fun findByInvoiceNumber(invoiceNumber: String): InvoiceEntity?
     fun existsByServiceOrderId(serviceOrderId: UUID): Boolean
+
+    @org.springframework.data.jpa.repository.Query("SELECT COALESCE(SUM(i.price), 0) FROM InvoiceEntity i")
+    fun getTotalRevenue(): java.math.BigDecimal?
+
+    @org.springframework.data.jpa.repository.Query("SELECT COALESCE(AVG(i.price), 0) FROM InvoiceEntity i")
+    fun getAverageTicket(): java.math.BigDecimal?
 }
 
 

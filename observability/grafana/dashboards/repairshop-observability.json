@@ -21,6 +21,18 @@
   "links": [
     {
       "asDropdown": false,
+      "icon": "chart-line",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": false,
+      "title": "📈 Executive & Business Dashboard",
+      "tooltip": "Abrir dashboard executivo e gerencial de métricas do negócio",
+      "type": "link",
+      "url": "/d/repairshop-business-metrics"
+    },
+    {
+      "asDropdown": false,
       "icon": "bolt",
       "includeVars": true,
       "keepTime": true,
