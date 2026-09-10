@@ -13,13 +13,14 @@
 
 *MVP do back-end para gestão de ordens de serviço, clientes, veículos e peças de uma oficina mecânica.*
 
-**POSTECH 15SOAT — Tech Challenge Fase 2 — Grupo CAO**
+**POSTECH 15SOAT — Tech Challenge (Fase 2 & Fase 3) — Grupo CAO**
 
 ---
 
 ## Sumário
 
 - [Sobre o Projeto](#sobre-o-projeto)
+- [Decisões Arquiteturais (ADRs) e Propostas Técnicas (RFCs) - Fase 3](#-decisões-arquiteturais-adrs-e-propostas-técnicas-rfcs---fase-3)
 - [Funcionalidades](#funcionalidades)
 - [Arquitetura](#arquitetura)
   - [Provisionamento Terraform](#provisionamento-terraform)
@@ -43,17 +44,19 @@
 
 ## Sobre o Projeto
 
-Após a implantação do sistema inicial para gestão da oficina mecânica (Fase 1), houve um ganho significativo de eficiência no atendimento. No entanto, com o aumento da demanda e a expansão para novas unidades, surgiu o desafio de garantir alta disponibilidade e suportar grandes volumes de operações simultâneas em horários de pico. 
+O projeto foi concebido e evoluído ao longo das fases da pós-graduação **POSTECH 15SOAT**:
+- **Fase 1:** Desenvolvimento do MVP inicial com domínio rico e regras de negócio da oficina mecânica.
+- **Fase 2:** Containerização com Docker, orquestração via Kubernetes (EKS), infraestrutura como código (Terraform) e esteiras completas de CI/CD com GitHub Actions.
+- **Fase 3 (Atual):** Desmembramento da arquitetura em repositórios especializados, isolamento do microsserviço serverless de autenticação (AWS Lambda Java 21), ponto único de entrada com AWS API Gateway (HTTP API v2), observabilidade unificada com OpenTelemetry (OTel Collector, Prometheus, Jaeger, Loki e Grafana), e formalização integral de todas as propostas e escolhas de engenharia através de [RFCs](RFCs/) e [ADRs](ADRs/).
 
-O projeto atual, entregue para o **Tech Challenge Fase 2** da pós-graduação **POSTECH 15SOAT**, foca na evolução arquitetural e de infraestrutura da aplicação. O objetivo principal agora transcende as regras de negócio: é garantir que o sistema escale de maneira resiliente, automatizada e sustentável.
+### Objetivos da Fase 2 & 3
 
-### Objetivos da Fase 2
-
-- **Evolução da Infraestrutura:** Reduzir riscos operacionais provendo um ambiente escalável e dinâmico na nuvem.
+- **Evolução da Infraestrutura & Nuvem (Fase 3):** Desmembramento em 6 repositórios especializados e descentralização de Security Groups (Well-Architected).
+- **Segurança & Serverless (Fase 3):** Isolamento da autenticação em AWS Lambda com JWT Stateless e AWS API Gateway HTTP v2.
+- **Observabilidade Total (Fase 3):** OpenTelemetry Java Agent sem poluição de código de negócio, exportação OTLP, traces distribuídos com Jaeger e Dashboard Executivo no Grafana.
+- **Governança & Rastreabilidade Técnica (Fase 3):** Padronização e documentação de todas as propostas e decisões técnicas em [RFCs](RFCs/) e [ADRs](ADRs/).
 - **Orquestração e Alta Disponibilidade:** Conteinerizar a aplicação (Docker) e orquestrá-la via **Kubernetes** (EKS), utilizando o *Horizontal Pod Autoscaler (HPA)* para absorver variações de carga.
-- **Automação (IaC e CI/CD):** Provisionar toda a estrutura na AWS (VPC, Cluster, RDS, ECR) via **Terraform** e estabelecer uma pipeline completa de CI/CD para automação dos deploys.
-- **Qualidade e Refatoração:** Refinar a base de código orientada pela **Clean Architecture** e garantir altíssima cobertura de testes automatizados (unitários e de integração) nos fluxos críticos da aplicação.
-- **Evolução do Domínio:** Aprimorar o controle de Ordens de Serviço com filtros refinados, delegação de aprovação de orçamento externa e implementação do envio de notificações por e-mail a cada mudança de status (via Mailpit).
+- **Qualidade e Refatoração:** Refinar a base de código orientada pela **Clean Architecture** e garantir altíssima cobertura de testes automatizados (unitários e de integração com Testcontainers).
 
 ---
 
@@ -119,8 +122,36 @@ k8s/
 ```
 
 > [!NOTE]
-> **Infraestrutura em Nuvem Desacoplada (Fase 3):**
-> Toda a infraestrutura AWS de nuvem (VPC, RDS PostgreSQL, Cluster EKS, Lambda Auth e API Gateway) é provisionada e gerenciada de forma desacoplada em repositórios dedicados de infraestrutura da organização. Para detalhes de subida e documentação completa, consulte a [Wiki da Organização](https://github.com/fiap-postech-repairshop/tech-challenge-wiki-docs).
+> **Infraestrutura em Nuvem Desacoplada e Governança (Fase 3):**
+> Toda a infraestrutura AWS de nuvem (VPC, RDS PostgreSQL, Cluster EKS, Lambda Auth e API Gateway) é provisionada e gerenciada de forma desacoplada em repositórios dedicados de infraestrutura da organização. Todas as propostas técnicas e decisões de arquitetura da Fase 3 estão formalizadas e disponíveis em [**`RFCs/`**](RFCs/) e [**`ADRs/`**](ADRs/).
+
+---
+
+## 🏛️ Decisões Arquiteturais (ADRs) e Propostas Técnicas (RFCs) - Fase 3
+
+Durante a **Fase 3** do projeto, todas as escolhas de arquitetura, segurança, infraestrutura em nuvem, esteiras de CI/CD e observabilidade foram registradas e amadurecidas através de **RFCs (Request for Comments)** e formalizadas como **ADRs (Architecture Decision Records)**:
+
+- 📜 **[RFCs (Request for Comments)](RFCs/):** Propostas técnicas abertas para discussão da equipe, detalhando problemas, alternativas avaliadas, trade-offs e pontos em aberto. Consulte o catálogo completo em [`RFCs/README.md`](RFCs/README.md).
+- 🏛️ **[ADRs (Architecture Decision Records)](ADRs/):** Registros formais e imutáveis das decisões adotadas (template Michael Nygard), detalhando contexto, decisão, consequências e mitigações. Consulte o catálogo completo em [`ADRs/README.md`](ADRs/README.md).
+
+### 📑 Catálogo Integrado de RFCs e ADRs
+
+| ID | Decisão / Proposta de Arquitetura | RFC (Proposta Técnica) | ADR (Decisão Formal) | Domínio / Área |
+| :---: | :--- | :---: | :---: | :--- |
+| **001** | Adoção de Kotlin e Spring Boot com Clean Architecture e DDD | [RFC-001](RFCs/RFC-001-adocao-kotlin-spring-boot-clean-architecture.md) | [ADR-001](ADRs/ADR-001-linguagem-e-framework-aplicacao-principal.md) | Aplicação / Core |
+| **002** | Banco de Dados Relacional PostgreSQL via AWS RDS e Flyway | [RFC-002](RFCs/RFC-002-banco-de-dados-relacional-postgresql-rds.md) | [ADR-002](ADRs/ADR-002-banco-de-dados-relacional-postgresql.md) | Persistência / Dados |
+| **003** | Desmembramento em Múltiplos Repositórios Especializados e Governança Git | [RFC-003](RFCs/RFC-003-desmembramento-em-micro-repositorios-e-governanca-git.md) | [ADR-003](ADRs/ADR-003-desmembramento-em-micro-repositorios-e-governanca-git.md) | Governança / Repositórios |
+| **004** | Provisionamento de IaC com Terraform e Segregação de Ambientes | [RFC-004](RFCs/RFC-004-infraestrutura-como-codigo-terraform-e-ambientes.md) | [ADR-004](ADRs/ADR-004-infraestrutura-como-codigo-terraform-e-ambientes.md) | Infraestrutura / IaC |
+| **005** | Topologia de Rede VPC Unificada e Security Groups Descentralizados | [RFC-005](RFCs/RFC-005-topologia-de-rede-vpc-e-security-groups-descentralizados.md) | [ADR-005](ADRs/ADR-005-topologia-de-rede-vpc-e-security-groups-descentralizados.md) | Redes / Segurança |
+| **006** | Orquestração de Contêineres com AWS EKS e Autoscaling via HPA | [RFC-006](RFCs/RFC-006-orquestracao-de-conteineres-com-kubernetes-aws-eks.md) | [ADR-006](ADRs/ADR-006-orquestracao-de-conteineres-com-kubernetes-aws-eks.md) | Computação / Orquestração |
+| **007** | Isolamento do Serviço de Autenticação em AWS Lambda e JWT Stateless | [RFC-007](RFCs/RFC-007-microsservico-serverless-de-autenticacao-aws-lambda-auth.md) | [ADR-007](ADRs/ADR-007-microsservico-serverless-de-autenticacao-aws-lambda-auth.md) | Segurança / Serverless |
+| **008** | Ponto Único de Entrada com AWS API Gateway (HTTP API v2) | [RFC-008](RFCs/RFC-008-ponto-unico-de-entrada-com-aws-api-gateway.md) | [ADR-008](ADRs/ADR-008-ponto-unico-de-entrada-com-aws-api-gateway.md) | Ingress / Gateway |
+| **009** | Pilha de Observabilidade Unificada com OpenTelemetry, Prometheus, Jaeger e Loki | [RFC-009](RFCs/RFC-009-pilha-de-observabilidade-unificada-opentelemetry.md) | [ADR-009](ADRs/ADR-009-pilha-de-observabilidade-unificada-opentelemetry.md) | Observabilidade / Telemetria |
+| **010** | Esteira CI/CD com GitHub Actions, Testcontainers, SonarCloud e Trivy | [RFC-010](RFCs/RFC-010-esteira-ci-cd-automacao-de-testes-e-quality-gate.md) | [ADR-010](ADRs/ADR-010-esteira-ci-cd-automacao-de-testes-e-quality-gate.md) | CI/CD / Qualidade |
+| **011** | Notificações de Status de OS e Interceptação em Dev com Mailpit | [RFC-011](RFCs/RFC-011-notificacoes-assincronas-e-ambiente-de-emulacao-email.md) | [ADR-011](ADRs/ADR-011-notificacoes-assincronas-e-ambiente-de-emulacao-email.md) | Notificações / Testes |
+| **012** | Procedimento Controlado de Destruição de Infraestrutura com Safety Gate | [RFC-012](RFCs/RFC-012-procedimento-seguro-de-destruicao-de-infraestrutura.md) | [ADR-012](ADRs/ADR-012-procedimento-seguro-de-destruicao-de-infraestrutura.md) | DevOps / Operação |
+| **013** | Substituição do MailHog pelo Mailpit como Servidor SMTP de Testes | [RFC-013](RFCs/RFC-013-substituicao-do-mailhog-pelo-mailpit-para-testes-de-email.md) | [ADR-013](ADRs/ADR-013-substituicao-do-mailhog-pelo-mailpit-para-testes-de-email.md) | Emulação / SMTP |
+| **014** | Dashboard Executivo no Grafana e Métricas de Negócio com Micrometer | [RFC-014](RFCs/RFC-014-dashboard-executivo-grafana-metricas-gerenciais-e-negocio.md) | [ADR-009](ADRs/ADR-009-pilha-de-observabilidade-unificada-opentelemetry.md) | Observabilidade / Negócios |
 
 #### Como Aplicar os Manifestos no Cluster EKS
 
