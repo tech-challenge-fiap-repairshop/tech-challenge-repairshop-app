@@ -17,7 +17,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
-  "id": null,
+  "id": 2,
   "links": [
     {
       "asDropdown": false,
@@ -127,9 +127,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.4.0",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -137,7 +139,7 @@
             "uid": "Prometheus"
           },
           "editorMode": "code",
-          "expr": "repairshop_business_customers_total",
+          "expr": "repairshop_business_customers",
           "instant": false,
           "legendFormat": "Clientes",
           "range": true,
@@ -192,9 +194,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.4.0",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -202,9 +206,9 @@
             "uid": "Prometheus"
           },
           "editorMode": "code",
-          "expr": "repairshop_business_vehicles_total",
+          "expr": "repairshop_business_vehicles",
           "instant": false,
-          "legendFormat": "Veículos",
+          "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
@@ -257,9 +261,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.4.0",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -267,9 +273,9 @@
             "uid": "Prometheus"
           },
           "editorMode": "code",
-          "expr": "repairshop_business_service_orders_total",
+          "expr": "repairshop_business_service_orders",
           "instant": false,
-          "legendFormat": "Ordens de Serviço",
+          "legendFormat": "__auto",
           "range": true,
           "refId": "A"
         }
@@ -322,9 +328,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.4.0",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -387,9 +395,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.4.0",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -460,9 +470,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.4.0",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -545,6 +557,7 @@
           "values": false
         },
         "tooltip": {
+          "maxHeight": 600,
           "mode": "single",
           "sort": "desc"
         }
@@ -592,6 +605,9 @@
               "viz": false
             },
             "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "thresholdsStyle": {
               "mode": "off"
             }
@@ -620,6 +636,7 @@
       "options": {
         "barRadius": 0.1,
         "barWidth": 0.7,
+        "fullHighlight": false,
         "groupWidth": 0.7,
         "legend": {
           "calcs": [],
@@ -631,10 +648,12 @@
         "showValue": "always",
         "stacking": "none",
         "tooltip": {
+          "maxHeight": 600,
           "mode": "single",
           "sort": "none"
         },
-        "xTickLabelRotation": -45
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
       },
       "pluginVersion": "10.4.0",
       "targets": [
@@ -711,9 +730,10 @@
           "values": false
         },
         "showUnfilled": true,
+        "sizing": "auto",
         "valueMode": "color"
       },
-      "pluginVersion": "10.4.0",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -768,6 +788,9 @@
               "viz": false
             },
             "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
             "thresholdsStyle": {
               "mode": "off"
             }
@@ -796,6 +819,7 @@
       "options": {
         "barRadius": 0.1,
         "barWidth": 0.7,
+        "fullHighlight": false,
         "groupWidth": 0.7,
         "legend": {
           "calcs": [],
@@ -807,10 +831,12 @@
         "showValue": "always",
         "stacking": "none",
         "tooltip": {
+          "maxHeight": 600,
           "mode": "single",
           "sort": "none"
         },
-        "xTickLabelRotation": 0
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
       },
       "pluginVersion": "10.4.0",
       "targets": [
@@ -882,9 +908,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.4.0",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -954,9 +982,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.4.0",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1026,9 +1056,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.4.0",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1098,9 +1130,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.4.0",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1184,9 +1218,10 @@
           "values": false
         },
         "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "showThresholdMarkers": true,
+        "sizing": "auto"
       },
-      "pluginVersion": "10.4.0",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1258,9 +1293,10 @@
           "values": false
         },
         "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "showThresholdMarkers": true,
+        "sizing": "auto"
       },
-      "pluginVersion": "10.4.0",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1323,9 +1359,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.4.0",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1333,7 +1371,7 @@
             "uid": "Prometheus"
           },
           "editorMode": "code",
-          "expr": "repairshop_business_inventory_items_total",
+          "expr": "repairshop_business_inventory_items",
           "instant": false,
           "legendFormat": "Itens em Estoque",
           "range": true,
@@ -1388,9 +1426,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.4.0",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1453,9 +1493,11 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.4.0",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1463,7 +1505,7 @@
             "uid": "Prometheus"
           },
           "editorMode": "code",
-          "expr": "repairshop_business_invoices_total",
+          "expr": "repairshop_business_invoices",
           "instant": false,
           "legendFormat": "Faturas",
           "range": true,
@@ -1475,8 +1517,7 @@
     }
   ],
   "refresh": "5s",
-  "schemaVersion": 38,
-  "style": "dark",
+  "schemaVersion": 39,
   "tags": [
     "repairshop",
     "business",
@@ -1484,10 +1525,14 @@
     "kpi",
     "management"
   ],
+  "templating": {
+    "list": []
+  },
   "time": {
-    "from": "now-15m",
+    "from": "now-7d",
     "to": "now"
   },
+  "timeRangeUpdatedDuringEditOrView": false,
   "timepicker": {
     "refresh_intervals": [
       "5s",
@@ -1500,5 +1545,6 @@
   "timezone": "browser",
   "title": "RepairShop - Executive & Business Management Dashboard",
   "uid": "repairshop-business-metrics",
-  "version": 1
+  "version": 2,
+  "weekStart": ""
 }
