@@ -48,6 +48,8 @@ spec:
               value: "otlp"
             - name: OTEL_LOGS_EXPORTER
               value: "otlp"
+            - name: OTEL_INSTRUMENTATION_LOGBACK_APPENDER_ENABLED
+              value: "true"
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: "http://otel-collector:4317"
             - name: OTEL_EXPORTER_OTLP_PROTOCOL

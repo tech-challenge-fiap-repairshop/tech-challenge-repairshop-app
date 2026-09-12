@@ -1,11 +1,11 @@
 {
   "info": {
-    "_postman_id": "c89f7547-7b62-474d-a68e-db75fa4174c2",
+    "_postman_id": "86a0e96d-0de1-4893-ab4b-6ba691bf7b8e",
     "name": "Repair Shop (Tech Challenge FIAP)",
     "description": "Collection passo a passo separada por domínios do projeto, facilitando a execução e testes da API de maneira fluída.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "16060735",
-    "_collection_link": "https://go.postman.co/collection/16060735-c89f7547-7b62-474d-a68e-db75fa4174c2?source=collection_link"
+    "_collection_link": "https://go.postman.co/collection/16060735-86a0e96d-0de1-4893-ab4b-6ba691bf7b8e?source=collection_link"
   },
   "item": [
     {
@@ -17,23 +17,10 @@
             {
               "listen": "prerequest",
               "script": {
-                "exec": [
-                  "function generateValidCpf() {",
-                  "    const randomDigit = () => Math.floor(Math.random() * 9);",
-                  "    let cpf = Array.from({length: 9}, randomDigit);",
-                  "    let d1 = 0; for (let i = 0; i < 9; i++) d1 += cpf[i] * (10 - i);",
-                  "    d1 = 11 - (d1 % 11); if (d1 >= 10) d1 = 0; cpf.push(d1);",
-                  "    let d2 = 0; for (let i = 0; i < 10; i++) d2 += cpf[i] * (11 - i);",
-                  "    d2 = 11 - (d2 % 11); if (d2 >= 10) d2 = 0; cpf.push(d2);",
-                  "    return cpf.join('');",
-                  "}",
-                  "let timestamp = Date.now();",
-                  "pm.collectionVariables.set(\"attendant_email\", \"att_\" + timestamp + \"@repairshop.com\");",
-                  "pm.collectionVariables.set(\"random_document\", generateValidCpf());"
-                ],
                 "type": "text/javascript",
-                "packages": {},
-                "requests": {}
+                "exec": [
+                  "function generateValidCpf() {\n    const randomDigit = () => Math.floor(Math.random() * 9);\n    let cpf = Array.from({length: 9}, randomDigit);\n    let d1 = 0; for (let i = 0; i < 9; i++) d1 += cpf[i] * (10 - i);\n    d1 = 11 - (d1 % 11); if (d1 >= 10) d1 = 0; cpf.push(d1);\n    let d2 = 0; for (let i = 0; i < 10; i++) d2 += cpf[i] * (11 - i);\n    d2 = 11 - (d2 % 11); if (d2 >= 10) d2 = 0; cpf.push(d2);\n    return cpf.join('');\n}\nlet timestamp = Date.now();\npm.collectionVariables.set(\"attendant_email\", \"att_\" + timestamp + \"@repairshop.com\");\npm.collectionVariables.set(\"random_document\", generateValidCpf());"
+                ]
               }
             }
           ],
@@ -47,7 +34,12 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"{{$randomFullName}}\",\n  \"function\": \"ATTENDANT\",\n  \"email\": \"{{attendant_email}}\",\n  \"phone\": \"11999999999\",\n  \"password\": \"securePass123\"\n}"
+              "raw": "{\n  \"name\": \"{{$randomFullName}}\",\n  \"function\": \"ATTENDANT\",\n  \"cpf\": \"{{random_document}}\",\n  \"email\": \"{{attendant_email}}\",\n  \"phone\": \"11999999999\",\n  \"password\": \"securePass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
             },
             "url": {
               "raw": "{{base_url}}/auth/register",
@@ -68,15 +60,10 @@
             {
               "listen": "test",
               "script": {
-                "exec": [
-                  "var jsonData = pm.response.json();",
-                  "if (jsonData.token) {",
-                  "    pm.globals.set(\"token\", jsonData.token);",
-                  "}"
-                ],
                 "type": "text/javascript",
-                "packages": {},
-                "requests": {}
+                "exec": [
+                  "var jsonData = pm.response.json();\nif (jsonData.token) {\n    pm.globals.set(\"token\", jsonData.token);\n}"
+                ]
               }
             }
           ],
@@ -90,7 +77,12 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{attendant_email}}\",\n  \"password\": \"securePass123\"\n}"
+              "raw": "{\n  \"cpf\": \"{{random_document}}\",\n  \"password\": \"securePass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
             },
             "url": {
               "raw": "{{base_url}}/auth/login",
@@ -116,37 +108,10 @@
             {
               "listen": "prerequest",
               "script": {
-                "exec": [
-                  "let timestamp = Date.now();",
-                  "pm.collectionVariables.set(\"customer_name\", pm.variables.replaceIn(\"{{$randomFullName}}\"));",
-                  "pm.collectionVariables.set(\"customer_email\", timestamp + \"@email.com\");",
-                  "pm.collectionVariables.set(\"customer_phone\", \"119\" + Math.floor(10000000 + Math.random() * 90000000));",
-                  "pm.collectionVariables.set(\"customer_plate\", \"ABC\" + Math.floor(1000 + Math.random() * 9000));",
-                  "function generateValidCpf() {",
-                  "    const randomDigit = () => Math.floor(Math.random() * 9);",
-                  "    let cpf = Array.from({length: 9}, randomDigit);",
-                  "    let d1 = 0; for (let i = 0; i < 9; i++) d1 += cpf[i] * (10 - i);",
-                  "    d1 = 11 - (d1 % 11); if (d1 >= 10) d1 = 0; cpf.push(d1);",
-                  "    let d2 = 0; for (let i = 0; i < 10; i++) d2 += cpf[i] * (11 - i);",
-                  "    d2 = 11 - (d2 % 11); if (d2 >= 10) d2 = 0; cpf.push(d2);",
-                  "    return cpf.join('');",
-                  "}",
-                  "pm.collectionVariables.set(\"customer_document\", generateValidCpf());"
-                ],
                 "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            },
-            {
-              "listen": "test",
-              "script": {
                 "exec": [
-                  ""
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
+                  "let timestamp = Date.now();\npm.collectionVariables.set(\"customer_name\", pm.variables.replaceIn(\"{{$randomFullName}}\"));\npm.collectionVariables.set(\"customer_email\", timestamp + \"@email.com\");\npm.collectionVariables.set(\"customer_phone\", \"119\" + Math.floor(10000000 + Math.random() * 90000000));\npm.collectionVariables.set(\"customer_plate\", \"ABC\" + Math.floor(1000 + Math.random() * 9000));\nfunction generateValidCpf() {\n    const randomDigit = () => Math.floor(Math.random() * 9);\n    let cpf = Array.from({length: 9}, randomDigit);\n    let d1 = 0; for (let i = 0; i < 9; i++) d1 += cpf[i] * (10 - i);\n    d1 = 11 - (d1 % 11); if (d1 >= 10) d1 = 0; cpf.push(d1);\n    let d2 = 0; for (let i = 0; i < 10; i++) d2 += cpf[i] * (11 - i);\n    d2 = 11 - (d2 % 11); if (d2 >= 10) d2 = 0; cpf.push(d2);\n    return cpf.join('');\n}\npm.collectionVariables.set(\"customer_document\", generateValidCpf());"
+                ]
               }
             }
           ],
@@ -160,7 +125,12 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"{{customer_name}}\",\n  \"function\": \"CUSTOMER\",\n  \"email\": \"{{customer_email}}\",\n  \"phone\": \"{{customer_phone}}\",\n  \"password\": \"securePass123\"\n}"
+              "raw": "{\n  \"name\": \"{{customer_name}}\",\n  \"function\": \"CUSTOMER\",\n  \"cpf\": \"{{customer_document}}\",\n  \"email\": \"{{customer_email}}\",\n  \"phone\": \"{{customer_phone}}\",\n  \"password\": \"securePass123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
             },
             "url": {
               "raw": "{{base_url}}/auth/register",

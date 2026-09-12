@@ -1,0 +1,40 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: repairshop
+
+resources:
+  - ../k8s/namespace.yaml
+  - ../k8s/configs/grafana-dashboards-config.yaml
+  - ../k8s/configs/grafana-dashboards-provider-config.yaml
+  - ../k8s/configs/grafana-datasources-config.yaml
+  - ../k8s/configs/jaeger-config.yaml
+  - ../k8s/configs/loki-config.yaml
+  - ../k8s/configs/otel-collector-config.yaml
+  - ../k8s/configs/prometheus-config.yaml
+  - ../k8s/secret.yaml
+  - ../k8s/jaeger.yaml
+  - ../k8s/loki.yaml
+  - ../k8s/otel-collector.yaml
+  - ../k8s/prometheus.yaml
+  - ../k8s/grafana.yaml
+  - ../k8s/mailpit.yaml
+  - ../k8s/service.yaml
+  - ../k8s/hpa.yaml
+  - ../k8s/deployment.yaml
+  - configmap-local.yaml
+  - postgres-local.yaml
+
+images:
+  - name: ECR_REGISTRY/repairshop
+    newName: repairshop
+    newTag: latest
+
+patches:
+  - target:
+      kind: Deployment
+      name: repairshop-app
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: IfNotPresent

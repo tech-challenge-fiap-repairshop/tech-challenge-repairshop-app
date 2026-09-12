@@ -19,7 +19,7 @@ spec:
         - name: otel-collector
           image: otel/opentelemetry-collector-contrib:0.100.0
           command:
-            - "/otelcol"
+            - "/otelcol-contrib"
             - "--config=/conf/otel-collector-config.yaml"
           resources:
             requests:
