@@ -29,6 +29,7 @@
 - [Arquitetura de Software](#-arquitetura-de-software)
   - [Domain-Driven Design (DDD)](#domain-driven-design-ddd)
   - [Clean Architecture (Módulos de Domínio)](#clean-architecture-módulos-de-domínio)
+  - [Diagrama de Sequência (Autenticação e Abertura de OS)](#-diagrama-de-sequência-autenticação-e-abertura-de-ordem-de-serviço-os)
 - [Arquitetura Cloud & Orquestração Kubernetes (`k8s/`)](#-arquitetura-cloud--orquestração-kubernetes-k8s)
   - [Topologia Cloud e Orquestração](#topologia-cloud-e-orquestração)
   - [Práticas de Resiliência Cloud-Native](#práticas-de-resiliência-cloud-native)
@@ -215,6 +216,35 @@ src/main/kotlin/com/cao/repairshop/
   <br><br>
 </div>
 
+### 🔄 Diagrama de Sequência: Autenticação e Abertura de Ordem de Serviço (OS)
+
+O fluxo ponta a ponta abrange desde a validação defensiva de credenciais e emissão do token JWT na borda (AWS Lambda Auth) até a autorização via Spring Security, a execução transacional do caso de uso de abertura de Ordem de Serviço (OS) e a persistência consistente no PostgreSQL RDS, com rastreabilidade distribuída via OpenTelemetry:
+
+<div align="center">
+  <img src="docs/delivery/sequence/diagrama_sequencia_auth_abertura_os.drawio.svg" alt="Diagrama de Sequência da Autenticação até a Abertura de Ordem de Serviço (OS)" width="950">
+  <br>
+  <em><small><strong>Figura 3: Diagrama de Sequência: Autenticação (Lambda Java 21) até Abertura de OS (Spring Boot / EKS)</strong></small></em>
+  <br><br>
+</div>
+
+> 💡 **Arquivos do Diagrama de Sequência no Repositório:**
+> - [diagrama_sequencia_auth_abertura_os.drawio.svg](docs/delivery/sequence/diagrama_sequencia_auth_abertura_os.drawio.svg) *(Renderização vetorial SVG em alta resolução para visualização direta)*
+> - [diagrama_sequencia_auth_abertura_os.drawio](docs/delivery/sequence/diagrama_sequencia_auth_abertura_os.drawio) *(Arquivo de modelagem editável no Diagrams.net / Draw.io)*
+
+#### Detalhamento das Fases do Fluxo:
+1. **Fase 1 — Autenticação e Emissão de Token JWT (`POST /auth/login`):**
+   - **Borda & Roteamento:** O cliente envia CPF e senha ao AWS API Gateway HTTP v2, que roteia a requisição via integração `AWS_PROXY` para a função Serverless **AWS Lambda Auth** (desenvolvida em Java 21 sob os princípios de Clean Architecture).
+   - **Validação Defensiva:** O `InputValidator` valida formato e dígitos verificadores do CPF antes de qualquer chamada interna (retornando `400 Bad Request` imediatamente caso inválido).
+   - **Autenticação:** O caso de uso `AuthenticateUseCase` aciona o backend via OpenFeign Client (`POST /auth/login`). A aplicação consulta a entidade `User` no PostgreSQL e valida a senha criptografada via BCrypt.
+   - **Emissão & Headers OWASP:** O `JwtService` emite o token assinado (HMAC-SHA256, expiração de 24h). A Lambda injeta cabeçalhos de proteção (`HSTS`, `X-Frame-Options`, `X-Content-Type-Options`, `Cache-Control: no-store`) e retorna o payload com `200 OK`.
+2. **Fase 2 — Abertura de Ordem de Serviço (OS) Protegida (`POST /service-orders`):**
+   - **Roteamento & Proxy:** O cliente envia `POST /service-orders` com cabeçalho `Authorization: Bearer <token>`. O API Gateway intercepta via rota catch-all `ANY /{proxy+}` e encaminha via Load Balancer (NLB) aos Pods da aplicação no EKS (namespace `repairshop`).
+   - **Segurança (Spring Security):** O `JwtAuthenticationFilter` intercepta a chamada, valida a assinatura e expiração do JWT via `JwtService` e registra o usuário no `SecurityContextHolder` (retornando `401 Unauthorized` se o token for inválido ou ausente).
+   - **Caso de Uso Transacional:** O controller valida o payload (`@Valid CreateServiceOrderRequest`) e invoca `CreateServiceOrderImpl` em contexto `@Transactional`.
+   - **Consistência de Domínio:** São validados e recuperados o Cliente (`CustomerGateway`) e o Veículo (`VehicleGateway`). A entidade agregadora `ServiceOrder` é instanciada e os insumos de cada serviço são resolvidos (`InsumeGateway`) e calculados via `order.addExecution`.
+   - **Persistência & Notificação:** O status inicial `RECEIVED` é registrado no histórico (`order.recordHistory`), a OS é persistida no PostgreSQL (`ServiceOrderGateway.save`), a notificação ao cliente é disparada (`NotifyCustomer`) e spans de rastreamento W3C são enviados assincronamente ao **OTel Collector**.
+   - **Resposta:** A API retorna status HTTP `201 Created` contendo o payload estruturado da Ordem de Serviço.
+
 ---
 
 ## ☸️ Arquitetura Cloud & Orquestração Kubernetes (`k8s/`)
@@ -226,7 +256,7 @@ A aplicação opera conteinerizada e orquestrada no **Amazon Elastic Kubernetes 
 <div align="center">
   <img src="docs/delivery/infrastructure/repairshop-diagrama-infra-cloud.svg" alt="Diagrama de Infraestrutura Cloud e Orquestração EKS" width="900">
   <br>
-  <em><small><strong>Figura 3: Topologia Integrada da Infraestrutura AWS e Orquestração Kubernetes</strong></small></em>
+  <em><small><strong>Figura 4: Topologia Integrada da Infraestrutura AWS e Orquestração Kubernetes</strong></small></em>
   <br><br>
 </div>
 
@@ -769,6 +799,7 @@ A base de código conta com uma ampla suíte de testes unitários e de integraç
 
 - 🏛️ **[Architecture Decision Records (ADRs)](ADRs/README.md):** Catálogo com 13 decisões arquiteturais formais no padrão de Michael Nygard abrangendo domínio, nuvem AWS, segurança e CI/CD.
 - 📜 **[Requests for Comments (RFCs)](RFCs/README.md):** Catálogo com 14 propostas técnicas que nortearam as discussões e alternativas arquiteturais antes da implementação na Fase 3.
+- 🔄 **[Diagrama de Sequência (Autenticação e Abertura de OS)](docs/delivery/sequence/):** Fluxo temporal ponta a ponta disponível nos formatos [`.drawio`](docs/delivery/sequence/diagrama_sequencia_auth_abertura_os.drawio) *(editável)* e [`.svg`](docs/delivery/sequence/diagrama_sequencia_auth_abertura_os.drawio.svg) *(vetorial)*.
 - 📄 **[Dicionário de Linguagem Ubíqua](docs/delivery/domain_driven_design/dicionario-linguagem-ubiqua.md):** Glossário oficial dos termos e conceitos do domínio da oficina.
 - 🗺️ **[Artefatos de Domain-Driven Design](docs/delivery/domain_driven_design/):** Diagramas exportados do Event Storming, Storytelling e fluxos de negócio.
 - 👥 **[Especificações por Papel SDD (Software Design Document)](https://github.com/fiap-postech-repairshop/tech-challenge-wiki-docs/tree/main/sdd):** Diretrizes, responsabilidades e *Definition of Done* por papel técnico (Arquiteto, DevSecOps, Tech Lead, QA e PO), centralizadas no repositório [`tech-challenge-wiki-docs`](https://github.com/fiap-postech-repairshop/tech-challenge-wiki-docs).
