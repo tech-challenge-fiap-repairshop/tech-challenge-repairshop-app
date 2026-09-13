@@ -221,14 +221,15 @@ src/main/kotlin/com/cao/repairshop/
 O fluxo ponta a ponta abrange desde a validação defensiva de credenciais e emissão do token JWT na borda (AWS Lambda Auth) até a autorização via Spring Security, a execução transacional do caso de uso de abertura de Ordem de Serviço (OS) e a persistência consistente no PostgreSQL RDS, com rastreabilidade distribuída via OpenTelemetry:
 
 <div align="center">
-  <img src="docs/delivery/sequence/diagrama_sequencia_auth_abertura_os.drawio.svg" alt="Diagrama de Sequência da Autenticação até a Abertura de Ordem de Serviço (OS)" width="950">
+  <img src="docs/delivery/sequence/diagrama_sequencia_auth_abertura_os.drawio.png" alt="Diagrama de Sequência da Autenticação até a Abertura de Ordem de Serviço (OS)" width="950">
   <br>
   <em><small><strong>Figura 3: Diagrama de Sequência: Autenticação (Lambda Java 21) até Abertura de OS (Spring Boot / EKS)</strong></small></em>
   <br><br>
 </div>
 
 > 💡 **Arquivos do Diagrama de Sequência no Repositório:**
-> - [diagrama_sequencia_auth_abertura_os.drawio.svg](docs/delivery/sequence/diagrama_sequencia_auth_abertura_os.drawio.svg) *(Renderização vetorial SVG em alta resolução para visualização direta)*
+> - [diagrama_sequencia_auth_abertura_os.drawio.png](docs/delivery/sequence/diagrama_sequencia_auth_abertura_os.drawio.png) *(Imagem PNG de alta resolução para visualização direta)*
+> - [diagrama_sequencia_auth_abertura_os.drawio.svg](docs/delivery/sequence/diagrama_sequencia_auth_abertura_os.drawio.svg) *(Renderização vetorial SVG)*
 > - [diagrama_sequencia_auth_abertura_os.drawio](docs/delivery/sequence/diagrama_sequencia_auth_abertura_os.drawio) *(Arquivo de modelagem editável no Diagrams.net / Draw.io)*
 
 #### Detalhamento das Fases do Fluxo:
@@ -799,7 +800,7 @@ A base de código conta com uma ampla suíte de testes unitários e de integraç
 
 - 🏛️ **[Architecture Decision Records (ADRs)](ADRs/README.md):** Catálogo com 13 decisões arquiteturais formais no padrão de Michael Nygard abrangendo domínio, nuvem AWS, segurança e CI/CD.
 - 📜 **[Requests for Comments (RFCs)](RFCs/README.md):** Catálogo com 14 propostas técnicas que nortearam as discussões e alternativas arquiteturais antes da implementação na Fase 3.
-- 🔄 **[Diagrama de Sequência (Autenticação e Abertura de OS)](docs/delivery/sequence/):** Fluxo temporal ponta a ponta disponível nos formatos [`.drawio`](docs/delivery/sequence/diagrama_sequencia_auth_abertura_os.drawio) *(editável)* e [`.svg`](docs/delivery/sequence/diagrama_sequencia_auth_abertura_os.drawio.svg) *(vetorial)*.
+- 🔄 **[Diagrama de Sequência (Autenticação e Abertura de OS)](docs/delivery/sequence/):** Fluxo temporal ponta a ponta disponível nos formatos [`.png`](docs/delivery/sequence/diagrama_sequencia_auth_abertura_os.drawio.png) *(imagem)*, [`.svg`](docs/delivery/sequence/diagrama_sequencia_auth_abertura_os.drawio.svg) *(vetorial)* e [`.drawio`](docs/delivery/sequence/diagrama_sequencia_auth_abertura_os.drawio) *(editável)*.
 - 📄 **[Dicionário de Linguagem Ubíqua](docs/delivery/domain_driven_design/dicionario-linguagem-ubiqua.md):** Glossário oficial dos termos e conceitos do domínio da oficina.
 - 🗺️ **[Artefatos de Domain-Driven Design](docs/delivery/domain_driven_design/):** Diagramas exportados do Event Storming, Storytelling e fluxos de negócio.
 - 👥 **[Especificações por Papel SDD (Software Design Document)](https://github.com/fiap-postech-repairshop/tech-challenge-wiki-docs/tree/main/sdd):** Diretrizes, responsabilidades e *Definition of Done* por papel técnico (Arquiteto, DevSecOps, Tech Lead, QA e PO), centralizadas no repositório [`tech-challenge-wiki-docs`](https://github.com/fiap-postech-repairshop/tech-challenge-wiki-docs).
